@@ -31,20 +31,30 @@ namespace SteamLibraryExplorer {
 
       // Use new location (or previous valid location if there was one)
       var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
+      if (cancellationToken.IsCancellationRequested) {
+        return;
+      }
       if (steamLocation != null) {
         _model.SteamConfiguration.Location.Value = steamLocation;
       }
 
       if (_model.SteamConfiguration.Location.Value == null) {
         _view.ShowError(
-          "Cannot locate Steam installation folder.\r\n\r\nTry starting the Steam application and select \"File > Refresh\".");
+          "Cannot locate Steam installation folder.\r\n\r\n" +
+          "Try starting the Steam application and select \"File > Refresh\".");
         return;
       }
 
       var mainLibrary = await _steamDiscovery.LoadMainLibraryAsync(steamLocation, cancellationToken);
+      if (cancellationToken.IsCancellationRequested) {
+        return;
+      }
       _model.SteamConfiguration.SteamLibraries.Add(mainLibrary);
 
       var libraries = await _steamDiscovery.LoadAdditionalLibrariesAsync(steamLocation, cancellationToken);
+      if (cancellationToken.IsCancellationRequested) {
+        return;
+      }
       foreach (var library in libraries) {
         _model.SteamConfiguration.SteamLibraries.Add(library);
       }
