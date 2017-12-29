@@ -23,7 +23,9 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     public Task DiscoverSizeOnDiskAsync(IEnumerable<SteamLibrary> libraries, CancellationToken cancellationToken) {
-      return RunAsync(() => DiscoverSizeOnDisk(libraries, cancellationToken));
+      // Copy collection, since it could be cleared if a Refresh occurs.
+      var copy = libraries.ToList();
+      return RunAsync(() => DiscoverSizeOnDisk(copy, cancellationToken));
     }
 
     private IEnumerable<SteamLibrary> LoadAdditionalLibraries(DirectoryInfo steamLocation, CancellationToken cancellationToken) {
