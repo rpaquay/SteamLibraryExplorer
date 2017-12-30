@@ -14,6 +14,7 @@
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
+    <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding x:Name="CloseCommand" Command="ApplicationCommands.Close"/>
@@ -92,7 +93,7 @@
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding SizeOnDisk}" TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
+                <TextBlock Text="{Binding SizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>

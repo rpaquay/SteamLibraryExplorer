@@ -4,11 +4,11 @@ using SteamLibraryExplorer.Utils;
 namespace SteamLibraryExplorer.ViewModel {
   public class SteamGameViewModel : ObservableObject {
     private string _listViewGroupHeader;
-    public int _listViewGroupHeaderSortIndex;
+    private int _listViewGroupHeaderSortIndex;
     private string _displayName;
     private string _location;
     private string _acfFile;
-    private string _sizeOnDisk;
+    private long _sizeOnDisk;
     private long _fileCount;
     private Brush _locationColor;
     private Brush _acfFileColor;
@@ -68,7 +68,7 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    public string SizeOnDisk {
+    public long SizeOnDisk {
       get { return _sizeOnDisk; }
       set {
         _sizeOnDisk = value;

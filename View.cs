@@ -87,10 +87,10 @@ namespace SteamLibraryExplorer {
         //       the "ValueChanged" event before we initialize the value of the ViewModel.
         game.SizeOnDisk.ValueChanged += (sender, arg) => {
           _throttledDispatcher.Enqeue(game.Location.FullName + "-" + nameof(gameViewModel.SizeOnDisk), () => {
-            gameViewModel.SizeOnDisk = HumanReadableDiskSize(arg.NewValue);
+            gameViewModel.SizeOnDisk = arg.NewValue;
           });
         };
-        gameViewModel.SizeOnDisk = HumanReadableDiskSize(game.SizeOnDisk.Value);
+        gameViewModel.SizeOnDisk = game.SizeOnDisk.Value;
         gameViewModel.SizeOnDiskColor = game.Location == null ? Brushes.Red : null;
 
         // Note: The order is important for concurrency correctness: we want to register to
