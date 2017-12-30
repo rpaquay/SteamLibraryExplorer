@@ -70,6 +70,7 @@
     <Compile Include="SteamUtil\SteamDiscovery.cs" />
     <Compile Include="SteamUtil\SteamGame.cs" />
     <Compile Include="SteamUtil\SteamLibrary.cs" />
+    <Compile Include="Utils\ThrottledDispatcher.cs" />
     <Compile Include="Utils\ValueChangedArg.cs" />
     <Compile Include="View.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />

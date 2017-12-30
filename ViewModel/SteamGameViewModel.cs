@@ -2,7 +2,7 @@
 
 namespace SteamLibraryExplorer.ViewModel {
   public class SteamGameViewModel : ObservableObject {
-    private string _listViewGroupLabel;
+    private string _listViewGroupHeader;
     private string _displayName;
     private string _location;
     private string _acfFile;
@@ -13,11 +13,11 @@ namespace SteamLibraryExplorer.ViewModel {
     private Brush _sizeOnDiskColor;
     private Brush _fileCountColor;
 
-    public string ListViewGroupLabel {
-      get { return _listViewGroupLabel; }
+    public string ListViewGroupHeader {
+      get { return _listViewGroupHeader; }
       set {
-        _listViewGroupLabel = value;
-        RaisePropertyChangedEvent(nameof(ListViewGroupLabel));
+        _listViewGroupHeader = value;
+        RaisePropertyChangedEvent(nameof(ListViewGroupHeader));
       }
     }
 

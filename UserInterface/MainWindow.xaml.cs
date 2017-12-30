@@ -18,7 +18,7 @@ namespace SteamLibraryExplorer.UserInterface {
       // Create grouping in list view
       CollectionView collectionView = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
       PropertyGroupDescription groupDescription =
-        new PropertyGroupDescription(nameof(SteamGameViewModel.ListViewGroupLabel));
+        new PropertyGroupDescription(nameof(SteamGameViewModel.ListViewGroupHeader));
       collectionView.GroupDescriptions.Add(groupDescription);
 
       Loaded += OnLoaded;

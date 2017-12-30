@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using System.Windows.Threading;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
@@ -18,9 +16,7 @@ namespace SteamLibraryExplorer {
     private readonly MainWindow _mainForm;
     private readonly Model _model;
     private readonly MainPageViewModel _viewModel;
-    private readonly IDictionary<string, Action> _refreshActions = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
-    private readonly object _refreshActionsLock = new object();
-    private readonly DispatcherTimer _timer = new DispatcherTimer();
+    private readonly ThrottledDispatcher _throttledDispatcher = new ThrottledDispatcher();
     private int _progressCount;
 
     public View(MainWindow mainForm, Model model) {
@@ -40,25 +36,7 @@ namespace SteamLibraryExplorer {
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
 
-      _timer.Interval = TimeSpan.FromMilliseconds(200);
-      _timer.Tick += RefreshListViewTimerOnTick;
-      _timer.Start();
-    }
-
-    private void RefreshListViewTimerOnTick(object o, EventArgs eventArgs) {
-      List<Action> refreshActions;
-      lock (_refreshActionsLock) {
-        if (_refreshActions.Count == 0) {
-          return;
-        }
-
-        refreshActions = _refreshActions.Values.ToList();
-        _refreshActions.Clear();
-      }
-
-      foreach (var action in refreshActions) {
-        action();
-      }
+      _throttledDispatcher.Start(TimeSpan.FromMilliseconds(200));
     }
 
     private void SteamLibraries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
@@ -75,60 +53,65 @@ namespace SteamLibraryExplorer {
     }
 
     private void AddGameLibrary(SteamLibrary library) {
-      var groupLabel = GetGroupHeaderText(library);
-
       var gamesViewModel = new List<SteamGameViewModel>();
+
+      // Note: The order is important for concurrency correctness: we want to register to
+      //       the "ValueChanged" event before we initialize the value of the ViewModel.
       library.FreeDiskSize.ValueChanged += (sender, arg) => {
-        lock (_refreshActionsLock) {
-          _refreshActions[library.Location.FullName] = () => {
-            foreach (var game in gamesViewModel) {
-              game.ListViewGroupLabel = GetGroupHeaderText(library);
-            }
-            ICollectionView view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
-            view.Refresh();
-          };
-        }
+        _throttledDispatcher.Enqeue(library.Location.FullName, () => {
+          RefreshGameLibraryGroups(library, gamesViewModel);
+        });
       };
       library.TotalDiskSize.ValueChanged += (sender, arg) => {
-        lock (_refreshActionsLock) {
-          _refreshActions[library.Location.FullName] = () => {
-            foreach (var game in gamesViewModel) {
-              game.ListViewGroupLabel = GetGroupHeaderText(library);
-            }
-            ICollectionView view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
-            view.Refresh();
-          };
-        }
+        _throttledDispatcher.Enqeue(library.Location.FullName, () => {
+          RefreshGameLibraryGroups(library, gamesViewModel);
+        });
       };
 
       foreach (var game in library.Games.OrderBy(x => x.DisplayName)) {
-        var vm = new SteamGameViewModel {
-          ListViewGroupLabel = groupLabel,
+        var gameViewModel = new SteamGameViewModel {
+          ListViewGroupHeader = GetGroupHeaderText(library),
           DisplayName = game.DisplayName,
           AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.FileInfo.GetRelativePathTo(library.Location),
           AcfFileColor = game.AcfFile == null ? Brushes.Red : null,
           Location = game.Location == null ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
           LocationColor = game.Location == null ? Brushes.Red : null,
-          SizeOnDisk = HumanReadableDiskSize(game.SizeOnDisk.Value),
-          SizeOnDiskColor = game.Location == null ? Brushes.Red : null,
-          FileCount = HumanReadableFileCount(game.FileCount.Value),
-          FileCountColor = game.Location == null ? Brushes.Red : null,
         };
 
+        // Note: The order is important for concurrency correctness: we want to register to
+        //       the "ValueChanged" event before we initialize the value of the ViewModel.
         game.SizeOnDisk.ValueChanged += (sender, arg) => {
-          lock (_refreshActionsLock) {
-            _refreshActions[game.Location.FullName + "-size"] = () => vm.SizeOnDisk = HumanReadableDiskSize(arg.NewValue);
-          }
+          _throttledDispatcher.Enqeue(game.Location.FullName + "-" + nameof(gameViewModel.SizeOnDisk), () => {
+            gameViewModel.SizeOnDisk = HumanReadableDiskSize(arg.NewValue);
+          });
         };
-        game.FileCount.ValueChanged += (sender, arg) => {
-          lock (_refreshActionsLock) {
-            _refreshActions[game.Location.FullName + "-count"] = () => vm.FileCount = HumanReadableFileCount(arg.NewValue);
-          }
-        };
+        gameViewModel.SizeOnDisk = HumanReadableDiskSize(game.SizeOnDisk.Value);
+        gameViewModel.SizeOnDiskColor = game.Location == null ? Brushes.Red : null;
 
-        _viewModel.SteamGames.Add(vm);
-        gamesViewModel.Add(vm);
+        // Note: The order is important for concurrency correctness: we want to register to
+        //       the "ValueChanged" event before we initialize the value of the ViewModel.
+        game.FileCount.ValueChanged += (sender, arg) => {
+          _throttledDispatcher.Enqeue(game.Location.FullName + "-" + nameof(gameViewModel.FileCount), () => {
+            gameViewModel.FileCount = HumanReadableFileCount(arg.NewValue);
+          });
+        };
+        gameViewModel.FileCount = HumanReadableDiskSize(game.FileCount.Value);
+        gameViewModel.FileCountColor = game.Location == null ? Brushes.Red : null;
+
+        _viewModel.SteamGames.Add(gameViewModel);
+        gamesViewModel.Add(gameViewModel);
       }
+    }
+
+    private void RefreshGameLibraryGroups(SteamLibrary library, List<SteamGameViewModel> gamesViewModel) {
+      foreach (var game in gamesViewModel) {
+        game.ListViewGroupHeader = GetGroupHeaderText(library);
+      }
+
+      // The group collection does not listen to propery change events, so we need
+      // to explicitly refresh it.
+      var view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
+      view.Refresh();
     }
 
     private static string GetGroupHeaderText(SteamLibrary library) {
@@ -159,14 +142,6 @@ namespace SteamLibraryExplorer {
         return string.Format("{0:n2} MB", (double)value / 1024 / 1024);
       }
       return string.Format("{0:n2} GB", (double)value / 1024 / 1024 / 1024);
-
-      //if (value < 1024 * 1024) {
-      //  return string.Format("{0:n0} KB ({1:n0} Bytes)", value / 1024, value);
-      //}
-      //if (value < 1024 * 1024 * 1024) {
-      //  return string.Format("{0:n0} MB ({1:n0} Bytes)", value / 1024 / 1024, value);
-      //}
-      //return string.Format("{0:n2} GB ({1:n0} Bytes)", (double)value / 1024 / 1024 / 1024, value);
     }
 
     private void ClearGameLibraries() {
