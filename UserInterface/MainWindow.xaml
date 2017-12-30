@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
+        ResizeMode="CanResizeWithGrip"
         mc:Ignorable="d"
         Title="Steam Library Explorer" Height="700" Width="1000">
   <Window.DataContext>
@@ -17,6 +18,11 @@
         <MenuItem Header="_Exit" />
       </MenuItem>
     </Menu>
+      <ToolBar DockPanel.Dock="Top">
+        <Button>
+          <TextBlock Text="Refresh"></TextBlock>
+        </Button>
+      </ToolBar>
     <StatusBar DockPanel.Dock="Bottom">
       <StatusBarItem>
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
