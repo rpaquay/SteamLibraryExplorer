@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Input;
 using SteamLibraryExplorer.SteamModel;
-using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer.UserInterface {
@@ -25,6 +24,8 @@ namespace SteamLibraryExplorer.UserInterface {
       Loaded += OnLoaded;
     }
 
+    public event EventHandler<GridViewColumnHeader> GamesListViewColumnsHeaderClick;
+
     private void OnLoaded(object sender, RoutedEventArgs routedEventArgs) {
       var model = new Model();
       var view = new View(this, model);
@@ -32,20 +33,12 @@ namespace SteamLibraryExplorer.UserInterface {
       controller.Run();
     }
 
-    private void CloseCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e) {
-      throw new NotImplementedException();
+    private void ListViewColumnHeader_Click(object sender, RoutedEventArgs e) {
+      OnGamesListViewColumnsHeaderClick((GridViewColumnHeader)sender);
     }
 
-    private void CloseCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
-      throw new NotImplementedException();
-    }
-
-    private void RefreshCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
-      throw new NotImplementedException();
-    }
-
-    private void RefreshCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e) {
-      throw new NotImplementedException();
+    protected virtual void OnGamesListViewColumnsHeaderClick(GridViewColumnHeader e) {
+      GamesListViewColumnsHeaderClick?.Invoke(this, e);
     }
   }
 }

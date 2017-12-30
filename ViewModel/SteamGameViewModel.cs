@@ -4,6 +4,7 @@ using SteamLibraryExplorer.Utils;
 namespace SteamLibraryExplorer.ViewModel {
   public class SteamGameViewModel : ObservableObject {
     private string _listViewGroupHeader;
+    public int _listViewGroupHeaderSortIndex;
     private string _displayName;
     private string _location;
     private string _acfFile;
@@ -20,6 +21,11 @@ namespace SteamLibraryExplorer.ViewModel {
         _listViewGroupHeader = value;
         RaisePropertyChangedEvent(nameof(ListViewGroupHeader));
       }
+    }
+
+    public int ListViewGroupHeaderSortIndex {
+      get { return _listViewGroupHeaderSortIndex; }
+      set { _listViewGroupHeaderSortIndex = value; }
     }
 
     public string DisplayName {
@@ -93,6 +99,5 @@ namespace SteamLibraryExplorer.ViewModel {
         RaisePropertyChangedEvent(nameof(FileCountColor));
       }
     }
-
   }
 }

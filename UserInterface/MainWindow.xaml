@@ -40,9 +40,9 @@
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
       </StatusBarItem>
       <StatusBarItem HorizontalAlignment="Right">
-        <Grid Visibility="{Binding Path=IsDiscoveringSteamFiles, Converter={StaticResource BooleanToVisibilityConverter}}">
-          <ProgressBar Width="300" Height="16" Margin="0,0,10,0" Minimum="0" Maximum="100" Name="ProgressBar" IsIndeterminate="True" />
-          <TextBlock Name="ProgressBarText" Text="Discovering Steam games" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Grid Margin="0,0,10,0" Visibility="{Binding Path=IsDiscoveringSteamFiles, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <ProgressBar Width="300" Height="16" Minimum="0" Maximum="100" IsIndeterminate="True" />
+          <TextBlock Text="Discovering Steam games" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
       </StatusBarItem>
     </StatusBar>
@@ -55,35 +55,50 @@
       </ListView.Resources>
       <ListView.View>
         <GridView>
-          <GridViewColumn Header="Game" Width="220">
+          <GridViewColumn Width="220">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
+            </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding DisplayName}" TextAlignment="Left"/>
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
-          <GridViewColumn Header="ACF File" Width="240">
+          <GridViewColumn Width="240">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click">ACF File</GridViewColumnHeader>
+            </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding AcfFile}" TextAlignment="Left"  Foreground="{Binding AcfFileColor}"/>
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
-          <GridViewColumn Header="Location" Width="240">
+          <GridViewColumn Width="240">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="Location" Click="ListViewColumnHeader_Click">Location</GridViewColumnHeader>
+            </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding Location}" TextAlignment="Left" Foreground="{Binding LocationColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
-          <GridViewColumn Header="Size" Width="80">
+          <GridViewColumn Width="80">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
+            </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding SizeOnDisk}" TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
-          <GridViewColumn Header="# of Files" Width="80">
+          <GridViewColumn Width="80">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
+            </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding FileCount}" TextAlignment="Right" Foreground="{Binding FileCountColor}" />

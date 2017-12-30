@@ -17,6 +17,8 @@ namespace SteamLibraryExplorer {
     private readonly Model _model;
     private readonly MainPageViewModel _viewModel;
     private readonly ThrottledDispatcher _throttledDispatcher = new ThrottledDispatcher();
+    private readonly ListViewColumnSorter _listViewColumnSorter = new ListViewColumnSorter();
+    private int _gameLibraryCount;
     private int _progressCount;
 
     public View(MainWindow mainForm, Model model) {
@@ -33,12 +35,13 @@ namespace SteamLibraryExplorer {
       _mainForm.RefreshCommand.CanExecute += (sender, args) => args.CanExecute = true;
       _mainForm.CloseCommand.Executed += (sender, args) => OnCloseView();
       _mainForm.RefreshCommand.Executed += (sender, args) => OnRefreshView();
+
+      _mainForm.GamesListViewColumnsHeaderClick += (sender, header) => _listViewColumnSorter.SortColumn(_mainForm.ListView, header);
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
 
       _throttledDispatcher.Start(TimeSpan.FromMilliseconds(200));
     }
-
     private void SteamLibraries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
       switch (e.Action) {
         case NotifyCollectionChangedAction.Add:
@@ -53,6 +56,7 @@ namespace SteamLibraryExplorer {
     }
 
     private void AddGameLibrary(SteamLibrary library) {
+      _gameLibraryCount++;
       var gamesViewModel = new List<SteamGameViewModel>();
 
       // Note: The order is important for concurrency correctness: we want to register to
@@ -71,6 +75,7 @@ namespace SteamLibraryExplorer {
       foreach (var game in library.Games.OrderBy(x => x.DisplayName)) {
         var gameViewModel = new SteamGameViewModel {
           ListViewGroupHeader = GetGroupHeaderText(library),
+          ListViewGroupHeaderSortIndex = _gameLibraryCount,
           DisplayName = game.DisplayName,
           AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.FileInfo.GetRelativePathTo(library.Location),
           AcfFileColor = game.AcfFile == null ? Brushes.Red : null,
@@ -95,7 +100,7 @@ namespace SteamLibraryExplorer {
             gameViewModel.FileCount = HumanReadableFileCount(arg.NewValue);
           });
         };
-        gameViewModel.FileCount = HumanReadableDiskSize(game.FileCount.Value);
+        gameViewModel.FileCount = HumanReadableFileCount(game.FileCount.Value);
         gameViewModel.FileCountColor = game.Location == null ? Brushes.Red : null;
 
         _viewModel.SteamGames.Add(gameViewModel);
@@ -146,6 +151,7 @@ namespace SteamLibraryExplorer {
 
     private void ClearGameLibraries() {
       _viewModel.SteamGames.Clear();
+      _gameLibraryCount = 0;
     }
 
     public void ShowSteamLocation(DirectoryInfo directoryInfo) {
