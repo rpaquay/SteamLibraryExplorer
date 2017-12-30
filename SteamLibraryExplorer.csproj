@@ -57,13 +57,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AcfFile.cs" />
-    <Compile Include="SteamUtil\DirectoryInfoExtensions.cs" />
-    <Compile Include="Property\PropertyValue.cs" />
-    <Compile Include="SteamConfiguration.cs" />
+    <Compile Include="Utils\DirectoryInfoExtensions.cs" />
+    <Compile Include="Utils\PropertyValue.cs" />
+    <Compile Include="SteamUtil\SteamConfiguration.cs" />
     <Compile Include="SteamUtil\SteamDiscovery.cs" />
-    <Compile Include="SteamGame.cs" />
-    <Compile Include="SteamLibrary.cs" />
-    <Compile Include="Property\ValueChangedArg.cs" />
+    <Compile Include="SteamUtil\SteamGame.cs" />
+    <Compile Include="SteamUtil\SteamLibrary.cs" />
+    <Compile Include="Utils\ValueChangedArg.cs" />
     <Compile Include="View.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="ViewModel\MyCollectionViewGroup.cs" />

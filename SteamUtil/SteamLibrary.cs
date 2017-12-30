@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace SteamLibraryExplorer {
+namespace SteamLibraryExplorer.SteamUtil {
   public class SteamLibrary {
     public SteamLibrary(DirectoryInfo location, bool isMainLibrary, IEnumerable<SteamGame> games, long freeDiskSize, long totalDiskSize) {
       Location = location;

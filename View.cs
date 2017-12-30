@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Threading;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
+using SteamLibraryExplorer.Utils;
 using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer {

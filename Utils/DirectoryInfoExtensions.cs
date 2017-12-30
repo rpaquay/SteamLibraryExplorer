@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace SteamLibraryExplorer.SteamUtil {
+namespace SteamLibraryExplorer.Utils {
   public static class DirectoryInfoExtensions {
     public static FileInfo GetFile(this DirectoryInfo directoryInfo, string fileName) {
       return directoryInfo

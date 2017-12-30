@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
-using SteamLibraryExplorer.Property;
+using SteamLibraryExplorer.Utils;
 
-namespace SteamLibraryExplorer {
+namespace SteamLibraryExplorer.SteamUtil {
   public class SteamConfiguration {
     public PropertyValue<DirectoryInfo> Location { get; } = new PropertyValue<DirectoryInfo>();
     public ObservableCollection<SteamLibrary> SteamLibraries { get; } = new ObservableCollection<SteamLibrary>();

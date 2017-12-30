@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SteamLibraryExplorer.Property
+namespace SteamLibraryExplorer.Utils
 {
   public class PropertyValue<T> {
     private T _value;

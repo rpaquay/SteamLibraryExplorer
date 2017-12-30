@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SteamLibraryExplorer.Property
+namespace SteamLibraryExplorer.Utils
 {
   public class ValueChangedArg<T> : EventArgs {
     public T OldValue { get; set; }
