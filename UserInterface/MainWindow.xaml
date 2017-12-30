@@ -6,7 +6,8 @@
         xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
         ResizeMode="CanResizeWithGrip"
         mc:Ignorable="d"
-        Title="Steam Library Explorer" Height="700" Width="1000">
+        Icon="../Resources/MainIcon.ico"
+        Title="{Binding WindowTitle}" Height="700" Width="1000">
   <Window.DataContext>
     <viewModel:MainPageViewModel/>
   </Window.DataContext>
