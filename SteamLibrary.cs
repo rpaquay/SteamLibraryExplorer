@@ -3,10 +3,12 @@ using System.IO;
 
 namespace SteamLibraryExplorer {
   public class SteamLibrary {
-    public SteamLibrary(DirectoryInfo location, bool isMainLibrary, IEnumerable<SteamGame> games) {
+    public SteamLibrary(DirectoryInfo location, bool isMainLibrary, IEnumerable<SteamGame> games, long freeDiskSize, long totalDiskSize) {
       Location = location;
       IsMainLibrary = isMainLibrary;
       Games.AddRange(games);
+      FreeDiskSize = freeDiskSize;
+      TotalDiskSize = totalDiskSize;
     }
     public string Id => Location.FullName;
     public bool IsMainLibrary { get; }
@@ -15,7 +17,7 @@ namespace SteamLibraryExplorer {
       : $"Library Folder ({Location.FullName})";
     public DirectoryInfo Location { get; }
     public List<SteamGame> Games { get; } = new List<SteamGame>();
-    public PropertyValue<long> TotalDiskSize { get; } = new PropertyValue<long>(0);
-    public PropertyValue<long> FreeDiskSize { get; } = new PropertyValue<long>(0);
+    public long TotalDiskSize { get; }
+    public long FreeDiskSize { get; }
   }
 }

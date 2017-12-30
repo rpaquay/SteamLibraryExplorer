@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using SteamLibraryExplorer.Property;
 
 namespace SteamLibraryExplorer {
   public class SteamGame {

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Security.AccessControl;
 
-namespace SteamLibraryExplorer
+namespace SteamLibraryExplorer.Property
 {
   public class PropertyValue<T> {
     private T _value;

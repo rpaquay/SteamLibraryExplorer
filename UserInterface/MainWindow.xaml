@@ -1,0 +1,101 @@
+﻿<Window x:Class="SteamLibraryExplorer.UserInterface.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
+        mc:Ignorable="d"
+        Title="Steam Library Explorer" Height="700" Width="1000">
+  <Window.DataContext>
+    <viewModel:MainPageViewModel/>
+  </Window.DataContext>
+  <DockPanel>
+    <Menu x:Name="MainMenu" DockPanel.Dock="Top">
+      <MenuItem Header="_File" Margin="0,4,0,0">
+        <MenuItem Header="_Refresh" />
+        <Separator />
+        <MenuItem Header="_Exit" />
+      </MenuItem>
+    </Menu>
+    <StatusBar DockPanel.Dock="Bottom">
+      <StatusBarItem>
+        <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
+      </StatusBarItem>
+    </StatusBar>
+    <ListView x:Name="ListView" ItemsSource="{Binding Games}">
+      <ListView.Resources>
+        <Style TargetType="{x:Type GridViewColumnHeader}">
+          <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+      </ListView.Resources>
+      <ListView.View>
+        <GridView>
+          <GridViewColumn Header="Game" Width="220">
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding DisplayName}" TextAlignment="Left"/>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Header="ACF File" Width="240">
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding AcfFile}" TextAlignment="Left"/>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Header="Location" Width="240">
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Location}" TextAlignment="Left"/>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Header="Size" Width="80">
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding SizeOnDisk}" TextAlignment="Right"/>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Header="# of Files" Width="80">
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding FileCount}" TextAlignment="Right"/>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+        </GridView>
+      </ListView.View>
+      <ListView.ItemContainerStyle>
+        <Style TargetType="ListViewItem">
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+      </ListView.ItemContainerStyle>
+      <ListView.GroupStyle>
+        <GroupStyle>
+          <GroupStyle.ContainerStyle>
+            <Style TargetType="{x:Type GroupItem}">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate>
+                    <Expander IsExpanded="True" Margin="0,4,0,2">
+                      <Expander.Header>
+                        <DockPanel Width="500">
+                          <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
+                          <TextBlock  Margin="2,0,2,0" Text="{Binding Name}" FontWeight="Bold"  DockPanel.Dock="Left" />
+                          <Separator VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                        </DockPanel>
+                      </Expander.Header>
+                      <ItemsPresenter />
+                    </Expander>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </GroupStyle.ContainerStyle>
+        </GroupStyle>
+      </ListView.GroupStyle>
+    </ListView>
+  </DockPanel>
+</Window>
