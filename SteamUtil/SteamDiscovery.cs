@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {

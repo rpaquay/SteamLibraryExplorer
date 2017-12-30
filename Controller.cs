@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Windows;
+using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.SteamUtil;
 
 namespace SteamLibraryExplorer {

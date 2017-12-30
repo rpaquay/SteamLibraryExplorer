@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace SteamLibraryExplorer.ViewModel {
+namespace SteamLibraryExplorer.Utils {
   public abstract class ObservableObject : INotifyPropertyChanged {
     public event PropertyChangedEventHandler PropertyChanged;
 

@@ -1,4 +1,5 @@
 ﻿using System.Windows.Media;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.ViewModel {
   public class SteamGameViewModel : ObservableObject {

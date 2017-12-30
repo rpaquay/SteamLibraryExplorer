@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.ViewModel {
   /// <summary>

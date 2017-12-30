@@ -1,6 +1,4 @@
-﻿using SteamLibraryExplorer.SteamUtil;
-
-namespace SteamLibraryExplorer {
+﻿namespace SteamLibraryExplorer.SteamModel {
   public class Model {
     public SteamConfiguration SteamConfiguration { get; } = new SteamConfiguration();
   }

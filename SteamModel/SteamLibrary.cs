@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using SteamLibraryExplorer.Utils;
 
-namespace SteamLibraryExplorer.SteamUtil {
+namespace SteamLibraryExplorer.SteamModel {
   public class SteamLibrary {
     public SteamLibrary(DirectoryInfo location, bool isMainLibrary, IEnumerable<SteamGame> games) {
       Location = location;

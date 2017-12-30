@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using SteamLibraryExplorer.SteamUtil;
 
-namespace SteamLibraryExplorer {
+namespace SteamLibraryExplorer.SteamModel {
   public class AcfFile {
     public AcfFile(FileInfo fileInfo, string contents) {
       FileInfo = fileInfo;

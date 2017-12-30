@@ -2,7 +2,7 @@
 using System.IO;
 using SteamLibraryExplorer.Utils;
 
-namespace SteamLibraryExplorer.SteamUtil {
+namespace SteamLibraryExplorer.SteamModel {
   public class SteamGame {
     public SteamGame(DirectoryInfo location, AcfFile acfFile) {
       Debug.Assert(location != null || acfFile != null);
