@@ -21,6 +21,7 @@ namespace SteamLibraryExplorer {
     private readonly IDictionary<string, Action> _refreshActions = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
     private readonly object _refreshActionsLock = new object();
     private readonly DispatcherTimer _timer = new DispatcherTimer();
+    private int _progressCount;
 
     public View(MainWindow mainForm, Model model) {
       _model = model;
@@ -192,6 +193,22 @@ namespace SteamLibraryExplorer {
 
     protected virtual void OnCloseView() {
       CloseView?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void StartProgress() {
+      if (_progressCount == 0) {
+        _mainForm.ProgressBar.Visibility = Visibility.Visible;
+        _mainForm.ProgressBarText.Visibility = Visibility.Visible;
+      }
+      _progressCount++;
+    }
+
+    public void StopProgress() {
+      _progressCount--;
+      if (_progressCount == 0) {
+        _mainForm.ProgressBar.Visibility = Visibility.Hidden;
+        _mainForm.ProgressBarText.Visibility = Visibility.Hidden;
+      }
     }
   }
 }

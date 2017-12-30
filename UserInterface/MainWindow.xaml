@@ -35,6 +35,12 @@
       <StatusBarItem>
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
       </StatusBarItem>
+      <StatusBarItem HorizontalAlignment="Right">
+        <Grid>
+          <ProgressBar Width="300" Height="16" Margin="0,0,10,0" Minimum="0" Maximum="100" Name="ProgressBar" IsIndeterminate="True" Visibility="Hidden" />
+          <TextBlock Name="ProgressBarText" Text="Discovering Steam games" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden" />
+        </Grid>
+      </StatusBarItem>
     </StatusBar>
     <ListView x:Name="ListView" ItemsSource="{Binding SteamGames}">
       <ListView.Resources>

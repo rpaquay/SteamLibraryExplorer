@@ -28,41 +28,48 @@ namespace SteamLibraryExplorer {
       _cancellationTokenSource = new CancellationTokenSource();
       var cancellationToken = _cancellationTokenSource.Token;
 
-      // Clear model and start a new collection process
-      _model.SteamConfiguration.SteamLibraries.Clear();
+      _view.StartProgress();
+      try {
 
-      // Use new location (or previous valid location if there was one)
-      var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
-      if (cancellationToken.IsCancellationRequested) {
-        return;
-      }
-      if (steamLocation != null) {
-        _model.SteamConfiguration.Location.Value = steamLocation;
-      }
+        // Clear model and start a new collection process
+        _model.SteamConfiguration.SteamLibraries.Clear();
 
-      if (_model.SteamConfiguration.Location.Value == null) {
-        _view.ShowError(
-          "Cannot locate Steam installation folder.\r\n\r\n" +
-          "Try starting the Steam application and select \"File > Refresh\".");
-        return;
-      }
+        // Use new location (or previous valid location if there was one)
+        var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
+        if (cancellationToken.IsCancellationRequested) {
+          return;
+        }
+        if (steamLocation != null) {
+          _model.SteamConfiguration.Location.Value = steamLocation;
+        }
 
-      var mainLibrary = await _steamDiscovery.LoadMainLibraryAsync(steamLocation, cancellationToken);
-      if (cancellationToken.IsCancellationRequested) {
-        return;
-      }
-      _model.SteamConfiguration.SteamLibraries.Add(mainLibrary);
+        if (_model.SteamConfiguration.Location.Value == null) {
+          _view.ShowError(
+            "Cannot locate Steam installation folder.\r\n\r\n" +
+            "Try starting the Steam application and select \"File > Refresh\".");
+          return;
+        }
 
-      var libraries = await _steamDiscovery.LoadAdditionalLibrariesAsync(steamLocation, cancellationToken);
-      if (cancellationToken.IsCancellationRequested) {
-        return;
-      }
-      foreach (var library in libraries) {
-        _model.SteamConfiguration.SteamLibraries.Add(library);
-      }
+        var mainLibrary = await _steamDiscovery.LoadMainLibraryAsync(steamLocation, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) {
+          return;
+        }
+        _model.SteamConfiguration.SteamLibraries.Add(mainLibrary);
 
-      // Start background tasks of discovering game size on disk
-      await _steamDiscovery.DiscoverSizeOnDiskAsync(_model.SteamConfiguration.SteamLibraries, cancellationToken);
+        var libraries = await _steamDiscovery.LoadAdditionalLibrariesAsync(steamLocation, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) {
+          return;
+        }
+        foreach (var library in libraries) {
+          _model.SteamConfiguration.SteamLibraries.Add(library);
+        }
+
+        // Start background tasks of discovering game size on disk
+        await _steamDiscovery.DiscoverSizeOnDiskAsync(_model.SteamConfiguration.SteamLibraries, cancellationToken);
+      }
+      finally {
+        _view.StopProgress();
+      }
     }
   }
 }
