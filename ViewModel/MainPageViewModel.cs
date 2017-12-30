@@ -1,6 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 
 namespace SteamLibraryExplorer.ViewModel {
+  /// <summary>
+  /// View Model for the main window
+  /// </summary>
   public class MainPageViewModel : ObservableObject {
     private string _statusText;
 
@@ -12,6 +15,6 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    public ObservableCollection<SteamGameViewModel> Games { get; } = new ObservableCollection<SteamGameViewModel>();
+    public ObservableCollection<SteamGameViewModel> SteamGames { get; } = new ObservableCollection<SteamGameViewModel>();
   }
 }

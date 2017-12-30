@@ -10,6 +10,6 @@
       }
     }
 
-    //public ObservableCollection<SteamGameViewModel> Games { get; } = new ObservableCollection<SteamGameViewModel>();
+    //public ObservableCollection<SteamGameViewModel> SteamGames { get; } = new ObservableCollection<SteamGameViewModel>();
   }
 }

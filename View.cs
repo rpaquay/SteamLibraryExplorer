@@ -25,14 +25,11 @@ namespace SteamLibraryExplorer {
       _viewModel = (MainPageViewModel)_mainForm.DataContext;
     }
 
-    public event EventHandler FirstShow;
     public event EventHandler RefreshView;
 
     public void Run() {
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
-
-      _mainForm.Loaded += (sender, args) => OnFirstShow();
 
       _timer.Interval = TimeSpan.FromMilliseconds(200);
       _timer.Tick += RefreshListViewTimerOnTick;
@@ -92,7 +89,7 @@ namespace SteamLibraryExplorer {
           }
         };
 
-        _viewModel.Games.Add(vm);
+        _viewModel.SteamGames.Add(vm);
       }
     }
 
@@ -135,7 +132,7 @@ namespace SteamLibraryExplorer {
     }
 
     private void ClearGameLibraries() {
-      _viewModel.Games.Clear();
+      _viewModel.SteamGames.Clear();
     }
 
     public void ShowSteamLocation(DirectoryInfo directoryInfo) {
@@ -146,10 +143,6 @@ namespace SteamLibraryExplorer {
       }
 
       _viewModel.StatusText = string.Format("Steam location: {0}", directoryInfo.FullName);
-    }
-
-    protected virtual void OnFirstShow() {
-      FirstShow?.Invoke(this, EventArgs.Empty);
     }
 
     protected virtual void OnRefreshView() {

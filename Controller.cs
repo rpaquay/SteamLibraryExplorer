@@ -15,9 +15,9 @@ namespace SteamLibraryExplorer {
     }
 
     public void Run() {
-      _view.FirstShow += (sender, args) => FetchSteamConfigurationAsync();
       _view.RefreshView += (sender, args) => FetchSteamConfigurationAsync();
       _view.Run();
+      FetchSteamConfigurationAsync();
     }
 
     private async void FetchSteamConfigurationAsync() {

@@ -22,7 +22,7 @@
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
       </StatusBarItem>
     </StatusBar>
-    <ListView x:Name="ListView" ItemsSource="{Binding Games}">
+    <ListView x:Name="ListView" ItemsSource="{Binding SteamGames}">
       <ListView.Resources>
         <Style TargetType="{x:Type GridViewColumnHeader}">
           <Setter Property="HorizontalContentAlignment" Value="Left" />
