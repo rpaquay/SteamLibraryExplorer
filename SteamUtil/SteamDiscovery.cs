@@ -61,19 +61,21 @@ namespace SteamLibraryExplorer.SteamUtil {
         return new SteamGame(x.Exists ? x : null, acfFile);
       });
 
-      ulong userFreeBytes;
-      ulong totalBytes;
-      ulong freeBytes;
-      if (GetDiskFreeSpaceEx(steamLocation.FullName, out userFreeBytes, out totalBytes, out freeBytes)) {
-      }
-
-      return new SteamLibrary(steamLocation, isMainLibrary, games, (long)freeBytes, (long)totalBytes);
+      return new SteamLibrary(steamLocation, isMainLibrary, games);
     }
 
     private void DiscoverSizeOnDisk(IEnumerable<SteamLibrary> libraries, CancellationToken cancellationToken) {
       foreach (var library in libraries) {
         if (cancellationToken.IsCancellationRequested)
           break;
+
+        ulong userFreeBytes;
+        ulong totalBytes;
+        ulong freeBytes;
+        if (GetDiskFreeSpaceEx(library.Location.FullName, out userFreeBytes, out totalBytes, out freeBytes)) {
+          library.FreeDiskSize.Value = (long)freeBytes;
+          library.TotalDiskSize.Value = (long)totalBytes;
+        }
 
         foreach (var game in library.Games) {
           DiscoverGameSizeOnDisk(game, cancellationToken);

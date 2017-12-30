@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.IO;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamLibrary {
-    public SteamLibrary(DirectoryInfo location, bool isMainLibrary, IEnumerable<SteamGame> games, long freeDiskSize, long totalDiskSize) {
+    public SteamLibrary(DirectoryInfo location, bool isMainLibrary, IEnumerable<SteamGame> games) {
       Location = location;
       IsMainLibrary = isMainLibrary;
       Games.AddRange(games);
-      FreeDiskSize = freeDiskSize;
-      TotalDiskSize = totalDiskSize;
     }
     public string Id => Location.FullName;
     public bool IsMainLibrary { get; }
@@ -17,7 +16,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       : $"Library Folder ({Location.FullName})";
     public DirectoryInfo Location { get; }
     public List<SteamGame> Games { get; } = new List<SteamGame>();
-    public long TotalDiskSize { get; }
-    public long FreeDiskSize { get; }
+    public PropertyValue<long> TotalDiskSize { get; } = new PropertyValue<long>();
+    public PropertyValue<long> FreeDiskSize { get; } = new PropertyValue<long>();
   }
 }

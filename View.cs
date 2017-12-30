@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Threading;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
@@ -67,6 +69,31 @@ namespace SteamLibraryExplorer {
 
     private void AddGameLibrary(SteamLibrary library) {
       var groupLabel = GetGroupHeaderText(library);
+
+      var gamesViewModel = new List<SteamGameViewModel>();
+      library.FreeDiskSize.ValueChanged += (sender, arg) => {
+        lock (_refreshActionsLock) {
+          _refreshActions[library.Location.FullName] = () => {
+            foreach (var game in gamesViewModel) {
+              game.ListViewGroupLabel = GetGroupHeaderText(library);
+            }
+            ICollectionView view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
+            view.Refresh();
+          };
+        }
+      };
+      library.TotalDiskSize.ValueChanged += (sender, arg) => {
+        lock (_refreshActionsLock) {
+          _refreshActions[library.Location.FullName] = () => {
+            foreach (var game in gamesViewModel) {
+              game.ListViewGroupLabel = GetGroupHeaderText(library);
+            }
+            ICollectionView view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
+            view.Refresh();
+          };
+        }
+      };
+
       foreach (var game in library.Games) {
         var vm = new SteamGameViewModel {
           ListViewGroupLabel = groupLabel,
@@ -90,15 +117,16 @@ namespace SteamLibraryExplorer {
         };
 
         _viewModel.SteamGames.Add(vm);
+        gamesViewModel.Add(vm);
       }
     }
 
     private static string GetGroupHeaderText(SteamLibrary library) {
-      if (library.TotalDiskSize > 0 && library.FreeDiskSize > 0) {
+      if (library.TotalDiskSize.Value > 0 && library.FreeDiskSize.Value > 0) {
         return string.Format("{0} - {1} of {2} available",
           library.DisplayName,
-          HumanReadableDiskSize(library.FreeDiskSize),
-          HumanReadableDiskSize(library.TotalDiskSize));
+          HumanReadableDiskSize(library.FreeDiskSize.Value),
+          HumanReadableDiskSize(library.TotalDiskSize.Value));
       }
       return library.DisplayName;
     }
