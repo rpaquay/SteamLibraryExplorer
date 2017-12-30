@@ -69,7 +69,6 @@
     <Compile Include="ViewModel\MyCollectionViewGroup.cs" />
     <Compile Include="ViewModel\ObservableObject.cs" />
     <Compile Include="ViewModel\SteamGameViewModel.cs" />
-    <Compile Include="ViewModel\SteamLibraryViewModel.cs" />
     <Compile Include="UserInterface\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
