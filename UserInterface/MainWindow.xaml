@@ -20,7 +20,7 @@
   </Window.InputBindings>
   <DockPanel>
     <Menu x:Name="MainMenu" DockPanel.Dock="Top">
-      <MenuItem Header="_File" Margin="0,4,0,0">
+      <MenuItem Header="_File" Padding="4">
         <MenuItem Header="_Refresh" Command="NavigationCommands.Refresh"/>
         <Separator />
         <MenuItem Header="_Exit" Command="ApplicationCommands.Close"/>
@@ -46,6 +46,7 @@
       <ListView.Resources>
         <Style TargetType="{x:Type GridViewColumnHeader}">
           <Setter Property="HorizontalContentAlignment" Value="Left" />
+          <Setter Property="Padding" Value="10, 4, 10, 4" />
         </Style>
       </ListView.Resources>
       <ListView.View>
