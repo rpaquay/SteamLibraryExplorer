@@ -5,7 +5,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using SteamLibraryExplorer.ViewModel;
 
-namespace SteamLibraryExplorer {
+namespace SteamLibraryExplorer.UserInterface {
   public class ListViewColumnSorter {
     private GridViewColumnHeader _lastSortedColumn;
     private SortAdorner _listViewSortAdorner;
