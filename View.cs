@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Threading;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
@@ -99,16 +100,19 @@ namespace SteamLibraryExplorer {
         }
       };
 
-      foreach (var game in library.Games) {
+      foreach (var game in library.Games.OrderBy(x => x.DisplayName)) {
         var vm = new SteamGameViewModel {
           ListViewGroupLabel = groupLabel,
           DisplayName = game.DisplayName,
           AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.FileInfo.GetRelativePathTo(library.Location),
+          AcfFileColor = game.AcfFile == null ? Brushes.Red : null,
           Location = game.Location == null ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
+          LocationColor = game.Location == null ? Brushes.Red : null,
           SizeOnDisk = HumanReadableDiskSize(game.SizeOnDisk.Value),
+          SizeOnDiskColor = game.Location == null ? Brushes.Red : null,
           FileCount = HumanReadableFileCount(game.FileCount.Value),
+          FileCountColor = game.Location == null ? Brushes.Red : null,
         };
-        //TODO: Make color RED if missing acf file or location
 
         game.SizeOnDisk.ValueChanged += (sender, arg) => {
           lock (_refreshActionsLock) {

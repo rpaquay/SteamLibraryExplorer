@@ -54,28 +54,28 @@
           <GridViewColumn Header="ACF File" Width="240">
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding AcfFile}" TextAlignment="Left"/>
+                <TextBlock Text="{Binding AcfFile}" TextAlignment="Left"  Foreground="{Binding AcfFileColor}"/>
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
           <GridViewColumn Header="Location" Width="240">
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding Location}" TextAlignment="Left"/>
+                <TextBlock Text="{Binding Location}" TextAlignment="Left" Foreground="{Binding LocationColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
           <GridViewColumn Header="Size" Width="80">
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding SizeOnDisk}" TextAlignment="Right"/>
+                <TextBlock Text="{Binding SizeOnDisk}" TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
           <GridViewColumn Header="# of Files" Width="80">
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding FileCount}" TextAlignment="Right"/>
+                <TextBlock Text="{Binding FileCount}" TextAlignment="Right" Foreground="{Binding FileCountColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
@@ -114,3 +114,4 @@
     </ListView>
   </DockPanel>
 </Window>
+
