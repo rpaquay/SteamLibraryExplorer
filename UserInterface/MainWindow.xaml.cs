@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -13,14 +14,8 @@ namespace SteamLibraryExplorer.UserInterface {
     public MainWindow() {
       InitializeComponent();
 
-      DataContext = new MainPageViewModel();
-
-      // Create grouping in list view
-      CollectionView collectionView = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
-      PropertyGroupDescription groupDescription =
-        new PropertyGroupDescription(nameof(SteamGameViewModel.ListViewGroupHeader));
-      collectionView.GroupDescriptions.Add(groupDescription);
-
+      // Set DataContext *before* OnLoaded
+      Debug.Assert(DataContext is MainPageViewModel);
       Loaded += OnLoaded;
     }
 

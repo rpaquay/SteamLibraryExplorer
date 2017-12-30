@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
+        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         ResizeMode="CanResizeWithGrip"
         mc:Ignorable="d"
         Icon="../Resources/MainIcon.ico"
@@ -15,6 +16,16 @@
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
+    <CollectionViewSource Source="{Binding SteamGames}" x:Key="SteamGamesCollectionViewSource">
+      <!--<CollectionViewSource.SortDescriptions>
+        <componentModel:SortDescription PropertyName="ListViewGroupHeaderIndex" Direction="Ascending"/>
+        <componentModel:SortDescription PropertyName="DisplayName" Direction="Ascending"/>
+      </CollectionViewSource.SortDescriptions>-->
+      <!-- Group by property "ListViewGroupHeader" of SteamGameViewModel!-->
+      <CollectionViewSource.GroupDescriptions>
+        <PropertyGroupDescription PropertyName="ListViewGroupHeader" />
+      </CollectionViewSource.GroupDescriptions>
+    </CollectionViewSource>
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding x:Name="CloseCommand" Command="ApplicationCommands.Close"/>
@@ -48,7 +59,7 @@
         </Grid>
       </StatusBarItem>
     </StatusBar>
-    <ListView x:Name="ListView" ItemsSource="{Binding SteamGames}">
+    <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}">
       <ListView.Resources>
         <Style TargetType="{x:Type GridViewColumnHeader}">
           <Setter Property="HorizontalContentAlignment" Value="Left" />
