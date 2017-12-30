@@ -87,9 +87,9 @@
                   <ControlTemplate>
                     <Expander IsExpanded="True" Margin="0,4,0,2" Template="{DynamicResource StretchExpanderControlTemplate}">
                       <Expander.Header>
-                        <DockPanel Width="500">
+                        <DockPanel>
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
-                          <TextBlock  Margin="2,0,2,0" Text="{Binding Name}" FontWeight="Bold"  DockPanel.Dock="Left" />
+                          <TextBlock Margin="2,0,2,0" Text="{Binding Name}" FontWeight="Bold"  DockPanel.Dock="Left" />
                           <Separator VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
                       </Expander.Header>

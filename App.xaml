@@ -5,7 +5,11 @@
              StartupUri="UserInterface/MainWindow.xaml">
   <Application.Resources>
 
-    <!-- This is a plain copy of the Expander Conrol Template !-->
+    <!--
+    This is a plain copy of the Expander Conrol Template, with a simple customization
+    to allow the header to have a Horizontal Alignment of "Stretch", so that it is easy
+    to add a separator bar that takes the whole length of the header.
+    !-->
     <ControlTemplate x:Key="StretchExpanderControlTemplate" TargetType="{x:Type Expander}">
       <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="3" SnapsToDevicePixels="True">
         <DockPanel>
@@ -36,7 +40,7 @@
                           </Grid.ColumnDefinitions>
                           <Ellipse x:Name="circle" Fill="White" HorizontalAlignment="Center" Height="19" Stroke="#FF333333" VerticalAlignment="Center" Width="19"/>
                           <Path x:Name="arrow" Data="M1,1.5L4.5,5 8,1.5" HorizontalAlignment="Center" SnapsToDevicePixels="False" Stroke="#FF333333" StrokeThickness="2" VerticalAlignment="Center"/>
-                          <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="1" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
+                          <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="1" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="Stretch" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
                         </Grid>
                       </Border>
                       <ControlTemplate.Triggers>
