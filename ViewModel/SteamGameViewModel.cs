@@ -9,7 +9,7 @@ namespace SteamLibraryExplorer.ViewModel {
     private string _location;
     private string _acfFile;
     private string _sizeOnDisk;
-    private string _fileCount;
+    private long _fileCount;
     private Brush _locationColor;
     private Brush _acfFileColor;
     private Brush _sizeOnDiskColor;
@@ -84,7 +84,7 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    public string FileCount {
+    public long FileCount {
       get { return _fileCount; }
       set {
         _fileCount = value;

@@ -13,6 +13,7 @@
   </Window.DataContext>
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding x:Name="CloseCommand" Command="ApplicationCommands.Close"/>
@@ -101,7 +102,7 @@
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding FileCount}" TextAlignment="Right" Foreground="{Binding FileCountColor}" />
+                <TextBlock Text="{Binding FileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" Foreground="{Binding FileCountColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>

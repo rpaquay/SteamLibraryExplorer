@@ -97,10 +97,10 @@ namespace SteamLibraryExplorer {
         //       the "ValueChanged" event before we initialize the value of the ViewModel.
         game.FileCount.ValueChanged += (sender, arg) => {
           _throttledDispatcher.Enqeue(game.Location.FullName + "-" + nameof(gameViewModel.FileCount), () => {
-            gameViewModel.FileCount = HumanReadableFileCount(arg.NewValue);
+            gameViewModel.FileCount = arg.NewValue;
           });
         };
-        gameViewModel.FileCount = HumanReadableFileCount(game.FileCount.Value);
+        gameViewModel.FileCount = game.FileCount.Value;
         gameViewModel.FileCountColor = game.Location == null ? Brushes.Red : null;
 
         _viewModel.SteamGames.Add(gameViewModel);
@@ -129,11 +129,11 @@ namespace SteamLibraryExplorer {
       return library.DisplayName;
     }
 
-    private static string HumanReadableFileCount(long value) {
+    public static string HumanReadableFileCount(long value) {
       return string.Format("{0:n0}", value);
     }
 
-    private static string HumanReadableDiskSize(long value) {
+    public static string HumanReadableDiskSize(long value) {
       if (value <= 0) {
         return "0 KB";
       }

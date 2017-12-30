@@ -74,6 +74,7 @@
     <Compile Include="Utils\ThrottledDispatcher.cs" />
     <Compile Include="Utils\ValueChangedArg.cs" />
     <Compile Include="View.cs" />
+    <Compile Include="ViewModel\FileCountValueConverter.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="Utils\ObservableObject.cs" />
     <Compile Include="ViewModel\SteamGameViewModel.cs" />
