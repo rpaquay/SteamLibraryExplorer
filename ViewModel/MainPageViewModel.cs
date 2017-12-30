@@ -8,6 +8,7 @@ namespace SteamLibraryExplorer.ViewModel {
   /// </summary>
   public class MainPageViewModel : ObservableObject {
     private string _statusText;
+    private bool _isDiscoveringSteamFiles;
 
     public string WindowTitle {
       get {
@@ -24,7 +25,14 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    public ObservableCollection<SteamGameViewModel> SteamGames { get; } = new ObservableCollection<SteamGameViewModel>();
+    public bool IsDiscoveringSteamFiles {
+      get { return _isDiscoveringSteamFiles; }
+      set {
+        _isDiscoveringSteamFiles = value;
+        RaisePropertyChangedEvent(nameof(IsDiscoveringSteamFiles));
+      }
+    }
 
+    public ObservableCollection<SteamGameViewModel> SteamGames { get; } = new ObservableCollection<SteamGameViewModel>();
   }
 }

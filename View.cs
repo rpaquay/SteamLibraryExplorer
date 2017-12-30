@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using SteamLibraryExplorer.SteamModel;
-using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
 using SteamLibraryExplorer.ViewModel;
@@ -173,8 +172,7 @@ namespace SteamLibraryExplorer {
 
     public void StartProgress() {
       if (_progressCount == 0) {
-        _mainForm.ProgressBar.Visibility = Visibility.Visible;
-        _mainForm.ProgressBarText.Visibility = Visibility.Visible;
+        _viewModel.IsDiscoveringSteamFiles = true;
       }
       _progressCount++;
     }
@@ -182,8 +180,7 @@ namespace SteamLibraryExplorer {
     public void StopProgress() {
       _progressCount--;
       if (_progressCount == 0) {
-        _mainForm.ProgressBar.Visibility = Visibility.Hidden;
-        _mainForm.ProgressBarText.Visibility = Visibility.Hidden;
+        _viewModel.IsDiscoveringSteamFiles = false;
       }
     }
   }
