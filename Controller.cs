@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Windows;
 using SteamLibraryExplorer.SteamUtil;
 
 namespace SteamLibraryExplorer {
@@ -16,6 +17,7 @@ namespace SteamLibraryExplorer {
 
     public void Run() {
       _view.RefreshView += (sender, args) => FetchSteamConfigurationAsync();
+      _view.CloseView += (sender, args) => Application.Current.Shutdown();
       _view.Run();
       FetchSteamConfigurationAsync();
     }

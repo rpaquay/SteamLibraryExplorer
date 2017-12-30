@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Input;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.ViewModel;
 
@@ -28,6 +29,22 @@ namespace SteamLibraryExplorer.UserInterface {
       var view = new View(this, model);
       var controller = new Controller(model, view);
       controller.Run();
+    }
+
+    private void CloseCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e) {
+      throw new NotImplementedException();
+    }
+
+    private void CloseCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
+      throw new NotImplementedException();
+    }
+
+    private void RefreshCommand_Executed(object sender, ExecutedRoutedEventArgs e) {
+      throw new NotImplementedException();
+    }
+
+    private void RefreshCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e) {
+      throw new NotImplementedException();
     }
   }
 }

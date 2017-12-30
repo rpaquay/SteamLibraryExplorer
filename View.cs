@@ -28,8 +28,13 @@ namespace SteamLibraryExplorer {
     }
 
     public event EventHandler RefreshView;
+    public event EventHandler CloseView;
 
     public void Run() {
+      _mainForm.CloseCommand.CanExecute += (sender, args) => args.CanExecute = true;
+      _mainForm.RefreshCommand.CanExecute += (sender, args) => args.CanExecute = true;
+      _mainForm.CloseCommand.Executed += (sender, args) => OnCloseView();
+      _mainForm.RefreshCommand.Executed += (sender, args) => OnRefreshView();
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
 
@@ -179,6 +184,10 @@ namespace SteamLibraryExplorer {
 
     public void ShowError(string text) {
       MessageBox.Show(_mainForm, text, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+    }
+
+    protected virtual void OnCloseView() {
+      CloseView?.Invoke(this, EventArgs.Empty);
     }
   }
 }
