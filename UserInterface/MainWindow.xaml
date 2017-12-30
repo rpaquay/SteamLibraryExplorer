@@ -85,11 +85,11 @@
               <Setter Property="Template">
                 <Setter.Value>
                   <ControlTemplate>
-                    <Expander IsExpanded="True" Margin="0,4,0,2" Template="{DynamicResource StretchExpanderControlTemplate}">
+                    <Expander IsExpanded="True" Template="{DynamicResource StretchExpanderControlTemplate}">
                       <Expander.Header>
-                        <DockPanel>
+                        <DockPanel Margin="0,6,0,6">
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
-                          <TextBlock Margin="2,0,2,0" Text="{Binding Name}" FontWeight="Bold"  DockPanel.Dock="Left" />
+                          <TextBlock Margin="2,0,2,0" Text="{Binding Name}" DockPanel.Dock="Left" FontSize="13.333" />
                           <Separator Margin="2,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
                       </Expander.Header>
