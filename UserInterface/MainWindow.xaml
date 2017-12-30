@@ -18,11 +18,11 @@
         <MenuItem Header="_Exit" />
       </MenuItem>
     </Menu>
-      <ToolBar DockPanel.Dock="Top">
-        <Button>
-          <TextBlock Text="Refresh"></TextBlock>
-        </Button>
-      </ToolBar>
+    <ToolBar DockPanel.Dock="Top">
+      <Button>
+        <TextBlock Text="Refresh"></TextBlock>
+      </Button>
+    </ToolBar>
     <StatusBar DockPanel.Dock="Bottom">
       <StatusBarItem>
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
@@ -90,7 +90,7 @@
                         <DockPanel>
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
                           <TextBlock Margin="2,0,2,0" Text="{Binding Name}" FontWeight="Bold"  DockPanel.Dock="Left" />
-                          <Separator VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                          <Separator Margin="2,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
                       </Expander.Header>
                       <ItemsPresenter />
