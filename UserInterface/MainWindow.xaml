@@ -85,7 +85,7 @@
               <Setter Property="Template">
                 <Setter.Value>
                   <ControlTemplate>
-                    <Expander IsExpanded="True" Margin="0,4,0,2">
+                    <Expander IsExpanded="True" Margin="0,4,0,2" Template="{DynamicResource StretchExpanderControlTemplate}">
                       <Expander.Header>
                         <DockPanel Width="500">
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
