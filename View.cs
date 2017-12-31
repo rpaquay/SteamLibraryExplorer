@@ -113,6 +113,10 @@ namespace SteamLibraryExplorer {
         game.ListViewGroupHeader = GetGroupHeaderText(library);
       }
 
+      RefreshListView();
+    }
+
+    private void RefreshListView() {
       // The group collection does not listen to propery change events, so we need
       // to explicitly refresh it.
       var view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
@@ -187,6 +191,8 @@ namespace SteamLibraryExplorer {
       _progressCount--;
       if (_progressCount == 0) {
         _viewModel.IsDiscoveringSteamFiles = false;
+        // We need to refresh so that sorting of column is up-to-date
+        _throttledDispatcher.Enqeue(nameof(RefreshListView), RefreshListView);
       }
     }
   }
