@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer {
   class Controller {
@@ -14,6 +14,7 @@ namespace SteamLibraryExplorer {
     private readonly SteamDiscovery _steamDiscovery;
     private readonly SteamMove _steamMove;
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    private CopyProgressView _currentGameMoveOperationView;
 
     public Controller(Model model, MainView mainView) {
       _model = model;
@@ -25,38 +26,62 @@ namespace SteamLibraryExplorer {
     public void Run() {
       _mainView.RefreshView += (sender, args) => FetchSteamConfigurationAsync();
       _mainView.CloseView += (sender, args) => Application.Current.Shutdown();
-      _mainView.CopyGameInvoked += (sender, game) => CopyGame(game);
+      _mainView.CopyGameInvoked += (sender, game) => MoveGameToOtherLibrary(game);
       _mainView.Run();
       FetchSteamConfigurationAsync();
     }
 
-    private async void CopyGame(SteamGame game) {
-      var t = new CancellationTokenSource();
-      var view = new CopyProgressView(new CopyProgressWindow());
+    private async void MoveGameToOtherLibrary(MoveGameEventArgs e) {
+      if (_currentGameMoveOperationView != null) {
+        _mainView.ShowError("Cannot move game because another game is currently being move.\r\n" +
+          "Please wait for the operation to finish, or cancel it.");
+        return;
+      }
+
+      if (e.Game.Location == null) {
+        _mainView.ShowError("Cannot move game because it does not have a valid location.");
+        return;
+      }
+
+      if (e.Game.AcfFile == null) {
+        _mainView.ShowError("Cannot move game because it does not have a valid ACF file.");
+        return;
+      }
+
+      var cancellationTokenSource = new CancellationTokenSource();
+      _currentGameMoveOperationView = new CopyProgressView(new CopyProgressWindow());
       try {
-        view.Cancel += (sender, args) => t.Cancel();
+        _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
         Action<SteamMove.MoveDirectoryInfo> progress = info => {
-          view.ReportProgress(info);
+          _currentGameMoveOperationView.ReportProgress(info);
         };
 
-        view.Show();
+        _currentGameMoveOperationView.Show();
 
-        //TODO: Remove this
-        var destinationDirectory = new DirectoryInfo(Path.Combine("e:\\", "test"));
+        var destinationDirectory = new DirectoryInfo(e.DestinationLibraryPath);
+
+        var sourceAcfFile = e.Game.AcfFile.FileInfo;
+        var sourceLocation = e.Game.Location;
+
+        var destinationAcfFile = destinationDirectory.CombineDirectory("steamapps").CombineFile(sourceAcfFile.Name);
+        var destinationLocation = destinationDirectory.CombineDirectory("steamapps").CombineDirectory("common").CombineDirectory(e.Game.Location.Name);
 
         var result = await _steamMove.MoveSteamGameAsync(
-          game.AcfFile.FileInfo,
-          game.Location,
-          destinationDirectory,
+          sourceAcfFile,
+          sourceLocation,
+          destinationAcfFile,
+          destinationLocation,
           progress,
-          t.Token);
+          cancellationTokenSource.Token);
 
         if (result.Kind == SteamMove.MoveGameResultKind.Error) {
-          _mainView.ShowError(string.Format("Error copying steam game:\r\n\r\n{0}", result.Error.Message));
+          _mainView.ShowError(string.Format("Error moving steam game to \"{0}\":\r\n\r\n{1}", 
+            destinationLocation.FullName, result.Error.Message));
         }
       }
       finally {
-        view.Close();
+        _currentGameMoveOperationView.Close();
+        _currentGameMoveOperationView = null;
       }
     }
 

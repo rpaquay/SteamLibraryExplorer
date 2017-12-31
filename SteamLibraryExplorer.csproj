@@ -64,6 +64,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CopyProgressView.cs" />
+    <Compile Include="MoveGameEventArgs.cs" />
     <Compile Include="SteamUtil\SteamMove.cs" />
     <Compile Include="UserInterface\CopyProgressWindow.xaml.cs">
       <DependentUpon>CopyProgressWindow.xaml</DependentUpon>

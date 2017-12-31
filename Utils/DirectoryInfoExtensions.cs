@@ -44,5 +44,13 @@ namespace SteamLibraryExplorer.Utils {
       }
       return entry.FullName;
     }
+
+    public static DirectoryInfo CombineDirectory(this DirectoryInfo directory, string name) {
+      return new DirectoryInfo(Path.Combine(directory.FullName, name));
+    }
+
+    public static FileInfo CombineFile(this DirectoryInfo directory, string name) {
+      return new FileInfo(Path.Combine(directory.FullName, name));
+    }
   }
 }

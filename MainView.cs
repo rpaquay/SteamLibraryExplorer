@@ -29,7 +29,7 @@ namespace SteamLibraryExplorer {
 
     public event EventHandler RefreshView;
     public event EventHandler CloseView;
-    public event EventHandler<SteamGame> CopyGameInvoked;
+    public event EventHandler<MoveGameEventArgs> CopyGameInvoked;
 
     public void Run() {
       _mainForm.CloseCommand.CanExecute += (sender, args) => args.CanExecute = true;
@@ -57,6 +57,12 @@ namespace SteamLibraryExplorer {
     }
 
     private void AddGameLibrary(SteamLibrary library) {
+      // Add "Move To" entry to existing games
+      foreach (var game in _viewModel.SteamGames) {
+        game.MoveToLibraries.Add(library.Location.FullName);
+      }
+
+      // Add games of new library
       _gameLibraryCount++;
       var gamesViewModel = new List<SteamGameViewModel>();
 
@@ -104,7 +110,7 @@ namespace SteamLibraryExplorer {
         gameViewModel.FileCount = game.FileCount.Value;
         gameViewModel.FileCountColor = game.Location == null ? Brushes.Red : null;
 
-        gameViewModel.CopyGameInvoked += (sender, args) => OnCopyGameInvoked(game);
+        gameViewModel.CopyGameInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
 
         _viewModel.SteamGames.Add(gameViewModel);
         gamesViewModel.Add(gameViewModel);
@@ -199,7 +205,7 @@ namespace SteamLibraryExplorer {
       }
     }
 
-    protected virtual void OnCopyGameInvoked(SteamGame e) {
+    protected virtual void OnCopyGameInvoked(MoveGameEventArgs e) {
       CopyGameInvoked?.Invoke(this, e);
     }
   }

@@ -66,11 +66,16 @@
         </Style>
       </ListView.Resources>
       <ListView.ContextMenu>
-        <ContextMenu>
-          <MenuItem Header="Move game to another library"
-                    DataContext="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                    Command="{Binding CopyGameCommand}"
-                    CommandParameter="{Binding}" />
+        <ContextMenu d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
+          <MenuItem x:Name="MoveToLibraryMenu" Header="_Move game to" ItemsSource="{Binding MoveToLibraries}">
+            <MenuItem.Resources>
+              <Style TargetType="MenuItem">
+                <Setter Property="DataContext" Value="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                <Setter Property="Command" Value="{Binding PlacementTarget.SelectedItem.CopyGameCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                <Setter Property="CommandParameter" Value="{Binding}" />
+              </Style>
+            </MenuItem.Resources>
+          </MenuItem>
         </ContextMenu>
       </ListView.ContextMenu>
       <ListView.View>

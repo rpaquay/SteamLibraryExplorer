@@ -9,12 +9,13 @@ using SteamLibraryExplorer.Utils;
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamMove {
     public Task<MoveGameResult> MoveSteamGameAsync(
-      FileInfo acfFile, DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory,
+      FileInfo sourceAcfFile, DirectoryInfo sourceDirectory,
+      FileInfo destinationAcfFile, DirectoryInfo destinationDirectory,
       Action<MoveDirectoryInfo> progress, CancellationToken cancellationToken) {
 
       return RunAsync(() => {
         try {
-          MoveSteamGame(acfFile, sourceDirectory, destinationDirectory, progress, cancellationToken);
+          MoveSteamGame(sourceAcfFile, sourceDirectory, destinationAcfFile, destinationDirectory, progress, cancellationToken);
           return MoveGameResult.CreateOk();
         } catch (Exception e) {
           return MoveGameResult.CreateError(e);
@@ -22,34 +23,11 @@ namespace SteamLibraryExplorer.SteamUtil {
       });
     }
 
-    public class MoveGameResult {
-      public MoveGameResult(MoveGameResultKind kind, Exception error) {
-        Kind = kind;
-        Error = error;
-      }
+    private void MoveSteamGame(
+      FileInfo sourceAcfFile, DirectoryInfo sourceDirectory,
+      FileInfo destinationAcfFile, DirectoryInfo destinationDirectory,
+      Action<MoveDirectoryInfo> progress, CancellationToken cancellationToken) {
 
-      public static MoveGameResult CreateError(Exception e) {
-        if (e is OperationCanceledException) {
-          return new MoveGameResult(MoveGameResultKind.Cancelled, null);
-        }
-        return new MoveGameResult(MoveGameResultKind.Error, e);
-      }
-
-      public static MoveGameResult CreateOk() {
-        return new MoveGameResult(MoveGameResultKind.Ok, null);
-      }
-
-      public MoveGameResultKind Kind { get; }
-      public Exception Error { get; }
-    }
-
-    public enum MoveGameResultKind {
-      Ok,
-      Error,
-      Cancelled
-    }
-
-    private void MoveSteamGame(FileInfo acfFile, DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory, Action<MoveDirectoryInfo> progress, CancellationToken cancellationToken) {
       var info = new MoveDirectoryInfo {
         SourceDirectory = sourceDirectory,
         DestinationDirectory = destinationDirectory,
@@ -58,31 +36,41 @@ namespace SteamLibraryExplorer.SteamUtil {
       };
       ReportProgess(MovePhase.DiscoveringSourceFiles, progress, info);
 
-      //TODO: REmove this
-      destinationDirectory.Refresh();
-      if (destinationDirectory.Exists) {
-        destinationDirectory.Delete(true);
-      }
-
-      acfFile.Refresh();
-      if (!acfFile.Exists) {
-        throw new ArgumentException($"ACF file \"{acfFile.FullName}\" does not exist");
+      sourceAcfFile.Refresh();
+      if (!sourceAcfFile.Exists) {
+        throw new ArgumentException($"ACF file \"{sourceAcfFile.FullName}\" does not exist");
       }
       sourceDirectory.Refresh();
       if (!sourceDirectory.Exists) {
-        throw new ArgumentException($"Steam game directory \"{sourceDirectory.FullName}\" does not exist");
+        throw new ArgumentException($"Source directory \"{sourceDirectory.FullName}\" does not exist");
+      }
+
+      destinationAcfFile.Refresh();
+      if (destinationAcfFile.Exists) {
+        throw new ArgumentException($"ACF file \"{destinationAcfFile.FullName}\" already exist");
       }
       destinationDirectory.Refresh();
       if (destinationDirectory.Exists) {
         if (destinationDirectory.EnumerateFiles().Any()) {
-          throw new ArgumentException($"Steam game destination directory \"{sourceDirectory.FullName}\" exists and is not empty");
+          throw new ArgumentException($"Destination directory \"{sourceDirectory.FullName}\" already exists and is not empty");
         }
       }
 
-      CollectDirectoryInfo(sourceDirectory, progress, info, cancellationToken);
+      ReportProgess(MovePhase.DiscoveringSourceFiles, progress, info);
+      DiscoverSourceDirectoryFiles(sourceDirectory, progress, info, cancellationToken);
+      cancellationToken.ThrowIfCancellationRequested();
+
+      // Account for ACF File
+      info.TotalFileCount++;
+      info.TotalBytes += sourceAcfFile.Length;
 
       ReportProgess(MovePhase.CopyingFiles, progress, info);
       CopyDirectoryRecurse(sourceDirectory, destinationDirectory, progress, info, cancellationToken);
+      cancellationToken.ThrowIfCancellationRequested();
+
+      // Copy ACF file
+      CopySingleFile(sourceAcfFile, destinationAcfFile, progress, info, cancellationToken);
+      cancellationToken.ThrowIfCancellationRequested();
     }
 
     private static void ReportProgess(MovePhase phase, Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info) {
@@ -107,35 +95,40 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Copy files
       foreach (var sourceFile in sourceDirectory.EnumerateFiles()) {
-        info.MovedFileCount++;
-        info.CurrentFile = sourceFile;
-        var lastBytes = 0L;
-        FileUtils.CopyFile(
-          sourceFile.FullName,
-          Path.Combine(destinationDirectory.FullName, sourceFile.Name),
-          sourceFile.Length >= 100 * 1024 * 1024,
-          copyProgress => {
-            info.TotalBytesOfCurrentFile = copyProgress.TotalFileSize;
-            info.MovedBytesOfCurrentFile = copyProgress.TotalBytesTransferred;
-
-            // Note: The progress callback report transferred bytes vs total
-            // We need to transfer that into a delta to add to the total
-            var deltaBytes = copyProgress.TotalBytesTransferred - lastBytes;
-            lastBytes = copyProgress.TotalBytesTransferred;
-            info.MovedBytes += deltaBytes;
-            ReportProgess(MovePhase.CopyingFiles, progress, info);
-          },
-          cancellationToken);
+        CopySingleFile(sourceFile, destinationDirectory.CombineFile(sourceFile.Name), progress, info, cancellationToken);
       }
 
       // Copy sub-directories
       foreach (var sourceChild in sourceDirectory.EnumerateDirectories()) {
-        var destinationChild = new DirectoryInfo(Path.Combine(destinationDirectory.FullName, sourceChild.Name));
+        var destinationChild = destinationDirectory.CombineDirectory(sourceChild.Name);
         CopyDirectoryRecurse(sourceChild, destinationChild, progress, info, cancellationToken);
       }
     }
 
-    private void CollectDirectoryInfo(DirectoryInfo sourceDirectory,
+    private static void CopySingleFile(FileInfo sourceFile, FileInfo destinationFile, Action<MoveDirectoryInfo> progress,
+      MoveDirectoryInfo info, CancellationToken cancellationToken) {
+      info.MovedFileCount++;
+      info.CurrentFile = sourceFile;
+      var lastBytes = 0L;
+      FileUtils.CopyFile(
+        sourceFile.FullName,
+        destinationFile.FullName,
+        sourceFile.Length >= 100 * 1024 * 1024,
+        copyProgress => {
+          info.TotalBytesOfCurrentFile = copyProgress.TotalFileSize;
+          info.MovedBytesOfCurrentFile = copyProgress.TotalBytesTransferred;
+
+          // Note: The progress callback report transferred bytes vs total
+          // We need to transfer that into a delta to add to the total
+          var deltaBytes = copyProgress.TotalBytesTransferred - lastBytes;
+          lastBytes = copyProgress.TotalBytesTransferred;
+          info.MovedBytes += deltaBytes;
+          ReportProgess(MovePhase.CopyingFiles, progress, info);
+        },
+        cancellationToken);
+    }
+
+    private void DiscoverSourceDirectoryFiles(DirectoryInfo sourceDirectory,
       Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info, CancellationToken cancellationToken) {
       cancellationToken.ThrowIfCancellationRequested();
 
@@ -148,7 +141,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         info.TotalBytes += file.Length;
       }
       foreach (var dir in sourceDirectory.EnumerateDirectories()) {
-        CollectDirectoryInfo(dir, progress, info, cancellationToken);
+        DiscoverSourceDirectoryFiles(dir, progress, info, cancellationToken);
       }
     }
 
@@ -229,5 +222,33 @@ namespace SteamLibraryExplorer.SteamUtil {
     private static Task<T> RunAsync<T>(Func<T> func) {
       return Task.Run(() => func.Invoke());
     }
+
+    public class MoveGameResult {
+      public MoveGameResult(MoveGameResultKind kind, Exception error) {
+        Kind = kind;
+        Error = error;
+      }
+
+      public static MoveGameResult CreateError(Exception e) {
+        if (e is OperationCanceledException) {
+          return new MoveGameResult(MoveGameResultKind.Cancelled, null);
+        }
+        return new MoveGameResult(MoveGameResultKind.Error, e);
+      }
+
+      public static MoveGameResult CreateOk() {
+        return new MoveGameResult(MoveGameResultKind.Ok, null);
+      }
+
+      public MoveGameResultKind Kind { get; }
+      public Exception Error { get; }
+    }
+
+    public enum MoveGameResultKind {
+      Ok,
+      Error,
+      Cancelled
+    }
+
   }
 }

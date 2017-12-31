@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
         Icon="../Resources/MainIcon.ico"
-        Title="{Binding PercentCompleteText}" Height="360" Width="500">
+        Title="{Binding PercentCompleteText}" Height="400" Width="600">
   <Window.DataContext>
     <viewModel:CopyProgressViewModel/>
   </Window.DataContext>
@@ -35,16 +35,6 @@
         <TextBlock Text="Speed: " VerticalAlignment="Center" HorizontalAlignment="Left" />
         <TextBlock Text="{Binding SpeedText}" VerticalAlignment="Center"/>
       </StackPanel>
-
-      <!--<StackPanel Orientation="Horizontal" Margin="16,2,6,2">
-        <TextBlock Text="Source location: " VerticalAlignment="Center" HorizontalAlignment="Left" />
-        <TextBlock Text="{Binding SourcePath}" VerticalAlignment="Center"/>
-      </StackPanel>
-
-      <StackPanel Orientation="Horizontal" Margin="16,2,6,2">
-        <TextBlock Text="Destination location: " VerticalAlignment="Center" HorizontalAlignment="Left" />
-        <TextBlock Text="{Binding DestinationPath}" VerticalAlignment="Center"/>
-      </StackPanel>-->
 
       <StackPanel Orientation="Horizontal" Margin="16,2,6,2">
         <TextBlock Text="Time elapsed: " VerticalAlignment="Center" HorizontalAlignment="Left" />

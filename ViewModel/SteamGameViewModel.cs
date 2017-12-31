@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Media;
 using SteamLibraryExplorer.Utils;
@@ -16,7 +17,7 @@ namespace SteamLibraryExplorer.ViewModel {
     private Brush _acfFileColor;
     private Brush _sizeOnDiskColor;
     private Brush _fileCountColor;
-    private CopyGameCommandImpl _copyGameCommand;
+    private RelayExecuteCommand<string> _copyGameCommand;
 
     public string ListViewGroupHeader {
       get { return _listViewGroupHeader; }
@@ -34,34 +35,13 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    public CopyGameCommandImpl CopyGameCommand {
-      get { return _copyGameCommand ?? (_copyGameCommand = new CopyGameCommandImpl(OnCopyGameInvoked));}
+    public RelayExecuteCommand<string> CopyGameCommand {
+      get { return _copyGameCommand ?? (_copyGameCommand = new RelayExecuteCommand<string>(OnCopyGameInvoked));}
     }
 
-    public event EventHandler CopyGameInvoked;
+    public event EventHandler<string> CopyGameInvoked;
 
-    public class CopyGameCommandImpl : ICommand {
-      private readonly Action _callback;
-
-      public CopyGameCommandImpl(Action callback) {
-        _callback = callback;
-      }
-
-      public bool CanExecute(object parameter) {
-        //return parameter is SteamGameViewModel;
-        return true;
-      }
-
-      public void Execute(object parameter) {
-        _callback();
-      }
-
-      public event EventHandler CanExecuteChanged;
-
-      protected virtual void OnCanExecuteChanged() {
-        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-      }
-    }
+    public ObservableCollection<string> MoveToLibraries { get; } = new ObservableCollection<string>();
 
     public string DisplayName {
       get { return _displayName; }
@@ -135,8 +115,31 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    protected virtual void OnCopyGameInvoked() {
-      CopyGameInvoked?.Invoke(this, EventArgs.Empty);
+    protected virtual void OnCopyGameInvoked(string libraryPath) {
+      CopyGameInvoked?.Invoke(this, libraryPath);
+    }
+  }
+
+  public class RelayExecuteCommand<T> : ICommand {
+    private readonly Action<T> _callback;
+
+    public RelayExecuteCommand(Action<T> callback) {
+      _callback = callback;
+    }
+
+    public bool CanExecute(object parameter) {
+      //return parameter is SteamGameViewModel;
+      return true;
+    }
+
+    public void Execute(object parameter) {
+      _callback((T)parameter);
+    }
+
+    public event EventHandler CanExecuteChanged;
+
+    protected virtual void OnCanExecuteChanged() {
+      CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
   }
 }
