@@ -3,10 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
-        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        ResizeMode="CanResizeWithGrip"
         mc:Ignorable="d"
+        xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
+        ResizeMode="CanResizeWithGrip"
         Icon="../Resources/MainIcon.ico"
         Title="{Binding WindowTitle}" Height="700" Width="1000">
   <Window.DataContext>
@@ -66,8 +65,16 @@
           <Setter Property="Padding" Value="10, 4, 10, 4" />
         </Style>
       </ListView.Resources>
+      <ListView.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Move game to another library"
+                    DataContext="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                    Command="{Binding CopyGameCommand}"
+                    CommandParameter="{Binding}" />
+        </ContextMenu>
+      </ListView.ContextMenu>
       <ListView.View>
-        <GridView>
+        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
           <GridViewColumn Width="220">
             <GridViewColumn.Header>
               <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
@@ -132,7 +139,8 @@
               <Setter Property="Template">
                 <Setter.Value>
                   <ControlTemplate>
-                    <Expander IsExpanded="True" Template="{DynamicResource StretchExpanderControlTemplate}">
+                    <Expander IsExpanded="True" Template="{DynamicResource StretchExpanderControlTemplate}"
+                              d:DataContext="{d:DesignInstance CollectionViewGroup}">
                       <Expander.Header>
                         <DockPanel Margin="0,6,0,6">
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />

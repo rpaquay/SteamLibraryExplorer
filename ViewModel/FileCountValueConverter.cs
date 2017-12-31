@@ -6,7 +6,7 @@ namespace SteamLibraryExplorer.ViewModel {
   class FileCountValueConverter : IValueConverter {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
       var fileCount = (long)value;
-      return View.HumanReadableFileCount(fileCount);
+      return MainView.HumanReadableFileCount(fileCount);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

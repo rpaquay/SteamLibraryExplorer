@@ -1,4 +1,6 @@
-﻿using System.Windows.Media;
+﻿using System;
+using System.Windows.Input;
+using System.Windows.Media;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.ViewModel {
@@ -14,6 +16,7 @@ namespace SteamLibraryExplorer.ViewModel {
     private Brush _acfFileColor;
     private Brush _sizeOnDiskColor;
     private Brush _fileCountColor;
+    private CopyGameCommandImpl _copyGameCommand;
 
     public string ListViewGroupHeader {
       get { return _listViewGroupHeader; }
@@ -25,7 +28,39 @@ namespace SteamLibraryExplorer.ViewModel {
 
     public int ListViewGroupHeaderSortIndex {
       get { return _listViewGroupHeaderSortIndex; }
-      set { _listViewGroupHeaderSortIndex = value; }
+      set {
+        _listViewGroupHeaderSortIndex = value;
+        RaisePropertyChangedEvent(nameof(ListViewGroupHeaderSortIndex));
+      }
+    }
+
+    public CopyGameCommandImpl CopyGameCommand {
+      get { return _copyGameCommand ?? (_copyGameCommand = new CopyGameCommandImpl(OnCopyGameInvoked));}
+    }
+
+    public event EventHandler CopyGameInvoked;
+
+    public class CopyGameCommandImpl : ICommand {
+      private readonly Action _callback;
+
+      public CopyGameCommandImpl(Action callback) {
+        _callback = callback;
+      }
+
+      public bool CanExecute(object parameter) {
+        //return parameter is SteamGameViewModel;
+        return true;
+      }
+
+      public void Execute(object parameter) {
+        _callback();
+      }
+
+      public event EventHandler CanExecuteChanged;
+
+      protected virtual void OnCanExecuteChanged() {
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+      }
     }
 
     public string DisplayName {
@@ -98,6 +133,10 @@ namespace SteamLibraryExplorer.ViewModel {
         _fileCountColor = value;
         RaisePropertyChangedEvent(nameof(FileCountColor));
       }
+    }
+
+    protected virtual void OnCopyGameInvoked() {
+      CopyGameInvoked?.Invoke(this, EventArgs.Empty);
     }
   }
 }

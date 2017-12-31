@@ -23,7 +23,7 @@ namespace SteamLibraryExplorer.UserInterface {
 
     private void OnLoaded(object sender, RoutedEventArgs routedEventArgs) {
       var model = new Model();
-      var view = new View(this, model);
+      var view = new MainView(this, model);
       var controller = new Controller(model, view);
       controller.Run();
     }

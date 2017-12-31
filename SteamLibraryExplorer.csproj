@@ -63,9 +63,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CopyProgressView.cs" />
+    <Compile Include="SteamUtil\SteamMove.cs" />
+    <Compile Include="UserInterface\CopyProgressWindow.xaml.cs">
+      <DependentUpon>CopyProgressWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserInterface\ListViewColumnSorter.cs" />
     <Compile Include="SteamModel\AcfFile.cs" />
     <Compile Include="Utils\DirectoryInfoExtensions.cs" />
+    <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\PropertyValue.cs" />
     <Compile Include="SteamModel\SteamConfiguration.cs" />
     <Compile Include="SteamUtil\SteamDiscovery.cs" />
@@ -73,7 +79,8 @@
     <Compile Include="SteamModel\SteamLibrary.cs" />
     <Compile Include="Utils\ThrottledDispatcher.cs" />
     <Compile Include="Utils\ValueChangedArg.cs" />
-    <Compile Include="View.cs" />
+    <Compile Include="MainView.cs" />
+    <Compile Include="ViewModel\CopyProgressViewModel.cs" />
     <Compile Include="ViewModel\FileCountValueConverter.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="Utils\ObservableObject.cs" />
@@ -82,6 +89,10 @@
     <Compile Include="UserInterface\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="UserInterface\CopyProgressWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserInterface\MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

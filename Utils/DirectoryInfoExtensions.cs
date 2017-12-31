@@ -8,7 +8,7 @@ namespace SteamLibraryExplorer.Utils {
     public static FileInfo GetFile(this DirectoryInfo directoryInfo, string fileName) {
       return directoryInfo
         .EnumerateFiles()
-        .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(fileName, (string) x.Name));
+        .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(fileName, x.Name));
     }
 
     public static DirectoryInfo GetDirectory(this DirectoryInfo directoryInfo, string fileName) {

@@ -12,7 +12,7 @@ using SteamLibraryExplorer.Utils;
 using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer {
-  public class View {
+  public class MainView {
     private readonly MainWindow _mainForm;
     private readonly Model _model;
     private readonly MainPageViewModel _viewModel;
@@ -21,7 +21,7 @@ namespace SteamLibraryExplorer {
     private int _gameLibraryCount;
     private int _progressCount;
 
-    public View(MainWindow mainForm, Model model) {
+    public MainView(MainWindow mainForm, Model model) {
       _model = model;
       _mainForm = mainForm;
       _viewModel = (MainPageViewModel)_mainForm.DataContext;
@@ -29,6 +29,7 @@ namespace SteamLibraryExplorer {
 
     public event EventHandler RefreshView;
     public event EventHandler CloseView;
+    public event EventHandler<SteamGame> CopyGameInvoked;
 
     public void Run() {
       _mainForm.CloseCommand.CanExecute += (sender, args) => args.CanExecute = true;
@@ -102,6 +103,8 @@ namespace SteamLibraryExplorer {
         };
         gameViewModel.FileCount = game.FileCount.Value;
         gameViewModel.FileCountColor = game.Location == null ? Brushes.Red : null;
+
+        gameViewModel.CopyGameInvoked += (sender, args) => OnCopyGameInvoked(game);
 
         _viewModel.SteamGames.Add(gameViewModel);
         gamesViewModel.Add(gameViewModel);
@@ -194,6 +197,10 @@ namespace SteamLibraryExplorer {
         // We need to refresh so that sorting of column is up-to-date
         _throttledDispatcher.Enqeue(nameof(RefreshListView), RefreshListView);
       }
+    }
+
+    protected virtual void OnCopyGameInvoked(SteamGame e) {
+      CopyGameInvoked?.Invoke(this, e);
     }
   }
 }

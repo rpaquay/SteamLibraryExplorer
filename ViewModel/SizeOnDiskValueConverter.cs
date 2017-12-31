@@ -6,7 +6,7 @@ namespace SteamLibraryExplorer.ViewModel {
   class SizeOnDiskValueConverter : IValueConverter {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
       var fileCount = (long)value;
-      return View.HumanReadableDiskSize(fileCount);
+      return MainView.HumanReadableDiskSize(fileCount);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
