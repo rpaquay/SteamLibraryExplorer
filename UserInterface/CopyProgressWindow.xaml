@@ -6,50 +6,75 @@
         xmlns:local="clr-namespace:SteamLibraryExplorer.UserInterface"
         xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
         mc:Ignorable="d"
-        Title="CopyProgressWindow" Height="250" Width="500">
+        ResizeMode="CanResizeWithGrip"
+        Icon="../Resources/MainIcon.ico"
+        Title="{Binding PercentCompleteText}" Height="360" Width="500">
   <Window.DataContext>
     <viewModel:CopyProgressViewModel/>
   </Window.DataContext>
   <DockPanel LastChildFill="True" >
-    <StackPanel DockPanel.Dock="Bottom">
-      <Button Content="Cancel" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
+    
+    <StackPanel DockPanel.Dock="Bottom" Margin="0,20,0,10">
+      <Button Content="Cancel" Width="100" Name="CancelButton" HorizontalAlignment="Center" VerticalAlignment="Center" />
     </StackPanel>
-    <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="*" />
-      </Grid.ColumnDefinitions>
-      
-      <Label Grid.Column="0" Grid.Row="0">Phase</Label>
-      <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding MessageText}" VerticalAlignment="Center" />
+    
+    <StackPanel Orientation="Vertical" Margin="20,20,20,10">
+      <TextBlock FontSize="12" Text="{Binding MessageText}"
+                 VerticalAlignment="Center" Margin="6,12,6,6" TextWrapping="WrapWithOverflow"/>
 
-      <Label Grid.Column="0" Grid.Row="1">Current file:</Label>
-      <TextBlock Grid.Column ="1" Grid.Row="1" Text="{Binding CurrentFilePath}" VerticalAlignment="Center" />
+      <TextBlock FontSize="16" Text="{Binding PercentCompleteText}" VerticalAlignment="Center" Margin="6,2,6,6"/>
 
-      <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
-        <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Minimum="0" Maximum="1" Value="{Binding CurrentFileProgressPercent}"></ProgressBar>
-        <TextBlock Text="{Binding CurrentFileProgressText}" VerticalAlignment="Center" />
+      <Grid Margin="6,4,6,4">
+        <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Height="30"
+                     Minimum="0" Maximum="1" Value="{Binding TotalProgressPercent}" />
+        <TextBlock Text="{Binding TotalProgressText}" VerticalAlignment="Center"
+                   HorizontalAlignment="Center" />
       </Grid>
 
-      <Label Grid.Column="0" Grid.Row="3">Elapsed Time:</Label>
-      <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding ElapsedTime}" VerticalAlignment="Center" />
+      <StackPanel Orientation="Horizontal" Margin="16,2,6,2">
+        <TextBlock Text="Speed: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding SpeedText}" VerticalAlignment="Center"/>
+      </StackPanel>
 
-      <Label Grid.Column="0" Grid.Row="4">Remaining Time:</Label>
-      <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding RemainingTime}" VerticalAlignment="Center" />
+      <!--<StackPanel Orientation="Horizontal" Margin="16,2,6,2">
+        <TextBlock Text="Source location: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding SourcePath}" VerticalAlignment="Center"/>
+      </StackPanel>
 
-      <Grid Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2">
-        <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Minimum="0" Maximum="1" Value="{Binding TotalProgressPercent}"></ProgressBar>
-        <TextBlock Text="{Binding TotalProgressText}" VerticalAlignment="Center" />
+      <StackPanel Orientation="Horizontal" Margin="16,2,6,2">
+        <TextBlock Text="Destination location: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding DestinationPath}" VerticalAlignment="Center"/>
+      </StackPanel>-->
+
+      <StackPanel Orientation="Horizontal" Margin="16,2,6,2">
+        <TextBlock Text="Time elapsed: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding ElapsedTime}" VerticalAlignment="Center"/>
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Margin="16,2,6,2">
+        <TextBlock Text="Time remaining: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding RemainingTime}" VerticalAlignment="Center" />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Margin="16,2,6,2">
+        <TextBlock Text="Items remaining: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding ItemsRemainingText}" VerticalAlignment="Center" />
+      </StackPanel>
+
+      <Separator HorizontalAlignment="Stretch" Margin="6,10,6,2"></Separator>
+
+      <StackPanel Orientation="Horizontal" Margin="6,2,6,2">
+        <TextBlock Text="Name: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding CurrentFilePath}" VerticalAlignment="Center" />
+      </StackPanel>
+
+      <Grid Margin="6,2,6,6">
+        <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Height="20"
+                     Minimum="0" Maximum="1" Value="{Binding CurrentFileProgressPercent}" />
+        <TextBlock Text="{Binding CurrentFileProgressText}" VerticalAlignment="Center"
+                   HorizontalAlignment="Center"/>
       </Grid>
 
-    </Grid>
+    </StackPanel>
   </DockPanel>
 </Window>

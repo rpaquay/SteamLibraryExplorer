@@ -10,6 +10,12 @@ namespace SteamLibraryExplorer.ViewModel {
     private string _totalProgressText;
     private string _elapsedTime;
     private string _remainingTime;
+    private string _remaingFileCount;
+    private string _percentCompleteText;
+    private string _itemsRemainingText;
+    private string _sourcePath;
+    private string _destinationPath;
+    private string _speed;
 
     public string MessageText {
       get { return _messageText; }
@@ -19,11 +25,51 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
+    public string SourcePath {
+      get { return _sourcePath; }
+      set {
+        if (_sourcePath != value) {
+          _sourcePath = value;
+          RaisePropertyChangedEvent(nameof(SourcePath));
+        }
+      }
+    }
+
+    public string DestinationPath {
+      get { return _destinationPath; }
+      set {
+        if (_destinationPath != value) {
+          _destinationPath = value;
+          RaisePropertyChangedEvent(nameof(DestinationPath));
+        }
+      }
+    }
+
+    public string SpeedText {
+      get { return _speed; }
+      set {
+        if (_speed != value) {
+          _speed = value;
+          RaisePropertyChangedEvent(nameof(SpeedText));
+        }
+      }
+    }
+
+    public string RemainingFileCount {
+      get { return _remaingFileCount; }
+      set {
+        _remaingFileCount = value;
+        RaisePropertyChangedEvent(nameof(RemainingFileCount));
+      }
+    }
+
     public string CurrentFilePath {
       get { return _currentFilePath; }
       set {
-        _currentFilePath = value;
-        RaisePropertyChangedEvent(nameof(CurrentFilePath));
+        if (_currentFilePath != value) {
+          _currentFilePath = value;
+          RaisePropertyChangedEvent(nameof(CurrentFilePath));
+        }
       }
     }
 
@@ -38,8 +84,18 @@ namespace SteamLibraryExplorer.ViewModel {
     public string CurrentFileProgressText {
       get { return _currentFileProgressText; }
       set {
-        _currentFileProgressText = value;
-        RaisePropertyChangedEvent(nameof(CurrentFileProgressText));
+        if (_currentFileProgressText != value) {
+          _currentFileProgressText = value;
+          RaisePropertyChangedEvent(nameof(CurrentFileProgressText));
+        }
+      }
+    }
+
+    public string ItemsRemainingText {
+      get { return _itemsRemainingText; }
+      set {
+        _itemsRemainingText = value;
+        RaisePropertyChangedEvent(nameof(ItemsRemainingText));
       }
     }
 
@@ -48,6 +104,16 @@ namespace SteamLibraryExplorer.ViewModel {
       set {
         _totalProgressPercent = value;
         RaisePropertyChangedEvent(nameof(TotalProgressPercent));
+      }
+    }
+
+    public string PercentCompleteText {
+      get { return _percentCompleteText; }
+      set {
+        if (_percentCompleteText != value) {
+          _percentCompleteText = value;
+          RaisePropertyChangedEvent(nameof(PercentCompleteText));
+        }
       }
     }
 

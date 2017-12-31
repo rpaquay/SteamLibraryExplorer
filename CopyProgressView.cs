@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
@@ -7,8 +9,8 @@ using SteamLibraryExplorer.ViewModel;
 namespace SteamLibraryExplorer {
   public class CopyProgressView {
     private readonly CopyProgressWindow _progressWindow;
+    private readonly CopyProgressViewModel _viewModel;
     private readonly ThrottledDispatcher _throttledDispatcher = new ThrottledDispatcher();
-    private CopyProgressViewModel _viewModel;
 
     public CopyProgressView(CopyProgressWindow progressWindow) {
       _progressWindow = progressWindow;
@@ -18,6 +20,8 @@ namespace SteamLibraryExplorer {
     public event EventHandler Cancel;
 
     public void Show() {
+      _progressWindow.Closed += (sender, args) => OnCancel();
+      _progressWindow.CancelButton.Click += (sender, args) => OnCancel();
       _throttledDispatcher.Start(TimeSpan.FromMilliseconds(25));
       _progressWindow.Show();
     }
@@ -39,28 +43,52 @@ namespace SteamLibraryExplorer {
     private void UpdateViewModel(SteamMove.MoveDirectoryInfo info) {
       switch (info.CurrentPhase) {
         case SteamMove.MovePhase.DiscoveringSourceFiles:
-          _viewModel.MessageText = "Discovering files and directories";
+          _viewModel.MessageText = string.Format("Discovering files and directories: {0:n0} files", info.TotalFileCount);
           break;
         case SteamMove.MovePhase.CopyingFiles:
-          _viewModel.MessageText = "Copying files to destination directory";
+          _viewModel.MessageText = string.Format("Copying {0:n0} items from \"{1}\" to \"{2}\"",
+            info.TotalFileCount, info.SourceDirectory.FullName, info.DestinationDirectory.FullName);
           break;
         case SteamMove.MovePhase.DeletingSourceDirectory:
-          _viewModel.MessageText = "Deleting source directory";
+          _viewModel.MessageText = "Copy successful, now deleting source directory";
           break;
         default:
           throw new ArgumentOutOfRangeException();
       }
 
-      _viewModel.CurrentFilePath = info.CurrentFile?.Name + string.Format(" ({0:n0} of {1:n0})", info.MovedFileCount, info.TotalFileCount) ?? "";
-
-      _viewModel.CurrentFileProgressPercent = ProgressValue(info.MovedBytesOfCurrentFile, info.TotalBytesOfCurrentFile);
-      _viewModel.CurrentFileProgressText = string.Format("{0:n0} of {1:n0} bytes", info.MovedBytesOfCurrentFile, info.TotalBytesOfCurrentFile);
+      _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", ProgressValue(info.MovedBytes, info.TotalBytes) * 100);
 
       _viewModel.TotalProgressPercent = ProgressValue(info.MovedBytes, info.TotalBytes);
-      _viewModel.TotalProgressText = string.Format("{0:n0} of {1:n0} bytes", info.MovedBytes, info.TotalBytes);
+      _viewModel.TotalProgressText = string.Format("{0} of {1}",
+        MainView.HumanReadableDiskSize(info.MovedBytes),
+        MainView.HumanReadableDiskSize(info.TotalBytes));
+
+      _viewModel.SpeedText = ThroughputText(info.MovedBytes, info.ElapsedTime);
+
+      _viewModel.SourcePath = info.SourceDirectory.FullName;
+      _viewModel.DestinationPath = info.DestinationDirectory.FullName;
 
       _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
-      _viewModel.RemainingTime = TimeSpanText(info.EstimatedRemainingTime);
+      _viewModel.RemainingTime = "About " + TimeSpanText(info.EstimatedRemainingTime);
+      _viewModel.RemainingFileCount = string.Format("{0:n0}", info.RemainingFileCount);
+
+      _viewModel.ItemsRemainingText = string.Format("{0:n0} ({1:n0})",
+        info.RemainingFileCount, MainView.HumanReadableDiskSize(info.RemainingBytes));
+      _viewModel.CurrentFilePath = info.CurrentFile?.Name ?? "";
+
+      _viewModel.CurrentFileProgressPercent = ProgressValue(info.MovedBytesOfCurrentFile, info.TotalBytesOfCurrentFile);
+      _viewModel.CurrentFileProgressText = string.Format("{0} of {1}",
+        MainView.HumanReadableDiskSize(info.MovedBytesOfCurrentFile),
+        MainView.HumanReadableDiskSize(info.TotalBytesOfCurrentFile));
+
+    }
+
+    private string ThroughputText(long currentBytes, TimeSpan elapsedTime) {
+      if (elapsedTime == TimeSpan.Zero) {
+        return "-";
+      }
+      var bytesPerSecond = (double)currentBytes / elapsedTime.TotalSeconds;
+      return MainView.HumanReadableDiskSize((long)bytesPerSecond) + "/s";
     }
 
     private string TimeSpanText(TimeSpan span) {

@@ -51,12 +51,15 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private void MoveSteamGame(FileInfo acfFile, DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory, Action<MoveDirectoryInfo> progress, CancellationToken cancellationToken) {
       var info = new MoveDirectoryInfo {
+        SourceDirectory = sourceDirectory,
+        DestinationDirectory = destinationDirectory,
         StartTime = DateTime.UtcNow,
         CurrentTime = DateTime.UtcNow,
       };
       ReportProgess(MovePhase.DiscoveringSourceFiles, progress, info);
 
       //TODO: REmove this
+      destinationDirectory.Refresh();
       if (destinationDirectory.Exists) {
         destinationDirectory.Delete(true);
       }
@@ -86,21 +89,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       info.CurrentPhase = phase;
       info.CurrentTime = DateTime.UtcNow;
 
-      var clone = new MoveDirectoryInfo {
-        CurrentPhase = info.CurrentPhase,
-        MovedFileCount = info.MovedFileCount,
-        TotalFileCount = info.TotalFileCount,
-        MovedDirectoryCount = info.MovedDirectoryCount,
-        TotalDirectoryCount = info.TotalDirectoryCount,
-        MovedBytes = info.MovedBytes,
-        TotalBytes = info.TotalBytes,
-        CurrentDirectory = info.CurrentDirectory,
-        CurrentFile = info.CurrentFile,
-        MovedBytesOfCurrentFile = info.MovedBytesOfCurrentFile,
-        TotalBytesOfCurrentFile = info.TotalBytesOfCurrentFile,
-        StartTime = info.StartTime,
-        CurrentTime = info.CurrentTime,
-      };
+      var clone = info.Clone();
       progress(clone);
     }
 
@@ -170,9 +159,14 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     public class MoveDirectoryInfo {
+      public DirectoryInfo SourceDirectory { get; set; }
+      public DirectoryInfo DestinationDirectory { get; set; }
       public MovePhase CurrentPhase { get; set; }
+
       public long MovedFileCount { get; set; }
       public long TotalFileCount { get; set; }
+      public long RemainingFileCount => TotalFileCount - MovedFileCount;
+      public long RemainingBytes => TotalBytes - MovedBytes;
 
       public long MovedDirectoryCount { get; set; }
       public long TotalDirectoryCount { get; set; }
@@ -188,24 +182,46 @@ namespace SteamLibraryExplorer.SteamUtil {
       public DateTime StartTime { get; set; }
       public DateTime CurrentTime { get; set; }
 
-      public TimeSpan ElapsedTime {
-        get { return CurrentTime - StartTime; }
+      public MoveDirectoryInfo Clone() {
+        return new MoveDirectoryInfo {
+          SourceDirectory = SourceDirectory,
+          DestinationDirectory = DestinationDirectory,
+          CurrentPhase = CurrentPhase,
+          MovedFileCount = MovedFileCount,
+          TotalFileCount = TotalFileCount,
+          MovedDirectoryCount = MovedDirectoryCount,
+          TotalDirectoryCount = TotalDirectoryCount,
+          MovedBytes = MovedBytes,
+          TotalBytes = TotalBytes,
+          CurrentDirectory = CurrentDirectory,
+          CurrentFile = CurrentFile,
+          MovedBytesOfCurrentFile = MovedBytesOfCurrentFile,
+          TotalBytesOfCurrentFile = TotalBytesOfCurrentFile,
+          StartTime = StartTime,
+          CurrentTime = CurrentTime,
+        };
       }
+
+
+      public TimeSpan ElapsedTime => CurrentTime - StartTime;
 
       public TimeSpan EstimatedRemainingTime {
         get {
-          if (TotalBytes == 0 || MovedBytes == 0 || ElapsedTime.TotalSeconds <= 1) {
+          var elapsedSeconds = ElapsedTime.TotalSeconds;
+          if (TotalBytes == 0 || MovedBytes == 0 || elapsedSeconds <= 1) {
             return TimeSpan.MaxValue;
           }
+
           // 0.8 means there is 80% of the work done
-          double progressRatio = (double)MovedBytes / TotalBytes;
-          Debug.Assert(progressRatio > 0);
+          var progressRatio = (double)MovedBytes / TotalBytes;
+          Debug.Assert(progressRatio >= 0.0);
           Debug.Assert(progressRatio <= 1.0);
+
           // If total seconds is 10 and progress is 0.8, then total time is 10 / 0.8 (12.5), and
           // remaining time is 12.5 - 10 = 2.5
-          double estimatedTotalSeconds = ElapsedTime.TotalSeconds / progressRatio;
-          double secondsRemaining = estimatedTotalSeconds - ElapsedTime.TotalSeconds;
-          return TimeSpan.FromSeconds(secondsRemaining);
+          double estimatedTotalSeconds = elapsedSeconds / progressRatio;
+          double estimatedSecondsRemaining = estimatedTotalSeconds - elapsedSeconds;
+          return TimeSpan.FromSeconds(estimatedSecondsRemaining);
         }
       }
     }

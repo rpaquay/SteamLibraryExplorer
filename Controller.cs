@@ -37,19 +37,13 @@ namespace SteamLibraryExplorer {
         view.Cancel += (sender, args) => t.Cancel();
         Action<SteamMove.MoveDirectoryInfo> progress = info => {
           view.ReportProgress(info);
-          Debug.WriteLine("Copy progress: file {0:n0} of {1:n0}, {2:n0} bytes of {3:n0}, total {4:n0} bytes of {5:n0}, {6:n0} bytes/sec, Elapsed: {7} sec, Remaining: {8} sec",
-            info.MovedFileCount, info.TotalFileCount,
-            info.MovedBytesOfCurrentFile, info.TotalBytesOfCurrentFile,
-            info.MovedBytes, info.TotalBytes,
-            (long)(info.TotalBytes / info.ElapsedTime.TotalSeconds),
-            info.ElapsedTime.TotalSeconds.ToString(),
-            info.EstimatedRemainingTime == TimeSpan.MaxValue ? "Unknown" : info.EstimatedRemainingTime.TotalSeconds.ToString());
         };
 
         view.Show();
 
         //TODO: Remove this
-        var destinationDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "test"));
+        var destinationDirectory = new DirectoryInfo(Path.Combine("e:\\", "test"));
+
         var result = await _steamMove.MoveSteamGameAsync(
           game.AcfFile.FileInfo,
           game.Location,
@@ -57,7 +51,9 @@ namespace SteamLibraryExplorer {
           progress,
           t.Token);
 
-        Debug.WriteLine("Result of copy operation: {0}-{1}", result.Kind, result.Error?.Message ?? "Success");
+        if (result.Kind == SteamMove.MoveGameResultKind.Error) {
+          _mainView.ShowError(string.Format("Error copying steam game:\r\n\r\n{0}", result.Error.Message));
+        }
       }
       finally {
         view.Close();
