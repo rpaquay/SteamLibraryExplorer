@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -59,16 +60,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       //  }
       //}
 
-      var destinationAcfFile = destinationLibraryLocation.CombineDirectory("steamapps")
-        .CombineFile(game.AcfFile.Path.Name);
+      var destinationAcfFile = destinationLibraryLocation.Combine("steamapps").Combine(game.AcfFile.Path.Name);
       if (FileSystem.FileExists(destinationAcfFile)) {
         throw new ArgumentException($"Game ACF file \"{destinationAcfFile.FullName}\" already exist");
       }
 
-      var destinationGameLocation = destinationLibraryLocation.CombineDirectory("steamapps").CombineDirectory("common")
-        .CombineDirectory(game.Location.Name);
+      var destinationGameLocation = destinationLibraryLocation.Combine("steamapps").Combine("common").Combine(game.Location.Name);
       if (FileSystem.DirectoryExists(destinationGameLocation)) {
-        if (destinationGameLocation.EnumerateFileSystemInfos().Any()) {
+        if (FileSystem.EnumerateEntries(destinationGameLocation).Any()) {
           throw new ArgumentException(
             $"Destination directory \"{destinationGameLocation}\" already exists and is not empty");
         }
@@ -76,8 +75,7 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       FullPath destinationWorkshopFile = null;
       if (game.WorkshopFile != null) {
-        destinationWorkshopFile = destinationLibraryLocation.CombineDirectory("steamapps").CombineDirectory("workshop")
-          .CombineFile(game.WorkshopFile.Path.Name);
+        destinationWorkshopFile = destinationLibraryLocation.Combine("steamapps").Combine("workshop").Combine(game.WorkshopFile.Path.Name);
         if (FileSystem.FileExists(destinationWorkshopFile)) {
           throw new ArgumentException($"Workshop ACF file \"{destinationWorkshopFile.FullName}\" already exist");
         }
@@ -85,11 +83,9 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       FullPath destinatioWorkshopLocation = null;
       if (game.WorkshopFile != null) {
-        destinatioWorkshopLocation = destinationLibraryLocation.CombineDirectory("steamapps")
-          .CombineDirectory("workshop")
-          .CombineDirectory("content").CombineDirectory(game.WorkshopFile.AppId);
+        destinatioWorkshopLocation = destinationLibraryLocation.Combine("steamapps").Combine("workshop").Combine("content").Combine(game.WorkshopFile.AppId);
         if (FileSystem.DirectoryExists(destinatioWorkshopLocation)) {
-          if (destinatioWorkshopLocation.EnumerateFileSystemInfos().Any()) {
+          if (FileSystem.EnumerateEntries(destinatioWorkshopLocation).Any()) {
             throw new ArgumentException(
               $"Destination directory \"{destinatioWorkshopLocation}\" already exists and is not empty");
           }
@@ -126,10 +122,10 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Account for ACF File(s)
       moveInfo.TotalFileCount++;
-      moveInfo.TotalBytes += game.AcfFile.Path.Length;
+      moveInfo.TotalBytes += FileSystem.GetFileSize(game.AcfFile.Path);
       if (game.WorkshopFile != null) {
         moveInfo.TotalFileCount++;
-        moveInfo.TotalBytes += game.WorkshopFile.Path.Length;
+        moveInfo.TotalBytes += FileSystem.GetFileSize(game.WorkshopFile.Path);
       }
 
       // Copy game (and workshop) files
@@ -191,14 +187,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
 
       // Copy files
-      foreach (var sourceFile in sourceDirectory.EnumerateFiles()) {
-        CopySingleFile(sourceFile, destinationDirectory.CombineFile(sourceFile.Name), progress, info,
+      foreach (var sourceFile in FileSystem.EnumerateFiles(sourceDirectory)) {
+        CopySingleFile(sourceFile, destinationDirectory.Combine(sourceFile.Name), progress, info,
           cancellationToken);
       }
 
       // Copy sub-directories
-      foreach (var sourceChild in sourceDirectory.EnumerateDirectories()) {
-        var destinationChild = destinationDirectory.CombineDirectory(sourceChild.Name);
+      foreach (var sourceChild in FileSystem.EnumerateDirectories(sourceDirectory)) {
+        var destinationChild = destinationDirectory.Combine(sourceChild.Name);
         CopyDirectoryRecurse(sourceChild, destinationChild, progress, info, cancellationToken);
       }
       info.MovedDirectoryCount++;
@@ -216,7 +212,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       FileUtils.CopyFile(
         sourceFile.FullName,
         destinationFile.FullName,
-        sourceFile.Length >= 100 * 1024 * 1024,
+        FileSystem.GetFileSize(sourceFile) >= 100 * 1024 * 1024,
         copyProgress => {
           info.TotalBytesOfCurrentFile = copyProgress.TotalFileSize;
           info.MovedBytesOfCurrentFile = copyProgress.TotalBytesTransferred;
@@ -243,12 +239,12 @@ namespace SteamLibraryExplorer.SteamUtil {
       ReportProgess(phase, progress, info);
 
       // Delete files
-      foreach (var sourceFile in directory.EnumerateFiles()) {
+      foreach (var sourceFile in FileSystem.EnumerateFiles(directory)) {
         DeleteSingleFile(phase, sourceFile, progress, info);
       }
 
       // Delete sub-directories
-      foreach (var sourceChild in directory.EnumerateDirectories()) {
+      foreach (var sourceChild in FileSystem.EnumerateDirectories(directory)) {
         DeleteDirectoryRecurse(phase, sourceChild, progress, info);
       }
 
@@ -284,11 +280,11 @@ namespace SteamLibraryExplorer.SteamUtil {
       info.CurrentDirectory = sourceDirectory;
       ReportProgess(MovePhase.DiscoveringSourceFiles, progress, info);
 
-      foreach (var file in sourceDirectory.EnumerateFiles()) {
+      foreach (var file in FileSystem.EnumerateFiles(sourceDirectory)) {
         info.TotalFileCount++;
-        info.TotalBytes += file.Length;
+        info.TotalBytes += FileSystem.GetFileSize(file);
       }
-      foreach (var dir in sourceDirectory.EnumerateDirectories()) {
+      foreach (var dir in FileSystem.EnumerateDirectories(sourceDirectory)) {
         DiscoverSourceDirectoryFiles(dir, progress, info, cancellationToken);
       }
 
@@ -299,7 +295,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (configuration.Location.Value == null) {
         throw new ArgumentException("Steam location is not known, cannot delete appcache file");
       }
-      var file = configuration.Location.Value.CombineDirectory("appcache").CombineFile("appinfo.vdf");
+      var file = configuration.Location.Value.Combine("appcache").Combine("appinfo.vdf");
       FileSystem.DeleteFile(file);
     }
 

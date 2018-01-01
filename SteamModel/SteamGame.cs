@@ -50,7 +50,7 @@ namespace SteamLibraryExplorer.SteamModel {
           return null;
         }
 
-        return WorkshopFile.Path.Parent.CombineDirectory("content").CombineDirectory(WorkshopFile.AppId);
+        return WorkshopFile.Path.Parent.Combine("content").Combine(WorkshopFile.AppId);
       }
     }
   }

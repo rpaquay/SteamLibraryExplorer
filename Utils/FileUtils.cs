@@ -3,13 +3,14 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
+using JetBrains.Annotations;
 
 namespace SteamLibraryExplorer.Utils {
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   [SuppressMessage("ReSharper", "UnusedMember.Local")]
   public class FileUtils {
-    public static void CopyFile(string sourceFile, string destinationFile,
-      bool largeFile, Action<CopyFileProgress> progress, CancellationToken cancellationToken) {
+    public static void CopyFile([NotNull]string sourceFile, [NotNull]string destinationFile,
+      bool largeFile, [NotNull]Action<CopyFileProgress> progress, CancellationToken cancellationToken) {
 
       CopyProgressRoutine copyProgress = (totalFileSize, totalBytesTransferred, streamSize, streamBytesTransferred, streamNumber, callbackReason, hSourceFile,
         hDestinationFile, data) => {
@@ -45,10 +46,13 @@ namespace SteamLibraryExplorer.Utils {
       }
     }
 
+    [NotNull]
     private const string LongPathPrefix = @"\\?\";
+    [NotNull]
     private const string LongPathPrefixUNC = @"\\?\UNC\";
 
-    private static string MakeLongPath(string path) {
+    [NotNull]
+    private static string MakeLongPath([NotNull]string path) {
       if (path.StartsWith("\\")) {
         // Convert from "\\server\share" to "\\?\UNC\server\share"
         return LongPathPrefixUNC + path.Substring(2);
@@ -95,8 +99,8 @@ namespace SteamLibraryExplorer.Utils {
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool CopyFileEx(string lpExistingFileName, string lpNewFileName,
-      CopyProgressRoutine lpProgressRoutine, IntPtr lpData, ref Int32 pbCancel,
+    private static extern bool CopyFileEx([NotNull]string lpExistingFileName, [NotNull]string lpNewFileName,
+      [CanBeNull]CopyProgressRoutine lpProgressRoutine, IntPtr lpData, ref Int32 pbCancel,
       CopyFileFlags dwCopyFlags);
 
     [Flags]

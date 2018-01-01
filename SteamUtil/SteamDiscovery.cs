@@ -31,9 +31,9 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     private IEnumerable<SteamLibrary> LoadAdditionalLibraries(FullPath steamLocation, CancellationToken cancellationToken) {
-      var libraryFile = steamLocation.GetDirectory("steamapps").GetFile("libraryfolders.vdf");
-      if (libraryFile != null) {
-        var contents = File.ReadAllText(libraryFile.FullName);
+      var libraryPath = steamLocation.Combine("steamapps").Combine("libraryfolders.vdf");
+      if (FileSystem.FileExists(libraryPath)) {
+        var contents = FileSystem.ReadAllText(libraryPath);
         for (var i = 1; i <= 100; i++) {
           var libId = i.ToString();
           var libPath = GetProperty(contents, libId);
@@ -55,7 +55,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       gameSet.UnionWith(gameDirs);
       gameSet.UnionWith(acfFiles
         .Where(x => x.InstallDir != null)
-        .Select(x => steamLocation.CombineDirectory("steamapps").CombineDirectory("common").CombineDirectory(Path.GetFileName(x.InstallDir))));
+        .Select(x => steamLocation.Combine("steamapps").Combine("common").Combine(Path.GetFileName(x.InstallDir))));
 
       var games = gameSet.Select(gameDir => {
         var acfFile = acfFiles
@@ -99,29 +99,27 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (directoryPath == null || !FileSystem.DirectoryExists(directoryPath)) {
         return;
       }
-      var files = directoryPath.EnumerateFiles().ToList();
-      var fileBytes = files.Aggregate(0L, (s, x) => s + x.Length);
+      var files = FileSystem.EnumerateFiles(directoryPath).ToList();
+      var fileBytes = files.Aggregate(0L, (s, x) => s + FileSystem.GetFileSize(x));
       game.SizeOnDisk.Value += fileBytes;
       game.FileCount.Value += files.Count;
-      foreach (var childDirectory in directoryPath.EnumerateDirectories()) {
+      foreach (var childDirectory in FileSystem.EnumerateDirectories(directoryPath)) {
         DiscoverGameSizeOnDiskRecursive(game, childDirectory, cancellationToken);
       }
     }
 
     private static IEnumerable<FullPath> LoadGameDirectories(FullPath steamLocation) {
-      return steamLocation.GetDirectory("steamapps").GetDirectory("common").EnumerateDirectories();
+      return FileSystem.EnumerateDirectories(steamLocation.Combine("steamapps").Combine("common"));
     }
 
     private static IEnumerable<AcfFile> LoadAcfFiles(FullPath steamLocation) {
-      return steamLocation.GetDirectory("steamapps")
-        .EnumerateFiles("*.acf")
-        .Select(x => new AcfFile(x, File.ReadAllText(x.FullName)));
+      return FileSystem.EnumerateFiles(steamLocation.Combine("steamapps"), "*.acf")
+        .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
     }
 
     private static IEnumerable<AcfFile> LoadWorkshopFiles(FullPath steamLocation) {
-      return steamLocation.GetDirectory("steamapps").GetDirectory("workshop")
-        .EnumerateFiles("*.acf")
-        .Select(x => new AcfFile(x, File.ReadAllText(x.FullName)));
+      return FileSystem.EnumerateFiles(steamLocation.Combine("steamapps").Combine("workshop"), "*.acf")
+        .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
     }
 
     private static Task<T> RunAsync<T>(Func<T> func) {
@@ -148,7 +146,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         return null;
       }
 
-      if (dir.GetDirectory("steamapps") == null) {
+      if (!FileSystem.DirectoryExists(dir.Combine("steamapps"))) {
         return null;
       }
 
