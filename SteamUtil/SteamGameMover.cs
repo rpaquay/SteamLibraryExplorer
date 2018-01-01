@@ -9,7 +9,9 @@ using SteamLibraryExplorer.Utils;
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamGameMover {
     public event EventHandler<FileCopyEventArgs> CopyingFile;
-    public event EventHandler<FileDeleteEventArgs> DeletingFile;
+    public event EventHandler<PathEventArgs> DeletingFile;
+    public event EventHandler<PathEventArgs> CreatingDirectory;
+    public event EventHandler<PathEventArgs> DeletingDirectory;
 
     /// <summary>
     /// Move a steam game from one library to another.
@@ -184,6 +186,7 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Create destination directory
       if (!destinationDirectory.DirectoryExists) {
+        OnCreatingDirectory(new PathEventArgs(destinationDirectory));
         destinationDirectory.CreateDirectory();
       }
 
@@ -250,6 +253,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
 
       // Delete directory
+      OnDeletingDirectory(new PathEventArgs(directory));
       directory.DeleteDirectory();
 
       info.DeletedDirectoryCount++;
@@ -261,7 +265,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         return;
       }
 
-      OnDeletingFile(new FileDeleteEventArgs(file));
+      OnDeletingFile(new PathEventArgs(file));
       info.CurrentFile = file;
       ReportProgess(phase, progress, info);
 
@@ -317,7 +321,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       CopyingFile?.Invoke(this, e);
     }
 
-    protected virtual void OnDeletingFile(FileDeleteEventArgs e) {
+    protected virtual void OnDeletingFile(PathEventArgs e) {
       DeletingFile?.Invoke(this, e);
     }
 
@@ -333,6 +337,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       public FullPath GameDirectory { get; }
       public FullPath WorkshopFile { get; }
       public FullPath WorkshopDirectory { get; }
+    }
+
+    protected virtual void OnCreatingDirectory(PathEventArgs e) {
+      CreatingDirectory?.Invoke(this, e);
+    }
+
+    protected virtual void OnDeletingDirectory(PathEventArgs e) {
+      DeletingDirectory?.Invoke(this, e);
     }
   }
 }

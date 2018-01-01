@@ -2,8 +2,8 @@
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
-  public class FileDeleteEventArgs {
-    public FileDeleteEventArgs(FullPath path) {
+  public class PathEventArgs {
+    public PathEventArgs(FullPath path) {
       Path = path;
     }
 

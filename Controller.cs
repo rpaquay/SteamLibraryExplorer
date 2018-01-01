@@ -28,6 +28,12 @@ namespace SteamLibraryExplorer {
       _steamGameMover.DeletingFile += (sender, args) => {
         Trace.WriteLine($"Deleting file \"{args.Path.FullName}\"");
       };
+      _steamGameMover.CreatingDirectory += (sender, args) => {
+        Trace.WriteLine($"Creating directory \"{args.Path.FullName}\"");
+      };
+      _steamGameMover.DeletingDirectory += (sender, args) => {
+        Trace.WriteLine($"Deleting directory \"{args.Path.FullName}\"");
+      };
     }
 
     public void Run() {
