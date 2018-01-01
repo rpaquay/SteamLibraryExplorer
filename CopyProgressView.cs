@@ -34,23 +34,23 @@ namespace SteamLibraryExplorer {
       Cancel?.Invoke(this, EventArgs.Empty);
     }
 
-    public void ReportProgress(SteamGameMover.MoveDirectoryInfo info) {
+    public void ReportProgress(MoveDirectoryInfo info) {
       _throttledDispatcher.Enqeue(nameof(ReportProgress), () => {
         UpdateViewModel(info);
       });
     }
 
-    private void UpdateViewModel(SteamGameMover.MoveDirectoryInfo info) {
+    private void UpdateViewModel(MoveDirectoryInfo info) {
       // We assume copy takes 90% of the time, and delete source takes 10% of the time
       var copyVersusDeleteFraction = 0.9;
       var deleteVersusCopyFraction = 1.0 - copyVersusDeleteFraction;
 
       switch (info.CurrentPhase) {
-        case SteamGameMover.MovePhase.DiscoveringSourceFiles:
+        case MovePhase.DiscoveringSourceFiles:
           _viewModel.MessageText = string.Format("Discovering files and directories: {0:n0} files", info.TotalFileCount);
           break;
 
-        case SteamGameMover.MovePhase.CopyingFiles:
+        case MovePhase.CopyingFiles:
           _viewModel.MessageText = string.Format("Copying {0:n0} items from \"{1}\" to \"{2}\"",
             info.TotalFileCount, info.SourceDirectory.FullName, info.DestinationDirectory.FullName);
           _viewModel.TotalProgressFraction = ProgressFraction(info.MovedBytes, info.TotalBytes)  * copyVersusDeleteFraction;
@@ -72,7 +72,7 @@ namespace SteamLibraryExplorer {
             MainView.HumanReadableDiskSize(info.TotalBytesOfCurrentFile));
           break;
 
-        case SteamGameMover.MovePhase.DeletingSourceDirectory:
+        case MovePhase.DeletingSourceDirectory:
           _viewModel.MessageText = "Deleting source directory after successful copy";
           _viewModel.TotalProgressFraction = copyVersusDeleteFraction + ProgressFraction(info.DeletedFileCount, info.MovedFileCount) * deleteVersusCopyFraction;
           _viewModel.TotalProgressText = "";
@@ -88,7 +88,7 @@ namespace SteamLibraryExplorer {
           _viewModel.CurrentFileProgressText = "";
           break;
 
-        case SteamGameMover.MovePhase.DeletingDestinationAfterCancellation:
+        case MovePhase.DeletingDestinationAfterCancellation:
           _viewModel.MessageText = "Cancelling operation, i.e. deleting files already copied to destination";
           _viewModel.PercentCompleteText = "(Cancelling)";
           _viewModel.TotalProgressFraction = ProgressFraction(info.MovedFileCount, info.RemainingFileToDeleteCount);

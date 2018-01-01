@@ -59,7 +59,7 @@ namespace SteamLibraryExplorer {
       _currentGameMoveOperationView = new CopyProgressView(new CopyProgressWindow());
       try {
         _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
-        Action<SteamGameMover.MoveDirectoryInfo> progress = info => {
+        Action<MoveDirectoryInfo> progress = info => {
           _currentGameMoveOperationView.ReportProgress(info);
         };
 

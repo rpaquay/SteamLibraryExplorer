@@ -65,6 +65,11 @@
     </ApplicationDefinition>
     <Compile Include="CopyProgressView.cs" />
     <Compile Include="MoveGameEventArgs.cs" />
+    <Compile Include="SteamUtil\FileCopyEventArgs.cs" />
+    <Compile Include="SteamUtil\FileDeleteEventArgs.cs" />
+    <Compile Include="SteamUtil\MoveDirectoryInfo.cs" />
+    <Compile Include="SteamUtil\MoveGameResult.cs" />
+    <Compile Include="SteamUtil\MovePhase.cs" />
     <Compile Include="SteamUtil\SteamGameMover.cs" />
     <Compile Include="UserInterface\CopyProgressWindow.xaml.cs">
       <DependentUpon>CopyProgressWindow.xaml</DependentUpon>
