@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
@@ -24,6 +25,18 @@ namespace SteamLibraryExplorer.SteamUtil {
           return MoveGameResult.CreateError(e);
         }
       });
+    }
+
+    public Task DeleteAppCacheAsync(SteamConfiguration configuration) {
+      return RunAsync(() => DeleteAppCache(configuration));
+    }
+
+    private void DeleteAppCache(SteamConfiguration configuration) {
+      if (configuration.Location.Value == null) {
+        throw new ArgumentException("Steam location is not known, cannot delete appcache file");
+      }
+      var file = configuration.Location.Value.CombineDirectory("appcache").CombineFile("appinfo.vdf");
+      file.Delete();
     }
 
     private void MoveSteamGame(
@@ -286,6 +299,10 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private static Task<T> RunAsync<T>(Func<T> func) {
       return Task.Run(() => func.Invoke());
+    }
+
+    private static Task RunAsync(Action func) {
+      return Task.Run(func);
     }
 
     public class MoveGameResult {

@@ -16,18 +16,6 @@ namespace SteamLibraryExplorer.SteamUtil {
       return RunAsync(LocateSteamUsingProcess);
     }
 
-    public Task DeleteAppCacheAsync(SteamConfiguration configuration) {
-      return RunAsync(() => DeleteAppCache(configuration));
-    }
-
-    private void DeleteAppCache(SteamConfiguration configuration) {
-      if (configuration.Location.Value == null) {
-        throw new ArgumentException("Steam location is not known, cannot delete appcache file");
-      }
-      var file = configuration.Location.Value.CombineDirectory("appcache").CombineFile("appinfo.vdf");
-      file.Delete();
-    }
-
     public Task<SteamLibrary> LoadMainLibraryAsync(DirectoryInfo steamLocation, CancellationToken cancellationToken) {
       return RunAsync(() => LoadLibrary(steamLocation, true, cancellationToken));
     }

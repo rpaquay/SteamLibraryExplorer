@@ -11,6 +11,7 @@ namespace SteamLibraryExplorer.SteamModel {
     public FileInfo FileInfo { get; }
     public string Contents { get; }
 
+    public string AppId => GetProperty("appid");
     public string InstallDir => GetProperty("installdir");
     public string GameDisplayName => GetProperty("name");
 
