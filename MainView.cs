@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
@@ -93,7 +92,7 @@ namespace SteamLibraryExplorer {
 
         // Add existing libraries to list of "MoveToLibraries" destination
         foreach (var otherLibrary in _model.SteamConfiguration.SteamLibraries) {
-          if (!Object.Equals(library, otherLibrary)) {
+          if (!Equals(library, otherLibrary)) {
             gameViewModel.MoveToLibraries.Add(otherLibrary.Location.FullName);
           }
         }

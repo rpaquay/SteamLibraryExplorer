@@ -108,6 +108,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         MoveSteamGameWorker(game, destinationInfo, progress, moveInfo, cancellationToken);
       } catch (OperationCanceledException) {
         RollbackPartialMove(destinationInfo, moveInfo, progress);
+        throw;
       }
     }
 
