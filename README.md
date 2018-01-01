@@ -9,4 +9,19 @@
 
 *Note:* This application is not affiliated with Valve and/or Steam. 
 
+## List of installed games, grouped by library folder
+
 ![Screenshot](/Docs/Screenshot.png?raw=true "Screenshot")
+
+## Right click on a game to select which library to move it to
+
+![Screenshot: Move Game To](/Docs/Screenshot-MoveTo.png?raw=true "Screenshot")
+
+## Wait for the move operation to finish
+
+![Screenshot: Move Game To Progress Window](/Docs/Screenshot-MoveTo-Progress.png?raw=true "Screenshot")
+
+## Success
+
+![Screenshot: Move Game To Success](/Docs/Screenshot-MoveTo-Success.png?raw=true "Screenshot")
+
