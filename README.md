@@ -1,8 +1,8 @@
 # Steam Library Explorer
 
-Application to explore the list of Steam games installed locally on your computer, including optional library folders.
+`Steam Library Explorer` is similar to the [SteamTool Library Manager](http://www.stefanjones.ca/steam/) with full support for `Steam Library` folders.
 
-The application displays the list of games grouped per steam library folder, as well as their size on disk and the disk space available.
+`Steam Library Explorer` shows the list of games locally installed in`Steam` and lets you move games (and their workshop content between libraries.
 
 **Important: MSI AfterBurner makes SteamLibraryExplorer crash at startup**.
 > To workaround the issue, add "SteamLibraryExplorer.exe" to the list of known applications of [Rivatuner Statistics Server](http://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html) and disable OSD for the application, i.e. set `Application Detection Level` to `None`.
