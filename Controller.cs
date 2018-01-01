@@ -97,11 +97,19 @@ namespace SteamLibraryExplorer {
         // Clear model and start a new collection process
         _model.SteamConfiguration.SteamLibraries.Clear();
 
-        // Use new location (or previous valid location if there was one)
+
+        // Find steam location (installation directory)
         var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
         if (cancellationToken.IsCancellationRequested) {
           return;
         }
+
+        // If no location found, re-use previously found one
+        if (steamLocation == null) {
+          steamLocation = _model.SteamConfiguration.Location.Value;
+        }
+
+        // Store location for re-use
         if (steamLocation != null) {
           _model.SteamConfiguration.Location.Value = steamLocation;
         }
