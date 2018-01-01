@@ -18,7 +18,7 @@ namespace SteamLibraryExplorer.Utils
     public T Value {
       get { return _value; }
       set {
-        if (object.Equals(_value, value)) {
+        if (Equals(_value, value)) {
           return;
         }
         var oldValue = _value;

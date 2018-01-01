@@ -1,10 +1,13 @@
 using System;
 using System.Diagnostics;
+using JetBrains.Annotations;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class MoveDirectoryInfo {
+    [CanBeNull]
     public FullPath SourceDirectory { get; set; }
+    [CanBeNull]
     public FullPath DestinationDirectory { get; set; }
     public MovePhase CurrentPhase { get; set; }
 
@@ -19,7 +22,9 @@ namespace SteamLibraryExplorer.SteamUtil {
     public long MovedBytes { get; set; }
     public long TotalBytes { get; set; }
 
+    [CanBeNull]
     public FullPath CurrentDirectory { get; set; }
+    [CanBeNull]
     public FullPath CurrentFile { get; set; }
     public long MovedBytesOfCurrentFile { get; set; }
     public long TotalBytesOfCurrentFile { get; set; }
@@ -30,9 +35,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     public long DeletedDirectoryCount { get; set; }
     public long DeletedFileCount { get; set; }
 
-    public long RemainingFileToDeleteCount {
-      get { return MovedFileCount - DeletedFileCount; }
-    }
+    public long RemainingFileToDeleteCount => MovedFileCount - DeletedFileCount;
 
     public MoveDirectoryInfo Clone() {
       return new MoveDirectoryInfo {

@@ -1,7 +1,11 @@
 using System;
 using System.Windows.Input;
 
-namespace SteamLibraryExplorer.ViewModel {
+namespace SteamLibraryExplorer.Utils {
+  /// <summary>
+  /// An implementation of <see cref="ICommand"/> that can always be executed
+  /// and that forwards execution to an <see cref="Action"/> callback.
+  /// </summary>
   public class RelayExecuteCommand : ICommand {
     private readonly Action<object> _callback;
 

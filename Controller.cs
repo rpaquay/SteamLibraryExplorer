@@ -50,8 +50,8 @@ namespace SteamLibraryExplorer {
         return;
       }
 
-      if (e.Game.Location == null) {
-        _mainView.ShowError("Cannot move game because it does not have a valid location.");
+      if (!FileSystem.DirectoryExists(e.Game.Location)) {
+        _mainView.ShowError($"Cannot move game because the directory \"{e.Game.Location}\" does not exist");
         return;
       }
 
@@ -74,10 +74,12 @@ namespace SteamLibraryExplorer {
 
         var result = await _steamGameMover.MoveSteamGameAsync(e.Game, destinationLibrary, progress, cancellationTokenSource.Token);
 
-        if (result.Kind == SteamGameMover.MoveGameResultKind.Error) {
-          _mainView.ShowError(string.Format("Error moving steam game to library \"{0}\":\r\n\r\n{1}", 
-            destinationLibrary, result.Error.Message));
-        } else if (result.Kind == SteamGameMover.MoveGameResultKind.Ok) {
+        if (result.Kind == MoveGameResultKind.Error) {
+          Debug.Assert(result.Error != null);
+          _mainView.ShowError(
+            $"Error moving steam game to library \"{destinationLibrary}\":\r\n\r\n" +
+            $"{result.Error.Message}");
+        } else if (result.Kind == MoveGameResultKind.Ok) {
           await _steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration);
         }
       }

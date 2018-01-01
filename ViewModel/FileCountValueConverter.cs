@@ -5,6 +5,9 @@ using System.Windows.Data;
 namespace SteamLibraryExplorer.ViewModel {
   class FileCountValueConverter : IValueConverter {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+      if (value == null) {
+        return "";
+      }
       var fileCount = (long)value;
       return MainView.HumanReadableFileCount(fileCount);
     }

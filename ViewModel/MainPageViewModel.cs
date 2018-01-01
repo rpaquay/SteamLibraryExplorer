@@ -13,26 +13,21 @@ namespace SteamLibraryExplorer.ViewModel {
     public string WindowTitle {
       get {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return string.Format("Steam Library Explorer {0}.{1}", version.Major, version.Minor);
+        return $"Steam Library Explorer {version.Major}.{version.Minor}";
       }
     }
 
     public string StatusText {
       get { return _statusText; }
-      set {
-        _statusText = value;
-        RaisePropertyChangedEvent(nameof(StatusText));
-      }
+      set { UpdateProperty(ref _statusText, value, nameof(StatusText)); }
     }
 
     public bool IsDiscoveringSteamFiles {
       get { return _isDiscoveringSteamFiles; }
-      set {
-        _isDiscoveringSteamFiles = value;
-        RaisePropertyChangedEvent(nameof(IsDiscoveringSteamFiles));
-      }
+      set { UpdateProperty(ref _isDiscoveringSteamFiles, value, nameof(IsDiscoveringSteamFiles)); }
     }
 
-    public ObservableCollection<SteamGameViewModel> SteamGames { get; } = new ObservableCollection<SteamGameViewModel>();
+    public ObservableCollection<SteamGameViewModel> SteamGames { get; } =
+      new ObservableCollection<SteamGameViewModel>();
   }
 }

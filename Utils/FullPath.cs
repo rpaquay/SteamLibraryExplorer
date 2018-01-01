@@ -36,6 +36,21 @@ namespace SteamLibraryExplorer.Utils {
       return new FullPath(Path.Combine(FullName, name));
     }
 
+    [NotNull]
+    public FullPath Combine([NotNull]string name1, [NotNull]string name2) {
+      return new FullPath(Path.Combine(FullName, name1, name2));
+    }
+
+    [NotNull]
+    public FullPath Combine([NotNull]string name1, [NotNull]string name2, [NotNull]string name3) {
+      return new FullPath(Path.Combine(FullName, name1, name2, name3));
+    }
+
+    [NotNull]
+    public FullPath Combine([NotNull]string name1, [NotNull]string name2, [NotNull]string name3, [NotNull]string name4) {
+      return new FullPath(Path.Combine(FullName, name1, name2, name3, name4));
+    }
+
     public int CompareTo([CanBeNull]FullPath other) {
       if (ReferenceEquals(other, null)) {
         return 1;

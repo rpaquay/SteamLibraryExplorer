@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
@@ -59,7 +57,7 @@ namespace SteamLibraryExplorer {
             MainView.HumanReadableDiskSize(info.TotalBytes));
           _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", _viewModel.TotalProgressFraction * 100);
 
-          _viewModel.SpeedText = ThroughputText(info.MovedBytes, info.ElapsedTime);
+          _viewModel.SpeedTextText = ThroughputText(info.MovedBytes, info.ElapsedTime);
           _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
           _viewModel.RemainingTime = "About " + TimeSpanText(info.EstimatedRemainingTime);
           _viewModel.ItemsRemainingText = string.Format("{0:n0} ({1:n0})",
@@ -78,7 +76,7 @@ namespace SteamLibraryExplorer {
           _viewModel.TotalProgressText = "";
           _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", _viewModel.TotalProgressFraction * 100);
 
-          _viewModel.SpeedText = "-";
+          _viewModel.SpeedTextText = "-";
           _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
           _viewModel.RemainingTime = "-";
           _viewModel.ItemsRemainingText = string.Format("{0:n0}", info.RemainingFileToDeleteCount);
@@ -93,7 +91,7 @@ namespace SteamLibraryExplorer {
           _viewModel.PercentCompleteText = "(Cancelling)";
           _viewModel.TotalProgressFraction = ProgressFraction(info.MovedFileCount, info.RemainingFileToDeleteCount);
           _viewModel.TotalProgressText = "";
-          _viewModel.SpeedText = "-";
+          _viewModel.SpeedTextText = "-";
           _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
           _viewModel.RemainingTime = "-";
           _viewModel.ItemsRemainingText = string.Format("{0:n0}", info.RemainingFileToDeleteCount);

@@ -12,102 +12,61 @@ namespace SteamLibraryExplorer.ViewModel {
     private string _remainingTime;
     private string _percentCompleteText;
     private string _itemsRemainingText;
-    private string _speed;
+    private string _speedText;
 
     public string MessageText {
       get { return _messageText; }
-      set {
-        _messageText = value;
-        RaisePropertyChangedEvent(nameof(MessageText));
-      }
+      set { UpdateProperty(ref _messageText, value, nameof(MessageText)); }
     }
 
-    public string SpeedText {
-      get { return _speed; }
-      set {
-        if (_speed != value) {
-          _speed = value;
-          RaisePropertyChangedEvent(nameof(SpeedText));
-        }
-      }
+    public string SpeedTextText {
+      get { return _speedText; }
+      set { UpdateProperty(ref _speedText, value, nameof(SpeedTextText)); }
     }
 
     public string CurrentFilePath {
       get { return _currentFilePath; }
-      set {
-        if (_currentFilePath != value) {
-          _currentFilePath = value;
-          RaisePropertyChangedEvent(nameof(CurrentFilePath));
-        }
-      }
+      set { UpdateProperty(ref _currentFilePath, value, nameof(CurrentFilePath)); }
     }
 
     public double CurrentFileProgressFraction {
       get { return _currentFileProgressFraction; }
-      set {
-        _currentFileProgressFraction = value;
-        RaisePropertyChangedEvent(nameof(CurrentFileProgressFraction));
-      }
+      set { UpdateProperty(ref _currentFileProgressFraction, value, nameof(CurrentFileProgressFraction)); }
     }
 
     public string CurrentFileProgressText {
       get { return _currentFileProgressText; }
-      set {
-        if (_currentFileProgressText != value) {
-          _currentFileProgressText = value;
-          RaisePropertyChangedEvent(nameof(CurrentFileProgressText));
-        }
-      }
+      set { UpdateProperty(ref _currentFileProgressText, value, nameof(CurrentFileProgressText)); }
     }
 
     public string ItemsRemainingText {
       get { return _itemsRemainingText; }
-      set {
-        _itemsRemainingText = value;
-        RaisePropertyChangedEvent(nameof(ItemsRemainingText));
-      }
+      set { UpdateProperty(ref _itemsRemainingText, value, nameof(ItemsRemainingText)); }
     }
 
     public double TotalProgressFraction {
       get { return _totalProgressFraction; }
-      set {
-        _totalProgressFraction = value;
-        RaisePropertyChangedEvent(nameof(TotalProgressFraction));
-      }
+      set { UpdateProperty(ref _totalProgressFraction, value, nameof(TotalProgressFraction)); }
     }
 
     public string PercentCompleteText {
       get { return _percentCompleteText; }
-      set {
-        if (_percentCompleteText != value) {
-          _percentCompleteText = value;
-          RaisePropertyChangedEvent(nameof(PercentCompleteText));
-        }
-      }
+      set { UpdateProperty(ref _percentCompleteText, value, nameof(PercentCompleteText)); }
     }
 
     public string TotalProgressText {
       get { return _totalProgressText; }
-      set {
-        _totalProgressText = value;
-        RaisePropertyChangedEvent(nameof(TotalProgressText));
-      }
+      set { UpdateProperty(ref _totalProgressText, value, nameof(TotalProgressText)); }
     }
 
     public string ElapsedTime {
       get { return _elapsedTime; }
-      set {
-        _elapsedTime = value;
-        RaisePropertyChangedEvent(nameof(ElapsedTime));
-      }
+      set { UpdateProperty(ref _elapsedTime, value, nameof(ElapsedTime)); }
     }
 
     public string RemainingTime {
       get { return _remainingTime; }
-      set {
-        _remainingTime = value;
-        RaisePropertyChangedEvent(nameof(RemainingTime));
-      }
+      set { UpdateProperty(ref _remainingTime, value, nameof(RemainingTime)); }
     }
   }
 }

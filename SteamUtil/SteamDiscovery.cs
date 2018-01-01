@@ -7,30 +7,42 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamDiscovery {
+    [NotNull]
     public Task<FullPath> LocateSteamFolderAsync() {
       return RunAsync(LocateSteamUsingProcess);
     }
 
-    public Task<SteamLibrary> LoadMainLibraryAsync(FullPath steamLocation, CancellationToken cancellationToken) {
+    [NotNull]
+    public Task<SteamLibrary> LoadMainLibraryAsync([NotNull] FullPath steamLocation,
+      CancellationToken cancellationToken) {
       return RunAsync(() => LoadLibrary(steamLocation, true, cancellationToken));
     }
 
-    public Task<IEnumerable<SteamLibrary>> LoadAdditionalLibrariesAsync(FullPath steamLocation, CancellationToken cancellationToken) {
+    [NotNull]
+    public Task<IEnumerable<SteamLibrary>> LoadAdditionalLibrariesAsync([NotNull] FullPath steamLocation,
+      CancellationToken cancellationToken) {
       return RunAsync(() => LoadAdditionalLibraries(steamLocation, cancellationToken));
     }
 
-    public Task DiscoverSizeOnDiskAsync(IEnumerable<SteamLibrary> libraries, CancellationToken cancellationToken) {
+    [NotNull]
+    public Task DiscoverSizeOnDiskAsync([NotNull] IEnumerable<SteamLibrary> libraries,
+      CancellationToken cancellationToken) {
       // Copy collection, since it could be cleared if a Refresh occurs.
       var copy = libraries.ToList();
       return RunAsync(() => DiscoverSizeOnDisk(copy, cancellationToken));
     }
 
-    private IEnumerable<SteamLibrary> LoadAdditionalLibraries(FullPath steamLocation, CancellationToken cancellationToken) {
+    [NotNull]
+    private IEnumerable<SteamLibrary> LoadAdditionalLibraries([NotNull] FullPath steamLocation,
+      CancellationToken cancellationToken) {
+      cancellationToken.ThrowIfCancellationRequested();
+
       var libraryPath = steamLocation.Combine("steamapps").Combine("libraryfolders.vdf");
       if (FileSystem.FileExists(libraryPath)) {
         var contents = FileSystem.ReadAllText(libraryPath);
@@ -46,12 +58,16 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
     }
 
-    private static SteamLibrary LoadLibrary(FullPath steamLocation, bool isMainLibrary, CancellationToken cancellationToken) {
+    [NotNull]
+    private static SteamLibrary LoadLibrary([NotNull] FullPath steamLocation, bool isMainLibrary,
+      CancellationToken cancellationToken) {
+      cancellationToken.ThrowIfCancellationRequested();
+
       var acfFiles = LoadAcfFiles(steamLocation).ToList();
       var gameDirs = LoadGameDirectories(steamLocation).ToList();
       var workshopFiles = LoadWorkshopFiles(steamLocation).ToList();
 
-      var gameSet = new HashSet<FullPath>(new DirectoryInfoComparer());
+      var gameSet = new HashSet<FullPath>();
       gameSet.UnionWith(gameDirs);
       gameSet.UnionWith(acfFiles
         .Where(x => x.InstallDir != null)
@@ -61,14 +77,16 @@ namespace SteamLibraryExplorer.SteamUtil {
         var acfFile = acfFiles
           .FirstOrDefault(acf => StringComparer.OrdinalIgnoreCase.Equals(acf.InstallDir, gameDir.Name));
         var workshopFile = workshopFiles
-          .FirstOrDefault(wsFile => acfFile != null && StringComparer.OrdinalIgnoreCase.Equals(wsFile.AppId, acfFile.AppId));
-        return new SteamGame(FileSystem.DirectoryExists(gameDir) ? gameDir : null, acfFile, workshopFile);
+          .FirstOrDefault(wsFile => acfFile != null &&
+                                    StringComparer.OrdinalIgnoreCase.Equals(wsFile.AppId, acfFile.AppId));
+        return new SteamGame(gameDir, acfFile, workshopFile);
       });
 
       return new SteamLibrary(steamLocation, isMainLibrary, games);
     }
 
-    private void DiscoverSizeOnDisk(IEnumerable<SteamLibrary> libraries, CancellationToken cancellationToken) {
+    private void DiscoverSizeOnDisk([NotNull] IEnumerable<SteamLibrary> libraries,
+      CancellationToken cancellationToken) {
       foreach (var library in libraries) {
         if (cancellationToken.IsCancellationRequested)
           break;
@@ -77,8 +95,8 @@ namespace SteamLibraryExplorer.SteamUtil {
         ulong totalBytes;
         ulong freeBytes;
         if (GetDiskFreeSpaceEx(library.Location.FullName, out userFreeBytes, out totalBytes, out freeBytes)) {
-          library.FreeDiskSize.Value = (long)freeBytes;
-          library.TotalDiskSize.Value = (long)totalBytes;
+          library.FreeDiskSize.Value = (long) freeBytes;
+          library.TotalDiskSize.Value = (long) totalBytes;
         }
 
         foreach (var game in library.Games) {
@@ -87,12 +105,13 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
     }
 
-    private static void DiscoverGameSizeOnDisk(SteamGame game, CancellationToken cancellationToken) {
+    private static void DiscoverGameSizeOnDisk([NotNull] SteamGame game, CancellationToken cancellationToken) {
       DiscoverGameSizeOnDiskRecursive(game, game.Location, cancellationToken);
       DiscoverGameSizeOnDiskRecursive(game, game.WorkshopLocation, cancellationToken);
     }
 
-    private static void DiscoverGameSizeOnDiskRecursive(SteamGame game, FullPath directoryPath, CancellationToken cancellationToken) {
+    private static void DiscoverGameSizeOnDiskRecursive([NotNull] SteamGame game, [CanBeNull] FullPath directoryPath,
+      CancellationToken cancellationToken) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
@@ -108,33 +127,40 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
     }
 
-    private static IEnumerable<FullPath> LoadGameDirectories(FullPath steamLocation) {
+    [NotNull]
+    private static IEnumerable<FullPath> LoadGameDirectories([NotNull] FullPath steamLocation) {
       return FileSystem.EnumerateDirectories(steamLocation.Combine("steamapps").Combine("common"));
     }
 
-    private static IEnumerable<AcfFile> LoadAcfFiles(FullPath steamLocation) {
+    [NotNull]
+    private static IEnumerable<AcfFile> LoadAcfFiles([NotNull] FullPath steamLocation) {
       return FileSystem.EnumerateFiles(steamLocation.Combine("steamapps"), "*.acf")
         .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
     }
 
-    private static IEnumerable<AcfFile> LoadWorkshopFiles(FullPath steamLocation) {
+    [NotNull]
+    private static IEnumerable<AcfFile> LoadWorkshopFiles([NotNull] FullPath steamLocation) {
       return FileSystem.EnumerateFiles(steamLocation.Combine("steamapps").Combine("workshop"), "*.acf")
         .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
     }
 
-    private static Task<T> RunAsync<T>(Func<T> func) {
+    [NotNull]
+    private static Task<T> RunAsync<T>([NotNull] Func<T> func) {
       return Task.Run(() => func.Invoke());
     }
 
-    private static Task RunAsync(Action func) {
+    [NotNull]
+    private static Task RunAsync([NotNull] Action func) {
       return Task.Run(func);
     }
 
+    [CanBeNull]
     private FullPath LocateSteamUsingProcess() {
       var steamProcesses = Process.GetProcessesByName("Steam");
       return steamProcesses.Select(GetSteamProcessFolder).FirstOrDefault(x => x != null);
     }
 
+    [CanBeNull]
     private FullPath GetSteamProcessFolder(Process process) {
       var processPath = new FullPath(process.MainModule.FileName);
       if (!FileSystem.FileExists(processPath)) {
@@ -153,7 +179,8 @@ namespace SteamLibraryExplorer.SteamUtil {
       return dir;
     }
 
-    public static string GetProperty(string contents, string propName) {
+    [CanBeNull]
+    public static string GetProperty([NotNull] string contents, [NotNull] string propName) {
       var regex = new Regex("^.*\"" + propName + "\".*\"(?<propValue>.+)\"$", RegexOptions.IgnoreCase);
       using (var reader = new StringReader(contents)) {
         for (var line = reader.ReadLine(); line != null; line = reader.ReadLine()) {
@@ -166,20 +193,9 @@ namespace SteamLibraryExplorer.SteamUtil {
       return null;
     }
 
-    public class DirectoryInfoComparer : IEqualityComparer<FullPath> {
-      public bool Equals(FullPath x, FullPath y) {
-        return StringComparer.OrdinalIgnoreCase.Equals(x.FullName, y.FullName);
-      }
-
-      public int GetHashCode(FullPath obj) {
-        return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.FullName);
-      }
-    }
-
-
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    static extern bool GetDiskFreeSpaceEx(string lpDirectoryName,
+    static extern bool GetDiskFreeSpaceEx([NotNull] string lpDirectoryName,
       out ulong lpFreeBytesAvailable,
       out ulong lpTotalNumberOfBytes,
       out ulong lpTotalNumberOfFreeBytes);

@@ -70,6 +70,7 @@
     <Compile Include="CopyProgressView.cs" />
     <Compile Include="MoveGameEventArgs.cs" />
     <Compile Include="SteamUtil\FileCopyEventArgs.cs" />
+    <Compile Include="SteamUtil\MoveGameResultKind.cs" />
     <Compile Include="SteamUtil\PathEventArgs.cs" />
     <Compile Include="SteamUtil\MoveDirectoryInfo.cs" />
     <Compile Include="SteamUtil\MoveGameResult.cs" />
@@ -97,7 +98,7 @@
     <Compile Include="ViewModel\FileCountValueConverter.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="Utils\ObservableObject.cs" />
-    <Compile Include="ViewModel\RelayExecuteCommand.cs" />
+    <Compile Include="Utils\RelayExecuteCommand.cs" />
     <Compile Include="ViewModel\SizeOnDiskValueConverter.cs" />
     <Compile Include="ViewModel\SteamGameViewModel.cs" />
     <Compile Include="UserInterface\MainWindow.xaml.cs">

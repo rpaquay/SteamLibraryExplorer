@@ -1,21 +1,24 @@
 ﻿using System.Diagnostics;
-using System.IO;
+using JetBrains.Annotations;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class SteamGame {
-    public SteamGame(FullPath location, AcfFile acfFile, AcfFile workshopFile) {
-      Debug.Assert(location != null || acfFile != null);
+    public SteamGame([NotNull]FullPath location, [CanBeNull]AcfFile acfFile, [CanBeNull]AcfFile workshopFile) {
       Debug.Assert(acfFile == null || workshopFile == null || acfFile.AppId == workshopFile.AppId);
       Location = location;
       AcfFile = acfFile;
       WorkshopFile = workshopFile;
     }
 
+    [NotNull]
     public FullPath Location { get; }
+    [CanBeNull]
     public AcfFile AcfFile { get; }
+    [CanBeNull]
     public AcfFile WorkshopFile { get; }
 
+    [NotNull]
     public string DisplayName {
       get {
         if (AcfFile != null) {
@@ -28,15 +31,15 @@ namespace SteamLibraryExplorer.SteamModel {
             return name;
           }
         }
-        if (Location != null) {
-          return Location.Name;
-        }
-        Debug.Assert(false);
-        return "n/a";
+        return Location.Name;
       }
     }
+
+    [NotNull]
     public PropertyValue<bool> CalculatingSizeOnDisk { get; } = new PropertyValue<bool>(false);
+    [NotNull]
     public PropertyValue<long> SizeOnDisk { get; } = new PropertyValue<long>();
+    [NotNull]
     public PropertyValue<long> FileCount { get; } = new PropertyValue<long>();
 
     /// <summary>
@@ -44,9 +47,10 @@ namespace SteamLibraryExplorer.SteamModel {
     /// The value is <code>null</code> if there is no workshop file.
     /// The directory may not exist (if there are no workshop files).
     /// </summary>
+    [CanBeNull]
     public FullPath WorkshopLocation {
       get {
-        if (Location == null || WorkshopFile == null || WorkshopFile.AppId == null) {
+        if (WorkshopFile == null || WorkshopFile.AppId == null || WorkshopFile.Path.Parent == null) {
           return null;
         }
 

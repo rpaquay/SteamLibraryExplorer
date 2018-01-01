@@ -87,8 +87,8 @@ namespace SteamLibraryExplorer {
           DisplayName = game.DisplayName,
           AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.Path.GetRelativePathTo(library.Location),
           AcfFileColor = game.AcfFile == null ? Brushes.Red : null,
-          Location = game.Location == null ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
-          LocationColor = game.Location == null ? Brushes.Red : null,
+          Location = !FileSystem.DirectoryExists(game.Location) ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
+          LocationColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null,
         };
 
         // Add existing libraries to list of "MoveToLibraries" destination
@@ -106,7 +106,7 @@ namespace SteamLibraryExplorer {
           });
         };
         gameViewModel.SizeOnDisk = game.SizeOnDisk.Value;
-        gameViewModel.SizeOnDiskColor = game.Location == null ? Brushes.Red : null;
+        gameViewModel.SizeOnDiskColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null;
 
         // Note: The order is important for concurrency correctness: we want to register to
         //       the "ValueChanged" event before we initialize the value of the ViewModel.
@@ -116,7 +116,7 @@ namespace SteamLibraryExplorer {
           });
         };
         gameViewModel.FileCount = game.FileCount.Value;
-        gameViewModel.FileCountColor = game.Location == null ? Brushes.Red : null;
+        gameViewModel.FileCountColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null;
 
         gameViewModel.CopyGameInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
 

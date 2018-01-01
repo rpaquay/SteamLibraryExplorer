@@ -28,14 +28,11 @@ namespace SteamLibraryExplorer.ViewModel {
 
     public int ListViewGroupHeaderSortIndex {
       get { return _listViewGroupHeaderSortIndex; }
-      set {
-        _listViewGroupHeaderSortIndex = value;
-        RaisePropertyChangedEvent(nameof(ListViewGroupHeaderSortIndex));
-      }
+      set { UpdateProperty(ref _listViewGroupHeaderSortIndex, value, nameof(ListViewGroupHeaderSortIndex)); }
     }
 
     public RelayExecuteCommand CopyGameCommand {
-      get { return _copyGameCommand ?? (_copyGameCommand = new RelayExecuteCommand(OnCopyGameInvoked));}
+      get { return _copyGameCommand ?? (_copyGameCommand = new RelayExecuteCommand(OnCopyGameInvoked)); }
     }
 
     public event EventHandler<string> CopyGameInvoked;
@@ -44,78 +41,51 @@ namespace SteamLibraryExplorer.ViewModel {
 
     public string DisplayName {
       get { return _displayName; }
-      set {
-        _displayName = value;
-        RaisePropertyChangedEvent(nameof(DisplayName));
-      }
+      set { UpdateProperty(ref _displayName, value, nameof(DisplayName)); }
     }
 
     public string Location {
       get { return _location; }
-      set {
-        _location = value;
-        RaisePropertyChangedEvent(nameof(Location));
-      }
+      set { UpdateProperty(ref _location, value, nameof(Location)); }
     }
 
     public Brush LocationColor {
       get { return _locationColor ?? Brushes.Black; }
-      set {
-        _locationColor = value;
-        RaisePropertyChangedEvent(nameof(LocationColor));
-      }
+      set { UpdateProperty(ref _locationColor, value, nameof(LocationColor)); }
     }
 
     public string AcfFile {
       get { return _acfFile; }
-      set {
-        _acfFile = value;
-        RaisePropertyChangedEvent(nameof(AcfFile));
-      }
+      set { UpdateProperty(ref _acfFile, value, nameof(AcfFile)); }
     }
 
     public Brush AcfFileColor {
       get { return _acfFileColor ?? Brushes.Black; }
-      set {
-        _acfFileColor = value;
-        RaisePropertyChangedEvent(nameof(AcfFileColor));
-      }
+      set { UpdateProperty(ref _acfFileColor, value, nameof(AcfFileColor)); }
     }
 
     public long SizeOnDisk {
       get { return _sizeOnDisk; }
-      set {
-        _sizeOnDisk = value;
-        RaisePropertyChangedEvent(nameof(SizeOnDisk));
-      }
+      set { UpdateProperty(ref _sizeOnDisk, value, nameof(SizeOnDisk)); }
     }
 
     public Brush SizeOnDiskColor {
       get { return _sizeOnDiskColor ?? Brushes.Black; }
-      set {
-        _sizeOnDiskColor = value;
-        RaisePropertyChangedEvent(nameof(SizeOnDiskColor));
-      }
+      set { UpdateProperty(ref _sizeOnDiskColor, value, nameof(SizeOnDiskColor)); }
     }
 
     public long FileCount {
       get { return _fileCount; }
-      set {
-        _fileCount = value;
-        RaisePropertyChangedEvent(nameof(FileCount));
-      }
+      set { UpdateProperty(ref _fileCount, value, nameof(FileCount)); }
     }
 
     public Brush FileCountColor {
       get { return _fileCountColor ?? Brushes.Black; }
-      set {
-        _fileCountColor = value;
-        RaisePropertyChangedEvent(nameof(FileCountColor));
-      }
+      set { UpdateProperty(ref _fileCountColor, value, nameof(FileCountColor)); }
     }
 
     protected virtual void OnCopyGameInvoked(object libraryPath) {
-      CopyGameInvoked?.Invoke(this, (string)libraryPath);
+      CopyGameInvoked?.Invoke(this, (string) libraryPath);
     }
   }
 }
