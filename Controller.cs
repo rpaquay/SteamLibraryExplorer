@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -21,6 +22,12 @@ namespace SteamLibraryExplorer {
       _mainView = mainView;
       _steamDiscovery = new SteamDiscovery();
       _steamGameMover = new SteamGameMover();
+      _steamGameMover.CopyingFile += (sender, args) => {
+        Trace.WriteLine($"Copying file \"{args.SourceFile.FullName}\" to \"{args.DestinationFile.FullName}\"");
+      };
+      _steamGameMover.DeletingFile += (sender, args) => {
+        Trace.WriteLine($"Deleting file \"{args.File.FullName}\"");
+      };
     }
 
     public void Run() {
@@ -58,25 +65,13 @@ namespace SteamLibraryExplorer {
 
         _currentGameMoveOperationView.Show();
 
-        var destinationDirectory = new DirectoryInfo(e.DestinationLibraryPath);
+        var destinationLibrary = new DirectoryInfo(e.DestinationLibraryPath);
 
-        var sourceAcfFile = e.Game.AcfFile.FileInfo;
-        var sourceLocation = e.Game.Location;
-
-        var destinationAcfFile = destinationDirectory.CombineDirectory("steamapps").CombineFile(sourceAcfFile.Name);
-        var destinationLocation = destinationDirectory.CombineDirectory("steamapps").CombineDirectory("common").CombineDirectory(e.Game.Location.Name);
-
-        var result = await _steamGameMover.MoveSteamGameAsync(
-          sourceAcfFile,
-          sourceLocation,
-          destinationAcfFile,
-          destinationLocation,
-          progress,
-          cancellationTokenSource.Token);
+        var result = await _steamGameMover.MoveSteamGameAsync(e.Game, destinationLibrary, progress, cancellationTokenSource.Token);
 
         if (result.Kind == SteamGameMover.MoveGameResultKind.Error) {
-          _mainView.ShowError(string.Format("Error moving steam game to \"{0}\":\r\n\r\n{1}", 
-            destinationLocation.FullName, result.Error.Message));
+          _mainView.ShowError(string.Format("Error moving steam game to library \"{0}\":\r\n\r\n{1}", 
+            destinationLibrary, result.Error.Message));
         } else if (result.Kind == SteamGameMover.MoveGameResultKind.Ok) {
           await _steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration);
         }

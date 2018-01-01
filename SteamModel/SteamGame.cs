@@ -4,14 +4,18 @@ using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class SteamGame {
-    public SteamGame(DirectoryInfo location, AcfFile acfFile) {
+    public SteamGame(DirectoryInfo location, AcfFile acfFile, AcfFile workshopFile) {
       Debug.Assert(location != null || acfFile != null);
+      Debug.Assert(acfFile == null || workshopFile == null || acfFile.AppId == workshopFile.AppId);
       Location = location;
       AcfFile = acfFile;
+      WorkshopFile = workshopFile;
     }
 
     public DirectoryInfo Location { get; }
     public AcfFile AcfFile { get; }
+    public AcfFile WorkshopFile { get; }
+
     public string DisplayName {
       get {
         if (AcfFile != null) {
@@ -35,5 +39,14 @@ namespace SteamLibraryExplorer.SteamModel {
     public PropertyValue<long> SizeOnDisk { get; } = new PropertyValue<long>();
     public PropertyValue<long> FileCount { get; } = new PropertyValue<long>();
 
+    public DirectoryInfo WorkshopLocation {
+      get {
+        if (Location == null || WorkshopFile == null || WorkshopFile.AppId == null) {
+          return null;
+        }
+
+        return WorkshopFile.FileInfo.Directory.CombineDirectory("content").CombineDirectory(WorkshopFile.AppId);
+      }
+    }
   }
 }

@@ -49,17 +49,20 @@ namespace SteamLibraryExplorer.SteamUtil {
     private static SteamLibrary LoadLibrary(DirectoryInfo steamLocation, bool isMainLibrary, CancellationToken cancellationToken) {
       var acfFiles = LoadAcfFiles(steamLocation).ToList();
       var gameDirs = LoadGameDirectories(steamLocation).ToList();
+      var workshopFiles = LoadWorkshopFiles(steamLocation).ToList();
 
       var gameSet = new HashSet<DirectoryInfo>(new DirectoryInfoComparer());
       gameSet.UnionWith(gameDirs);
       gameSet.UnionWith(acfFiles
         .Where(x => x.InstallDir != null)
-        .Select(x => new DirectoryInfo(Path.Combine(steamLocation.FullName, "steamapps", "common", Path.GetFileName(x.InstallDir)))));
+        .Select(x => steamLocation.CombineDirectory("steamapps").CombineDirectory("common").CombineDirectory(Path.GetFileName(x.InstallDir))));
 
-      var games = gameSet.Select(x => {
+      var games = gameSet.Select(gameDir => {
         var acfFile = acfFiles
-          .FirstOrDefault(acf => StringComparer.OrdinalIgnoreCase.Equals(acf.InstallDir, x.Name));
-        return new SteamGame(x.Exists ? x : null, acfFile);
+          .FirstOrDefault(acf => StringComparer.OrdinalIgnoreCase.Equals(acf.InstallDir, gameDir.Name));
+        var workshopFile = workshopFiles
+          .FirstOrDefault(wsFile => acfFile != null && StringComparer.OrdinalIgnoreCase.Equals(wsFile.AppId, acfFile.AppId));
+        return new SteamGame(gameDir.Exists ? gameDir : null, acfFile, workshopFile);
       });
 
       return new SteamLibrary(steamLocation, isMainLibrary, games);
@@ -86,13 +89,14 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private static void DiscoverGameSizeOnDisk(SteamGame game, CancellationToken cancellationToken) {
       DiscoverGameSizeOnDiskRecursive(game, game.Location, cancellationToken);
+      DiscoverGameSizeOnDiskRecursive(game, game.WorkshopLocation, cancellationToken);
     }
 
     private static void DiscoverGameSizeOnDiskRecursive(SteamGame game, DirectoryInfo location, CancellationToken cancellationToken) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
-      if (location == null) {
+      if (location == null || !location.Exists) {
         return;
       }
       var files = location.EnumerateFiles().ToList();
@@ -110,6 +114,12 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private static IEnumerable<AcfFile> LoadAcfFiles(DirectoryInfo steamLocation) {
       return steamLocation.GetDirectory("steamapps")
+        .EnumerateFiles("*.acf")
+        .Select(x => new AcfFile(x, File.ReadAllText(x.FullName)));
+    }
+
+    private static IEnumerable<AcfFile> LoadWorkshopFiles(DirectoryInfo steamLocation) {
+      return steamLocation.GetDirectory("steamapps").GetDirectory("workshop")
         .EnumerateFiles("*.acf")
         .Select(x => new AcfFile(x, File.ReadAllText(x.FullName)));
     }
