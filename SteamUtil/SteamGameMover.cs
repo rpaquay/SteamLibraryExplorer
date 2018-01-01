@@ -59,6 +59,17 @@ namespace SteamLibraryExplorer.SteamUtil {
         }
       }
 
+      try {
+        MoveSteamGameWorker(sourceAcfFile, sourceDirectory, destinationAcfFile, destinationDirectory, info, progress, cancellationToken);
+      }
+      catch (OperationCanceledException) {
+        RollbackPartialMove(destinationDirectory, info, progress, cancellationToken);
+      }
+    }
+
+    private void MoveSteamGameWorker(FileInfo sourceAcfFile, DirectoryInfo sourceDirectory, FileInfo destinationAcfFile,
+      DirectoryInfo destinationDirectory, MoveDirectoryInfo info, Action<MoveDirectoryInfo> progress, CancellationToken cancellationToken) {
+
       ReportProgess(MovePhase.DiscoveringSourceFiles, progress, info);
       DiscoverSourceDirectoryFiles(sourceDirectory, progress, info, cancellationToken);
       cancellationToken.ThrowIfCancellationRequested();
@@ -74,6 +85,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       // Copy ACF file
       CopySingleFile(sourceAcfFile, destinationAcfFile, progress, info, cancellationToken);
       cancellationToken.ThrowIfCancellationRequested();
+
+      // Delete source directory and source acf file
+      DeleteDirectoryRecurse(MovePhase.DeletingSourceDirectory, sourceDirectory, progress, info);
+      DeleteSingleFile(MovePhase.DeletingSourceDirectory, sourceAcfFile, progress, info);
+    }
+
+    private void RollbackPartialMove(DirectoryInfo destinationDirectory, MoveDirectoryInfo info, Action<MoveDirectoryInfo> progress, CancellationToken cancellationToken) {
+      DeleteDirectoryRecurse(MovePhase.DeletingDestinationAfterCancellation, destinationDirectory, progress, info);
     }
 
     private static void ReportProgess(MovePhase phase, Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info) {
@@ -110,8 +129,10 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private static void CopySingleFile(FileInfo sourceFile, FileInfo destinationFile, Action<MoveDirectoryInfo> progress,
       MoveDirectoryInfo info, CancellationToken cancellationToken) {
-      info.MovedFileCount++;
+
       info.CurrentFile = sourceFile;
+      ReportProgess(MovePhase.CopyingFiles, progress, info);
+
       var lastBytes = 0L;
       FileUtils.CopyFile(
         sourceFile.FullName,
@@ -129,6 +150,37 @@ namespace SteamLibraryExplorer.SteamUtil {
           ReportProgess(MovePhase.CopyingFiles, progress, info);
         },
         cancellationToken);
+
+      info.MovedFileCount++;
+    }
+
+    private void DeleteDirectoryRecurse(MovePhase phase, DirectoryInfo directory, Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info) {
+      info.CurrentDirectory = directory;
+      ReportProgess(phase, progress, info);
+
+      // Delete files
+      foreach (var sourceFile in directory.EnumerateFiles()) {
+        DeleteSingleFile(phase, sourceFile, progress, info);
+      }
+
+      // Delete sub-directories
+      foreach (var sourceChild in directory.EnumerateDirectories()) {
+        DeleteDirectoryRecurse(phase, sourceChild, progress, info);
+      }
+
+      // Delete directory
+      directory.Delete();
+
+      info.DeletedDirectoryCount++;
+    }
+
+    private static void DeleteSingleFile(MovePhase phase, FileInfo file, Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info) {
+      info.CurrentFile = file;
+      ReportProgess(phase, progress, info);
+
+      file.Delete();
+
+      info.DeletedFileCount++;
     }
 
     private void DiscoverSourceDirectoryFiles(DirectoryInfo sourceDirectory,
@@ -152,6 +204,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       DiscoveringSourceFiles,
       CopyingFiles,
       DeletingSourceDirectory,
+      DeletingDestinationAfterCancellation,
     }
 
     public class MoveDirectoryInfo {
@@ -178,6 +231,13 @@ namespace SteamLibraryExplorer.SteamUtil {
       public DateTime StartTime { get; set; }
       public DateTime CurrentTime { get; set; }
 
+      public long DeletedDirectoryCount { get; set; }
+      public long DeletedFileCount { get; set; }
+
+      public long RemainingFileToDeleteCount {
+        get { return MovedFileCount - DeletedFileCount; }
+      }
+
       public MoveDirectoryInfo Clone() {
         return new MoveDirectoryInfo {
           SourceDirectory = SourceDirectory,
@@ -195,6 +255,8 @@ namespace SteamLibraryExplorer.SteamUtil {
           TotalBytesOfCurrentFile = TotalBytesOfCurrentFile,
           StartTime = StartTime,
           CurrentTime = CurrentTime,
+          DeletedDirectoryCount = DeletedDirectoryCount,
+          DeletedFileCount = DeletedFileCount,
         };
       }
 
@@ -252,6 +314,5 @@ namespace SteamLibraryExplorer.SteamUtil {
       Error,
       Cancelled
     }
-
   }
 }

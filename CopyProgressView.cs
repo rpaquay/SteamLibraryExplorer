@@ -41,46 +41,69 @@ namespace SteamLibraryExplorer {
     }
 
     private void UpdateViewModel(SteamGameMover.MoveDirectoryInfo info) {
+      var copyVersusDeleteFraction = 0.9;
+      var deleteVersusCopyFraction = 1.0 - copyVersusDeleteFraction;
+
       switch (info.CurrentPhase) {
         case SteamGameMover.MovePhase.DiscoveringSourceFiles:
           _viewModel.MessageText = string.Format("Discovering files and directories: {0:n0} files", info.TotalFileCount);
           break;
+
         case SteamGameMover.MovePhase.CopyingFiles:
           _viewModel.MessageText = string.Format("Copying {0:n0} items from \"{1}\" to \"{2}\"",
             info.TotalFileCount, info.SourceDirectory.FullName, info.DestinationDirectory.FullName);
+          _viewModel.TotalProgressFraction = ProgressFraction(info.MovedBytes, info.TotalBytes)  * copyVersusDeleteFraction;
+          _viewModel.TotalProgressText = string.Format("{0} of {1}",
+            MainView.HumanReadableDiskSize(info.MovedBytes),
+            MainView.HumanReadableDiskSize(info.TotalBytes));
+          _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", _viewModel.TotalProgressFraction * 100);
+
+          _viewModel.SpeedText = ThroughputText(info.MovedBytes, info.ElapsedTime);
+          _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
+          _viewModel.RemainingTime = "About " + TimeSpanText(info.EstimatedRemainingTime);
+          _viewModel.ItemsRemainingText = string.Format("{0:n0} ({1:n0})",
+            info.RemainingFileCount, MainView.HumanReadableDiskSize(info.RemainingBytes));
+
+          _viewModel.CurrentFilePath = info.CurrentFile?.Name ?? "";
+          _viewModel.CurrentFileProgressFraction = ProgressFraction(info.MovedBytesOfCurrentFile, info.TotalBytesOfCurrentFile);
+          _viewModel.CurrentFileProgressText = string.Format("{0} of {1}",
+            MainView.HumanReadableDiskSize(info.MovedBytesOfCurrentFile),
+            MainView.HumanReadableDiskSize(info.TotalBytesOfCurrentFile));
           break;
+
         case SteamGameMover.MovePhase.DeletingSourceDirectory:
-          _viewModel.MessageText = "Copy successful, now deleting source directory";
+          _viewModel.MessageText = "Deleting source directory after successful copy";
+          _viewModel.TotalProgressFraction = copyVersusDeleteFraction + ProgressFraction(info.MovedFileCount, info.RemainingFileToDeleteCount) * deleteVersusCopyFraction;
+          _viewModel.TotalProgressText = "";
+          _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", _viewModel.TotalProgressFraction * 100);
+
+          _viewModel.SpeedText = "-";
+          _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
+          _viewModel.RemainingTime = "-";
+          _viewModel.ItemsRemainingText = string.Format("{0:n0}", info.RemainingFileToDeleteCount);
+
+          _viewModel.CurrentFilePath = info.CurrentFile?.Name ?? "";
+          _viewModel.CurrentFileProgressFraction = 1.0;
+          _viewModel.CurrentFileProgressText = "";
           break;
+
+        case SteamGameMover.MovePhase.DeletingDestinationAfterCancellation:
+          _viewModel.MessageText = "Cancelling operation, i.e. deleting files already copied to destination";
+          _viewModel.PercentCompleteText = "(Cancelling)";
+          _viewModel.TotalProgressFraction = ProgressFraction(info.MovedFileCount, info.RemainingFileToDeleteCount);
+          _viewModel.TotalProgressText = "";
+          _viewModel.SpeedText = "-";
+          _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
+          _viewModel.RemainingTime = "-";
+          _viewModel.ItemsRemainingText = string.Format("{0:n0}", info.RemainingFileToDeleteCount);
+          _viewModel.CurrentFilePath = info.CurrentFile?.Name ?? "";
+          _viewModel.CurrentFileProgressFraction = 1.0;
+          _viewModel.CurrentFileProgressText = "";
+          break;
+
         default:
           throw new ArgumentOutOfRangeException();
       }
-
-      _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", ProgressValue(info.MovedBytes, info.TotalBytes) * 100);
-
-      _viewModel.TotalProgressPercent = ProgressValue(info.MovedBytes, info.TotalBytes);
-      _viewModel.TotalProgressText = string.Format("{0} of {1}",
-        MainView.HumanReadableDiskSize(info.MovedBytes),
-        MainView.HumanReadableDiskSize(info.TotalBytes));
-
-      _viewModel.SpeedText = ThroughputText(info.MovedBytes, info.ElapsedTime);
-
-      _viewModel.SourcePath = info.SourceDirectory.FullName;
-      _viewModel.DestinationPath = info.DestinationDirectory.FullName;
-
-      _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
-      _viewModel.RemainingTime = "About " + TimeSpanText(info.EstimatedRemainingTime);
-      _viewModel.RemainingFileCount = string.Format("{0:n0}", info.RemainingFileCount);
-
-      _viewModel.ItemsRemainingText = string.Format("{0:n0} ({1:n0})",
-        info.RemainingFileCount, MainView.HumanReadableDiskSize(info.RemainingBytes));
-      _viewModel.CurrentFilePath = info.CurrentFile?.Name ?? "";
-
-      _viewModel.CurrentFileProgressPercent = ProgressValue(info.MovedBytesOfCurrentFile, info.TotalBytesOfCurrentFile);
-      _viewModel.CurrentFileProgressText = string.Format("{0} of {1}",
-        MainView.HumanReadableDiskSize(info.MovedBytesOfCurrentFile),
-        MainView.HumanReadableDiskSize(info.TotalBytesOfCurrentFile));
-
     }
 
     private string ThroughputText(long currentBytes, TimeSpan elapsedTime) {
@@ -108,7 +131,7 @@ namespace SteamLibraryExplorer {
       return formatted;
     }
 
-    public double ProgressValue(long current, long total) {
+    public double ProgressFraction(long current, long total) {
       if (total == 0) {
         return 0;
       }

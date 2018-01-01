@@ -128,8 +128,7 @@ namespace SteamLibraryExplorer.ViewModel {
     }
 
     public bool CanExecute(object parameter) {
-      //return parameter is SteamGameViewModel;
-      return true;
+      return parameter is T;
     }
 
     public void Execute(object parameter) {

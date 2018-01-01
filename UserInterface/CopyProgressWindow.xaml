@@ -26,7 +26,7 @@
 
       <Grid Margin="6,4,6,4">
         <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Height="30"
-                     Minimum="0" Maximum="1" Value="{Binding TotalProgressPercent}" />
+                     Minimum="0" Maximum="1" Value="{Binding TotalProgressFraction}" />
         <TextBlock Text="{Binding TotalProgressText}" VerticalAlignment="Center"
                    HorizontalAlignment="Center" />
       </Grid>
@@ -60,7 +60,7 @@
 
       <Grid Margin="6,2,6,6">
         <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Height="20"
-                     Minimum="0" Maximum="1" Value="{Binding CurrentFileProgressPercent}" />
+                     Minimum="0" Maximum="1" Value="{Binding CurrentFileProgressFraction}" />
         <TextBlock Text="{Binding CurrentFileProgressText}" VerticalAlignment="Center"
                    HorizontalAlignment="Center"/>
       </Grid>
