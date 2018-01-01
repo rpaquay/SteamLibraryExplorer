@@ -5,6 +5,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
+using JetBrains.Annotations;
+using NLog;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
@@ -12,6 +14,8 @@ using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer {
   public class MainView {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     private readonly MainWindow _mainForm;
     private readonly Model _model;
     private readonly MainPageViewModel _viewModel;
@@ -43,7 +47,98 @@ namespace SteamLibraryExplorer {
       _throttledDispatcher.Start(TimeSpan.FromMilliseconds(200));
     }
 
-    private void SteamLibraries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
+    public static string HumanReadableFileCount(long value) {
+      return string.Format("{0:n0}", value);
+    }
+
+    public static string HumanReadableDiskSize(long value) {
+      if (value <= 0) {
+        return "0 KB";
+      }
+      if (value <= 1024) {
+        return "1 KB";
+      }
+      if (value < 1024 * 1024) {
+        return string.Format("{0:n0} KB", value / 1024);
+      }
+      if (value < 1024 * 1024 * 1024) {
+        return string.Format("{0:n2} MB", (double)value / 1024 / 1024);
+      }
+      return string.Format("{0:n2} GB", (double)value / 1024 / 1024 / 1024);
+    }
+
+    public void ShowSteamLocation([CanBeNull]FullPath directoryInfo) {
+      //_mainForm.steamLocationTextBox.Text = directoryInfo.FullName;
+      if (directoryInfo == null) {
+        _viewModel.StatusText = "Steam location: <Not found>";
+        return;
+      }
+
+      _viewModel.StatusText = $"Steam location: {directoryInfo.FullName}";
+    }
+
+    public void ShowError([NotNull]string text) {
+      Logger.Warn("ShowError: {0}", text);
+      MessageBox.Show(_mainForm, text, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+    }
+
+    public void ShowInfo([NotNull]string text) {
+      Logger.Warn("ShowInfo: {0}", text);
+      MessageBox.Show(_mainForm, text, "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    [NotNull]
+    public CopyProgressWindow CreateCopyPropgressWindow() {
+      return new CopyProgressWindow() { Owner = _mainForm };
+    }
+
+    public void StartProgress() {
+      if (_progressCount == 0) {
+        _viewModel.IsDiscoveringSteamFiles = true;
+      }
+      _progressCount++;
+    }
+
+    public void StopProgress() {
+      _progressCount--;
+      if (_progressCount == 0) {
+        _viewModel.IsDiscoveringSteamFiles = false;
+        // We need to refresh so that sorting of column is up-to-date
+        _throttledDispatcher.Enqeue(nameof(RefreshListView), RefreshListView);
+      }
+    }
+
+    private void ClearGameLibraries() {
+      _viewModel.SteamGames.Clear();
+      _gameLibraryCount = 0;
+    }
+
+    private void RefreshGameLibraryGroups([NotNull]SteamLibrary library, [NotNull]List<SteamGameViewModel> gamesViewModel) {
+      foreach (var game in gamesViewModel) {
+        game.ListViewGroupHeader = GetGroupHeaderText(library);
+      }
+
+      RefreshListView();
+    }
+
+    private void RefreshListView() {
+      // The group collection does not listen to propery change events, so we need
+      // to explicitly refresh it.
+      var view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
+      view.Refresh();
+    }
+
+    private static string GetGroupHeaderText([NotNull]SteamLibrary library) {
+      if (library.TotalDiskSize.Value > 0 && library.FreeDiskSize.Value > 0) {
+        return string.Format("{0} - {1} of {2} available",
+          library.DisplayName,
+          HumanReadableDiskSize(library.FreeDiskSize.Value),
+          HumanReadableDiskSize(library.TotalDiskSize.Value));
+      }
+      return library.DisplayName;
+    }
+
+    private void SteamLibraries_CollectionChanged([NotNull]object sender, [NotNull]NotifyCollectionChangedEventArgs e) {
       switch (e.Action) {
         case NotifyCollectionChangedAction.Add:
           AddGameLibrary((SteamLibrary)e.NewItems[0]);
@@ -56,7 +151,7 @@ namespace SteamLibraryExplorer {
       }
     }
 
-    private void AddGameLibrary(SteamLibrary library) {
+    private void AddGameLibrary([NotNull]SteamLibrary library) {
       // Add "Move To" entry to existing games
       foreach (var gameViewModel in _viewModel.SteamGames) {
         gameViewModel.MoveToLibraries.Add(library.Location.FullName);
@@ -124,104 +219,16 @@ namespace SteamLibraryExplorer {
       }
     }
 
-    private void RefreshGameLibraryGroups(SteamLibrary library, List<SteamGameViewModel> gamesViewModel) {
-      foreach (var game in gamesViewModel) {
-        game.ListViewGroupHeader = GetGroupHeaderText(library);
-      }
-
-      RefreshListView();
-    }
-
-    private void RefreshListView() {
-      // The group collection does not listen to propery change events, so we need
-      // to explicitly refresh it.
-      var view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
-      view.Refresh();
-    }
-
-    private static string GetGroupHeaderText(SteamLibrary library) {
-      if (library.TotalDiskSize.Value > 0 && library.FreeDiskSize.Value > 0) {
-        return string.Format("{0} - {1} of {2} available",
-          library.DisplayName,
-          HumanReadableDiskSize(library.FreeDiskSize.Value),
-          HumanReadableDiskSize(library.TotalDiskSize.Value));
-      }
-      return library.DisplayName;
-    }
-
-    public static string HumanReadableFileCount(long value) {
-      return string.Format("{0:n0}", value);
-    }
-
-    public static string HumanReadableDiskSize(long value) {
-      if (value <= 0) {
-        return "0 KB";
-      }
-      if (value <= 1024) {
-        return "1 KB";
-      }
-      if (value < 1024 * 1024) {
-        return string.Format("{0:n0} KB", value / 1024);
-      }
-      if (value < 1024 * 1024 * 1024) {
-        return string.Format("{0:n2} MB", (double)value / 1024 / 1024);
-      }
-      return string.Format("{0:n2} GB", (double)value / 1024 / 1024 / 1024);
-    }
-
-    private void ClearGameLibraries() {
-      _viewModel.SteamGames.Clear();
-      _gameLibraryCount = 0;
-    }
-
-    public void ShowSteamLocation(FullPath directoryInfo) {
-      //_mainForm.steamLocationTextBox.Text = directoryInfo.FullName;
-      if (directoryInfo == null) {
-        _viewModel.StatusText = "Steam location: <Not found>";
-        return;
-      }
-
-      _viewModel.StatusText = string.Format("Steam location: {0}", directoryInfo.FullName);
-    }
-
     protected virtual void OnRefreshView() {
       RefreshView?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void ShowError(string text) {
-      MessageBox.Show(_mainForm, text, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-    }
-
-    public void ShowInfo(string text) {
-      MessageBox.Show(_mainForm, text, "Information", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     protected virtual void OnCloseView() {
       CloseView?.Invoke(this, EventArgs.Empty);
     }
 
-    public void StartProgress() {
-      if (_progressCount == 0) {
-        _viewModel.IsDiscoveringSteamFiles = true;
-      }
-      _progressCount++;
-    }
-
-    public void StopProgress() {
-      _progressCount--;
-      if (_progressCount == 0) {
-        _viewModel.IsDiscoveringSteamFiles = false;
-        // We need to refresh so that sorting of column is up-to-date
-        _throttledDispatcher.Enqeue(nameof(RefreshListView), RefreshListView);
-      }
-    }
-
-    protected virtual void OnCopyGameInvoked(MoveGameEventArgs e) {
+    protected virtual void OnCopyGameInvoked([NotNull]MoveGameEventArgs e) {
       CopyGameInvoked?.Invoke(this, e);
-    }
-
-    public CopyProgressWindow CreateCopyPropgressWindow() {
-      return new CopyProgressWindow() { Owner = _mainForm };
     }
   }
 }

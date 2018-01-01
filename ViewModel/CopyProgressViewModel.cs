@@ -50,7 +50,7 @@ namespace SteamLibraryExplorer.ViewModel {
     }
 
     public string PercentCompleteText {
-      get { return _percentCompleteText; }
+      get { return _percentCompleteText ?? ""; }
       set { UpdateProperty(ref _percentCompleteText, value, nameof(PercentCompleteText)); }
     }
 

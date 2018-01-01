@@ -2,17 +2,21 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
+using NLog;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.SteamUtil;
-using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer {
   class Controller {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     private readonly Model _model;
     private readonly MainView _mainView;
     private readonly SteamDiscovery _steamDiscovery;
     private readonly SteamGameMover _steamGameMover;
+    private readonly DispatcherTimer _lookForSteamTimer;
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     private CopyProgressView _currentGameMoveOperationView;
 
@@ -22,25 +26,38 @@ namespace SteamLibraryExplorer {
       _steamDiscovery = new SteamDiscovery();
       _steamGameMover = new SteamGameMover();
       _steamGameMover.CopyingFile += (sender, args) => {
-        Trace.WriteLine($"Copying file \"{args.SourcePath.FullName}\" to \"{args.DestinationPath.FullName}\"");
+        Logger.Info("Copying file \"{0}\" to \"{1}\"", args.SourcePath.FullName, args.DestinationPath.FullName);
       };
       _steamGameMover.DeletingFile += (sender, args) => {
-        Trace.WriteLine($"Deleting file \"{args.Path.FullName}\"");
+        Logger.Info("Deleting file \"{0}\"", args.Path.FullName);
       };
       _steamGameMover.CreatingDirectory += (sender, args) => {
-        Trace.WriteLine($"Creating directory \"{args.Path.FullName}\"");
+        Logger.Info("Creating directory \"{0}\"", args.Path.FullName);
       };
       _steamGameMover.DeletingDirectory += (sender, args) => {
-        Trace.WriteLine($"Deleting directory \"{args.Path.FullName}\"");
+        Logger.Info("Deleting directory \"{0}\"", args.Path.FullName);
       };
+      _lookForSteamTimer = new DispatcherTimer();
     }
 
     public void Run() {
+      _lookForSteamTimer.Interval = TimeSpan.FromSeconds(2);
+      _lookForSteamTimer.Tick += LookForSteamTimerOnTick;
+      _lookForSteamTimer.Start();
       _mainView.RefreshView += (sender, args) => FetchSteamConfigurationAsync();
       _mainView.CloseView += (sender, args) => Application.Current.Shutdown();
       _mainView.CopyGameInvoked += (sender, game) => MoveGameToOtherLibrary(game);
       _mainView.Run();
       FetchSteamConfigurationAsync();
+    }
+
+    private async void LookForSteamTimerOnTick(object o, EventArgs eventArgs) {
+      if (_model.SteamConfiguration.Location.Value == null) {
+        var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
+        if (steamLocation != null) {
+          FetchSteamConfigurationAsync();
+        }
+      }
     }
 
     private async void MoveGameToOtherLibrary(MoveGameEventArgs e) {
@@ -122,6 +139,7 @@ namespace SteamLibraryExplorer {
 
         // Store location for re-use
         if (steamLocation != null) {
+          Logger.Info("Found Steam installation directory: {0}", steamLocation.FullName);
           _model.SteamConfiguration.Location.Value = steamLocation;
         }
 

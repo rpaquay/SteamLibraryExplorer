@@ -8,11 +8,14 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using NLog;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamDiscovery {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     [NotNull]
     public Task<FullPath> LocateSteamFolderAsync() {
       return RunAsync(LocateSteamUsingProcess);
@@ -59,19 +62,21 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [NotNull]
-    private static SteamLibrary LoadLibrary([NotNull] FullPath steamLocation, bool isMainLibrary,
+    private static SteamLibrary LoadLibrary([NotNull] FullPath libraryRootPath, bool isMainLibrary,
       CancellationToken cancellationToken) {
       cancellationToken.ThrowIfCancellationRequested();
 
-      var acfFiles = LoadAcfFiles(steamLocation).ToList();
-      var gameDirs = LoadGameDirectories(steamLocation).ToList();
-      var workshopFiles = LoadWorkshopFiles(steamLocation).ToList();
+      Logger.Info("Loading game definitions from Steam library at \"{0}\"", libraryRootPath.FullName);
+
+      var acfFiles = LoadAcfFiles(libraryRootPath).ToList();
+      var gameDirs = LoadGameDirectories(libraryRootPath).ToList();
+      var workshopFiles = LoadWorkshopFiles(libraryRootPath).ToList();
 
       var gameSet = new HashSet<FullPath>();
       gameSet.UnionWith(gameDirs);
       gameSet.UnionWith(acfFiles
         .Where(x => x.InstallDir != null)
-        .Select(x => steamLocation.Combine("steamapps").Combine("common").Combine(Path.GetFileName(x.InstallDir))));
+        .Select(x => libraryRootPath.Combine("steamapps").Combine("common").Combine(Path.GetFileName(x.InstallDir))));
 
       var games = gameSet.Select(gameDir => {
         var acfFile = acfFiles
@@ -79,10 +84,13 @@ namespace SteamLibraryExplorer.SteamUtil {
         var workshopFile = workshopFiles
           .FirstOrDefault(wsFile => acfFile != null &&
                                     StringComparer.OrdinalIgnoreCase.Equals(wsFile.AppId, acfFile.AppId));
+        Logger.Info("Found game: Directory=\"{0}\", ACF file=\"{1}\", Workshop file=\"{2}\"", 
+          gameDir.FullName, acfFile?.Path.FullName ?? "<None>", workshopFile?.Path.FullName ?? "<None>");
         return new SteamGame(gameDir, acfFile, workshopFile);
-      });
+      }).ToList();
 
-      return new SteamLibrary(steamLocation, isMainLibrary, games);
+      Logger.Info("Done loading game definitions from Steam library at \"{0}\"", libraryRootPath.FullName);
+      return new SteamLibrary(libraryRootPath, isMainLibrary, games);
     }
 
     private void DiscoverSizeOnDisk([NotNull] IEnumerable<SteamLibrary> libraries,
