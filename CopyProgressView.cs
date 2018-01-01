@@ -34,22 +34,22 @@ namespace SteamLibraryExplorer {
       Cancel?.Invoke(this, EventArgs.Empty);
     }
 
-    public void ReportProgress(SteamMove.MoveDirectoryInfo info) {
+    public void ReportProgress(SteamGameMover.MoveDirectoryInfo info) {
       _throttledDispatcher.Enqeue(nameof(ReportProgress), () => {
         UpdateViewModel(info);
       });
     }
 
-    private void UpdateViewModel(SteamMove.MoveDirectoryInfo info) {
+    private void UpdateViewModel(SteamGameMover.MoveDirectoryInfo info) {
       switch (info.CurrentPhase) {
-        case SteamMove.MovePhase.DiscoveringSourceFiles:
+        case SteamGameMover.MovePhase.DiscoveringSourceFiles:
           _viewModel.MessageText = string.Format("Discovering files and directories: {0:n0} files", info.TotalFileCount);
           break;
-        case SteamMove.MovePhase.CopyingFiles:
+        case SteamGameMover.MovePhase.CopyingFiles:
           _viewModel.MessageText = string.Format("Copying {0:n0} items from \"{1}\" to \"{2}\"",
             info.TotalFileCount, info.SourceDirectory.FullName, info.DestinationDirectory.FullName);
           break;
-        case SteamMove.MovePhase.DeletingSourceDirectory:
+        case SteamGameMover.MovePhase.DeletingSourceDirectory:
           _viewModel.MessageText = "Copy successful, now deleting source directory";
           break;
         default:

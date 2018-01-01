@@ -12,7 +12,7 @@ namespace SteamLibraryExplorer {
     private readonly Model _model;
     private readonly MainView _mainView;
     private readonly SteamDiscovery _steamDiscovery;
-    private readonly SteamMove _steamMove;
+    private readonly SteamGameMover _steamGameMover;
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     private CopyProgressView _currentGameMoveOperationView;
 
@@ -20,7 +20,7 @@ namespace SteamLibraryExplorer {
       _model = model;
       _mainView = mainView;
       _steamDiscovery = new SteamDiscovery();
-      _steamMove = new SteamMove();
+      _steamGameMover = new SteamGameMover();
     }
 
     public void Run() {
@@ -52,7 +52,7 @@ namespace SteamLibraryExplorer {
       _currentGameMoveOperationView = new CopyProgressView(new CopyProgressWindow());
       try {
         _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
-        Action<SteamMove.MoveDirectoryInfo> progress = info => {
+        Action<SteamGameMover.MoveDirectoryInfo> progress = info => {
           _currentGameMoveOperationView.ReportProgress(info);
         };
 
@@ -66,7 +66,7 @@ namespace SteamLibraryExplorer {
         var destinationAcfFile = destinationDirectory.CombineDirectory("steamapps").CombineFile(sourceAcfFile.Name);
         var destinationLocation = destinationDirectory.CombineDirectory("steamapps").CombineDirectory("common").CombineDirectory(e.Game.Location.Name);
 
-        var result = await _steamMove.MoveSteamGameAsync(
+        var result = await _steamGameMover.MoveSteamGameAsync(
           sourceAcfFile,
           sourceLocation,
           destinationAcfFile,
@@ -74,7 +74,7 @@ namespace SteamLibraryExplorer {
           progress,
           cancellationTokenSource.Token);
 
-        if (result.Kind == SteamMove.MoveGameResultKind.Error) {
+        if (result.Kind == SteamGameMover.MoveGameResultKind.Error) {
           _mainView.ShowError(string.Format("Error moving steam game to \"{0}\":\r\n\r\n{1}", 
             destinationLocation.FullName, result.Error.Message));
         }

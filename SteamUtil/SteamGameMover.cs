@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
-  public class SteamMove {
+  public class SteamGameMover {
+    /// <summary>
+    /// Move a steam game from one library to another.
+    /// </summary>
     public Task<MoveGameResult> MoveSteamGameAsync(
       FileInfo sourceAcfFile, DirectoryInfo sourceDirectory,
       FileInfo destinationAcfFile, DirectoryInfo destinationDirectory,
