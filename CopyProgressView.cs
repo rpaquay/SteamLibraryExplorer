@@ -41,6 +41,7 @@ namespace SteamLibraryExplorer {
     }
 
     private void UpdateViewModel(SteamGameMover.MoveDirectoryInfo info) {
+      // We assume copy takes 90% of the time, and delete source takes 10% of the time
       var copyVersusDeleteFraction = 0.9;
       var deleteVersusCopyFraction = 1.0 - copyVersusDeleteFraction;
 
@@ -73,7 +74,7 @@ namespace SteamLibraryExplorer {
 
         case SteamGameMover.MovePhase.DeletingSourceDirectory:
           _viewModel.MessageText = "Deleting source directory after successful copy";
-          _viewModel.TotalProgressFraction = copyVersusDeleteFraction + ProgressFraction(info.MovedFileCount, info.RemainingFileToDeleteCount) * deleteVersusCopyFraction;
+          _viewModel.TotalProgressFraction = copyVersusDeleteFraction + ProgressFraction(info.DeletedFileCount, info.MovedFileCount) * deleteVersusCopyFraction;
           _viewModel.TotalProgressText = "";
           _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", _viewModel.TotalProgressFraction * 100);
 
