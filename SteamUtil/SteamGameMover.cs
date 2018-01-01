@@ -52,12 +52,14 @@ namespace SteamLibraryExplorer.SteamUtil {
           throw new ArgumentException($"Workshop ACF file \"{game.WorkshopFile.FileInfo.FullName}\" does not exist");
         }
       }
-      if (game.WorkshopLocation != null) {
-        game.WorkshopLocation.Refresh();
-        if (!game.WorkshopLocation.Exists) {
-          throw new ArgumentException($"Workshop source directory \"{game.WorkshopLocation.FullName}\" does not exist");
-        }
-      }
+
+      // Note: The workshop diractory may not exist if there are no workshop files stored for the game
+      //if (game.WorkshopLocation != null) {
+      //  game.WorkshopLocation.Refresh();
+      //  if (!game.WorkshopLocation.Exists) {
+      //    throw new ArgumentException($"Workshop source directory \"{game.WorkshopLocation.FullName}\" does not exist");
+      //  }
+      //}
 
       var destinationAcfFile = destinationLibraryLocation.CombineDirectory("steamapps")
         .CombineFile(game.AcfFile.FileInfo.Name);
@@ -176,7 +178,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     private void CopyDirectoryRecurse(DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory,
       Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info, CancellationToken cancellationToken) {
 
-      if (sourceDirectory == null) {
+      if (sourceDirectory == null || !sourceDirectory.Exists) {
         return;
       }
       cancellationToken.ThrowIfCancellationRequested();
@@ -234,7 +236,7 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private void DeleteDirectoryRecurse(MovePhase phase, DirectoryInfo directory, Action<MoveDirectoryInfo> progress,
       MoveDirectoryInfo info) {
-      if (directory == null) {
+      if (directory == null || !directory.Exists) {
         return;
       }
 
@@ -275,7 +277,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     private void DiscoverSourceDirectoryFiles(DirectoryInfo sourceDirectory,
       Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info, CancellationToken cancellationToken) {
       cancellationToken.ThrowIfCancellationRequested();
-      if (sourceDirectory == null) {
+      if (sourceDirectory == null || !sourceDirectory.Exists) {
         return;
       }
 
@@ -324,18 +326,17 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     private class DestinationInfo {
-      public DestinationInfo(FileInfo acfFile, DirectoryInfo gameDirectory, FileInfo workshopFile,
-        DirectoryInfo workshopDirectory) {
+      public DestinationInfo(FileInfo acfFile, DirectoryInfo gameDirectory, FileInfo workshopFile, DirectoryInfo workshopDirectory) {
         AcfFile = acfFile;
         GameDirectory = gameDirectory;
         WorkshopFile = workshopFile;
         WorkshopDirectory = workshopDirectory;
       }
 
-      public FileInfo AcfFile { get; private set; }
-      public DirectoryInfo GameDirectory { get; private set; }
-      public FileInfo WorkshopFile { get; private set; }
-      public DirectoryInfo WorkshopDirectory { get; private set; }
+      public FileInfo AcfFile { get; }
+      public DirectoryInfo GameDirectory { get; }
+      public FileInfo WorkshopFile { get; }
+      public DirectoryInfo WorkshopDirectory { get; }
     }
   }
 }

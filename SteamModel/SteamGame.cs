@@ -39,6 +39,11 @@ namespace SteamLibraryExplorer.SteamModel {
     public PropertyValue<long> SizeOnDisk { get; } = new PropertyValue<long>();
     public PropertyValue<long> FileCount { get; } = new PropertyValue<long>();
 
+    /// <summary>
+    /// The directory where the workshop files are located.
+    /// The value is <code>null</code> if there is no workshop file.
+    /// The directory may not exist (if there are no workshop files).
+    /// </summary>
     public DirectoryInfo WorkshopLocation {
       get {
         if (Location == null || WorkshopFile == null || WorkshopFile.AppId == null) {

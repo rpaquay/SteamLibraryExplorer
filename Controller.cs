@@ -6,7 +6,6 @@ using System.Windows;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
-using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer {
   class Controller {
