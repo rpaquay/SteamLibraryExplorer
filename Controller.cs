@@ -77,6 +77,8 @@ namespace SteamLibraryExplorer {
         if (result.Kind == SteamGameMover.MoveGameResultKind.Error) {
           _mainView.ShowError(string.Format("Error moving steam game to \"{0}\":\r\n\r\n{1}", 
             destinationLocation.FullName, result.Error.Message));
+        } else if (result.Kind == SteamGameMover.MoveGameResultKind.Ok) {
+          await _steamDiscovery.DeleteAppCacheAsync(_model.SteamConfiguration);
         }
       }
       finally {
