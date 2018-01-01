@@ -61,7 +61,7 @@ namespace SteamLibraryExplorer {
       }
 
       var cancellationTokenSource = new CancellationTokenSource();
-      _currentGameMoveOperationView = new CopyProgressView(new CopyProgressWindow());
+      _currentGameMoveOperationView = new CopyProgressView(_mainView.CreateCopyPropgressWindow());
       try {
         _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
         Action<MoveDirectoryInfo> progress = info => {
@@ -81,6 +81,10 @@ namespace SteamLibraryExplorer {
             $"{result.Error.Message}");
         } else if (result.Kind == MoveGameResultKind.Ok) {
           await _steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration);
+
+          _mainView.ShowInfo(
+            $"\"{e.Game.DisplayName}\" has successfully been moved to the library located at \"{e.DestinationLibraryPath}\".\r\n\r\n" +
+            "Please restart the Steam application to make sure the new game location is taken into account.");
         }
       }
       finally {

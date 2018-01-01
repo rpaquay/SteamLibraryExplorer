@@ -193,6 +193,10 @@ namespace SteamLibraryExplorer {
       MessageBox.Show(_mainForm, text, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
     }
 
+    public void ShowInfo(string text) {
+      MessageBox.Show(_mainForm, text, "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
     protected virtual void OnCloseView() {
       CloseView?.Invoke(this, EventArgs.Empty);
     }
@@ -215,6 +219,10 @@ namespace SteamLibraryExplorer {
 
     protected virtual void OnCopyGameInvoked(MoveGameEventArgs e) {
       CopyGameInvoked?.Invoke(this, e);
+    }
+
+    public CopyProgressWindow CreateCopyPropgressWindow() {
+      return new CopyProgressWindow() { Owner = _mainForm };
     }
   }
 }

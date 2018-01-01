@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
         Icon="../Resources/MainIcon.ico"
+        WindowStartupLocation="CenterOwner"
         Title="{Binding PercentCompleteText}" Height="400" Width="600">
   <Window.DataContext>
     <viewModel:CopyProgressViewModel/>
