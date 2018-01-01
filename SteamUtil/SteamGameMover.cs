@@ -39,15 +39,15 @@ namespace SteamLibraryExplorer.SteamUtil {
       SteamGame game, FullPath destinationLibraryLocation,
       Action<MoveDirectoryInfo> progress, CancellationToken cancellationToken) {
 
-      if (!game.AcfFile.Path.FileExists) {
+      if (!FileSystem.FileExists(game.AcfFile.Path)) {
         throw new ArgumentException($"ACF file \"{game.AcfFile.Path.FullName}\" does not exist");
       }
-      if (!game.Location.DirectoryExists) {
+      if (!FileSystem.DirectoryExists(game.Location)) {
         throw new ArgumentException($"Source directory \"{game.Location.FullName}\" does not exist");
       }
 
       if (game.WorkshopFile != null) {
-        if (!game.WorkshopFile.Path.FileExists) {
+        if (!FileSystem.FileExists(game.WorkshopFile.Path)) {
           throw new ArgumentException($"Workshop ACF file \"{game.WorkshopFile.Path.FullName}\" does not exist");
         }
       }
@@ -61,13 +61,13 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       var destinationAcfFile = destinationLibraryLocation.CombineDirectory("steamapps")
         .CombineFile(game.AcfFile.Path.Name);
-      if (destinationAcfFile.FileExists) {
+      if (FileSystem.FileExists(destinationAcfFile)) {
         throw new ArgumentException($"Game ACF file \"{destinationAcfFile.FullName}\" already exist");
       }
 
       var destinationGameLocation = destinationLibraryLocation.CombineDirectory("steamapps").CombineDirectory("common")
         .CombineDirectory(game.Location.Name);
-      if (destinationGameLocation.DirectoryExists) {
+      if (FileSystem.DirectoryExists(destinationGameLocation)) {
         if (destinationGameLocation.EnumerateFileSystemInfos().Any()) {
           throw new ArgumentException(
             $"Destination directory \"{destinationGameLocation}\" already exists and is not empty");
@@ -78,7 +78,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (game.WorkshopFile != null) {
         destinationWorkshopFile = destinationLibraryLocation.CombineDirectory("steamapps").CombineDirectory("workshop")
           .CombineFile(game.WorkshopFile.Path.Name);
-        if (destinationWorkshopFile.FileExists) {
+        if (FileSystem.FileExists(destinationWorkshopFile)) {
           throw new ArgumentException($"Workshop ACF file \"{destinationWorkshopFile.FullName}\" already exist");
         }
       }
@@ -88,7 +88,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         destinatioWorkshopLocation = destinationLibraryLocation.CombineDirectory("steamapps")
           .CombineDirectory("workshop")
           .CombineDirectory("content").CombineDirectory(game.WorkshopFile.AppId);
-        if (destinatioWorkshopLocation.DirectoryExists) {
+        if (FileSystem.DirectoryExists(destinatioWorkshopLocation)) {
           if (destinatioWorkshopLocation.EnumerateFileSystemInfos().Any()) {
             throw new ArgumentException(
               $"Destination directory \"{destinatioWorkshopLocation}\" already exists and is not empty");
@@ -176,7 +176,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     private void CopyDirectoryRecurse(FullPath sourceDirectory, FullPath destinationDirectory,
       Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info, CancellationToken cancellationToken) {
 
-      if (sourceDirectory == null || !sourceDirectory.DirectoryExists) {
+      if (sourceDirectory == null || !FileSystem.DirectoryExists(sourceDirectory)) {
         return;
       }
       cancellationToken.ThrowIfCancellationRequested();
@@ -185,9 +185,9 @@ namespace SteamLibraryExplorer.SteamUtil {
       ReportProgess(MovePhase.CopyingFiles, progress, info);
 
       // Create destination directory
-      if (!destinationDirectory.DirectoryExists) {
+      if (!FileSystem.DirectoryExists(destinationDirectory)) {
         OnCreatingDirectory(new PathEventArgs(destinationDirectory));
-        destinationDirectory.CreateDirectory();
+        FileSystem.CreateDirectory(destinationDirectory);
       }
 
       // Copy files
@@ -235,7 +235,7 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private void DeleteDirectoryRecurse(MovePhase phase, FullPath directory, Action<MoveDirectoryInfo> progress,
       MoveDirectoryInfo info) {
-      if (directory == null || !directory.DirectoryExists) {
+      if (directory == null || !FileSystem.DirectoryExists(directory)) {
         return;
       }
 
@@ -254,7 +254,7 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Delete directory
       OnDeletingDirectory(new PathEventArgs(directory));
-      directory.DeleteDirectory();
+      FileSystem.DeleteDirectory(directory);
 
       info.DeletedDirectoryCount++;
     }
@@ -269,7 +269,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       info.CurrentFile = file;
       ReportProgess(phase, progress, info);
 
-      file.DeleteFile();
+      FileSystem.DeleteFile(file);
 
       info.DeletedFileCount++;
     }
@@ -277,7 +277,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     private void DiscoverSourceDirectoryFiles(FullPath sourceDirectory,
       Action<MoveDirectoryInfo> progress, MoveDirectoryInfo info, CancellationToken cancellationToken) {
       cancellationToken.ThrowIfCancellationRequested();
-      if (sourceDirectory == null || !sourceDirectory.DirectoryExists) {
+      if (sourceDirectory == null || !FileSystem.DirectoryExists(sourceDirectory)) {
         return;
       }
 
@@ -300,7 +300,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         throw new ArgumentException("Steam location is not known, cannot delete appcache file");
       }
       var file = configuration.Location.Value.CombineDirectory("appcache").CombineFile("appinfo.vdf");
-      file.DeleteFile();
+      FileSystem.DeleteFile(file);
     }
 
     private static Task<T> RunAsync<T>(Func<T> func) {

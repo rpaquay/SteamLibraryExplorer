@@ -62,7 +62,7 @@ namespace SteamLibraryExplorer.SteamUtil {
           .FirstOrDefault(acf => StringComparer.OrdinalIgnoreCase.Equals(acf.InstallDir, gameDir.Name));
         var workshopFile = workshopFiles
           .FirstOrDefault(wsFile => acfFile != null && StringComparer.OrdinalIgnoreCase.Equals(wsFile.AppId, acfFile.AppId));
-        return new SteamGame(gameDir.DirectoryExists ? gameDir : null, acfFile, workshopFile);
+        return new SteamGame(FileSystem.DirectoryExists(gameDir) ? gameDir : null, acfFile, workshopFile);
       });
 
       return new SteamLibrary(steamLocation, isMainLibrary, games);
@@ -96,7 +96,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
-      if (directoryPath == null || !directoryPath.DirectoryExists) {
+      if (directoryPath == null || !FileSystem.DirectoryExists(directoryPath)) {
         return;
       }
       var files = directoryPath.EnumerateFiles().ToList();
@@ -139,12 +139,12 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     private FullPath GetSteamProcessFolder(Process process) {
       var processPath = new FullPath(process.MainModule.FileName);
-      if (!processPath.FileExists) {
+      if (!FileSystem.FileExists(processPath)) {
         return null;
       }
 
       var dir = processPath.Parent;
-      if (dir == null || !dir.DirectoryExists) {
+      if (dir == null || !FileSystem.DirectoryExists(dir)) {
         return null;
       }
 

@@ -18,20 +18,5 @@ namespace SteamLibraryExplorer.Utils {
         return parentDir == null ? null : new FullPath(parentDir);
       }
     }
-
-    public bool DirectoryExists => FileSystem.DirectoryExists(this);
-    public bool FileExists => FileSystem.FileExists(this);
-
-    public void CreateDirectory() {
-      FileSystem.CreateDirectory(this);
-    }
-
-    public void DeleteDirectory() {
-      FileSystem.DeleteDirectory(this);
-    }
-
-    public void DeleteFile() {
-      FileSystem.DeleteFile(this);
-    }
   }
 }
