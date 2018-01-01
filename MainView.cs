@@ -43,6 +43,7 @@ namespace SteamLibraryExplorer {
 
       _throttledDispatcher.Start(TimeSpan.FromMilliseconds(200));
     }
+
     private void SteamLibraries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
       switch (e.Action) {
         case NotifyCollectionChangedAction.Add:
@@ -58,8 +59,8 @@ namespace SteamLibraryExplorer {
 
     private void AddGameLibrary(SteamLibrary library) {
       // Add "Move To" entry to existing games
-      foreach (var game in _viewModel.SteamGames) {
-        game.MoveToLibraries.Add(library.Location.FullName);
+      foreach (var gameViewModel in _viewModel.SteamGames) {
+        gameViewModel.MoveToLibraries.Add(library.Location.FullName);
       }
 
       // Add games of new library
@@ -89,6 +90,13 @@ namespace SteamLibraryExplorer {
           Location = game.Location == null ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
           LocationColor = game.Location == null ? Brushes.Red : null,
         };
+
+        // Add existing libraries to list of "MoveToLibraries" destination
+        foreach (var otherLibrary in _model.SteamConfiguration.SteamLibraries) {
+          if (!Object.Equals(library, otherLibrary)) {
+            gameViewModel.MoveToLibraries.Add(otherLibrary.Location.FullName);
+          }
+        }
 
         // Note: The order is important for concurrency correctness: we want to register to
         //       the "ValueChanged" event before we initialize the value of the ViewModel.

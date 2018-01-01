@@ -2,10 +2,10 @@ using System;
 using System.Windows.Input;
 
 namespace SteamLibraryExplorer.ViewModel {
-  public class RelayExecuteCommand<T> : ICommand {
-    private readonly Action<T> _callback;
+  public class RelayExecuteCommand : ICommand {
+    private readonly Action<object> _callback;
 
-    public RelayExecuteCommand(Action<T> callback) {
+    public RelayExecuteCommand(Action<object> callback) {
       _callback = callback;
     }
 
@@ -15,7 +15,7 @@ namespace SteamLibraryExplorer.ViewModel {
     }
 
     public void Execute(object parameter) {
-      _callback((T)parameter);
+      _callback(parameter);
     }
 
     public event EventHandler CanExecuteChanged;

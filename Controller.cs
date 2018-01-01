@@ -82,6 +82,9 @@ namespace SteamLibraryExplorer {
       finally {
         _currentGameMoveOperationView.Close();
         _currentGameMoveOperationView = null;
+
+        // Refresh view since things have changed
+        FetchSteamConfigurationAsync();
       }
     }
 

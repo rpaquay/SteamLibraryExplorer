@@ -16,7 +16,7 @@ namespace SteamLibraryExplorer.ViewModel {
     private Brush _acfFileColor;
     private Brush _sizeOnDiskColor;
     private Brush _fileCountColor;
-    private RelayExecuteCommand<string> _copyGameCommand;
+    private RelayExecuteCommand _copyGameCommand;
 
     public string ListViewGroupHeader {
       get { return _listViewGroupHeader; }
@@ -34,8 +34,8 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    public RelayExecuteCommand<string> CopyGameCommand {
-      get { return _copyGameCommand ?? (_copyGameCommand = new RelayExecuteCommand<string>(OnCopyGameInvoked));}
+    public RelayExecuteCommand CopyGameCommand {
+      get { return _copyGameCommand ?? (_copyGameCommand = new RelayExecuteCommand(OnCopyGameInvoked));}
     }
 
     public event EventHandler<string> CopyGameInvoked;
@@ -114,8 +114,8 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
-    protected virtual void OnCopyGameInvoked(string libraryPath) {
-      CopyGameInvoked?.Invoke(this, libraryPath);
+    protected virtual void OnCopyGameInvoked(object libraryPath) {
+      CopyGameInvoked?.Invoke(this, (string)libraryPath);
     }
   }
 }
