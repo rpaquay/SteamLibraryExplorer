@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using System.Windows.Media;
 using SteamLibraryExplorer.Utils;
 
@@ -117,28 +116,6 @@ namespace SteamLibraryExplorer.ViewModel {
 
     protected virtual void OnCopyGameInvoked(string libraryPath) {
       CopyGameInvoked?.Invoke(this, libraryPath);
-    }
-  }
-
-  public class RelayExecuteCommand<T> : ICommand {
-    private readonly Action<T> _callback;
-
-    public RelayExecuteCommand(Action<T> callback) {
-      _callback = callback;
-    }
-
-    public bool CanExecute(object parameter) {
-      return parameter is T;
-    }
-
-    public void Execute(object parameter) {
-      _callback((T)parameter);
-    }
-
-    public event EventHandler CanExecuteChanged;
-
-    protected virtual void OnCanExecuteChanged() {
-      CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
   }
 }
