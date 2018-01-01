@@ -12,15 +12,15 @@ using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamDiscovery {
-    public Task<DirectoryInfo> LocateSteamFolderAsync() {
+    public Task<FullPath> LocateSteamFolderAsync() {
       return RunAsync(LocateSteamUsingProcess);
     }
 
-    public Task<SteamLibrary> LoadMainLibraryAsync(DirectoryInfo steamLocation, CancellationToken cancellationToken) {
+    public Task<SteamLibrary> LoadMainLibraryAsync(FullPath steamLocation, CancellationToken cancellationToken) {
       return RunAsync(() => LoadLibrary(steamLocation, true, cancellationToken));
     }
 
-    public Task<IEnumerable<SteamLibrary>> LoadAdditionalLibrariesAsync(DirectoryInfo steamLocation, CancellationToken cancellationToken) {
+    public Task<IEnumerable<SteamLibrary>> LoadAdditionalLibrariesAsync(FullPath steamLocation, CancellationToken cancellationToken) {
       return RunAsync(() => LoadAdditionalLibraries(steamLocation, cancellationToken));
     }
 
@@ -30,7 +30,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       return RunAsync(() => DiscoverSizeOnDisk(copy, cancellationToken));
     }
 
-    private IEnumerable<SteamLibrary> LoadAdditionalLibraries(DirectoryInfo steamLocation, CancellationToken cancellationToken) {
+    private IEnumerable<SteamLibrary> LoadAdditionalLibraries(FullPath steamLocation, CancellationToken cancellationToken) {
       var libraryFile = steamLocation.GetDirectory("steamapps").GetFile("libraryfolders.vdf");
       if (libraryFile != null) {
         var contents = File.ReadAllText(libraryFile.FullName);
@@ -40,18 +40,18 @@ namespace SteamLibraryExplorer.SteamUtil {
           if (libPath == null) {
             break;
           }
-          var libDirectory = new DirectoryInfo(libPath);
+          var libDirectory = new FullPath(libPath);
           yield return LoadLibrary(libDirectory, false, cancellationToken);
         }
       }
     }
 
-    private static SteamLibrary LoadLibrary(DirectoryInfo steamLocation, bool isMainLibrary, CancellationToken cancellationToken) {
+    private static SteamLibrary LoadLibrary(FullPath steamLocation, bool isMainLibrary, CancellationToken cancellationToken) {
       var acfFiles = LoadAcfFiles(steamLocation).ToList();
       var gameDirs = LoadGameDirectories(steamLocation).ToList();
       var workshopFiles = LoadWorkshopFiles(steamLocation).ToList();
 
-      var gameSet = new HashSet<DirectoryInfo>(new DirectoryInfoComparer());
+      var gameSet = new HashSet<FullPath>(new DirectoryInfoComparer());
       gameSet.UnionWith(gameDirs);
       gameSet.UnionWith(acfFiles
         .Where(x => x.InstallDir != null)
@@ -62,7 +62,7 @@ namespace SteamLibraryExplorer.SteamUtil {
           .FirstOrDefault(acf => StringComparer.OrdinalIgnoreCase.Equals(acf.InstallDir, gameDir.Name));
         var workshopFile = workshopFiles
           .FirstOrDefault(wsFile => acfFile != null && StringComparer.OrdinalIgnoreCase.Equals(wsFile.AppId, acfFile.AppId));
-        return new SteamGame(gameDir.Exists ? gameDir : null, acfFile, workshopFile);
+        return new SteamGame(gameDir.DirectoryExists ? gameDir : null, acfFile, workshopFile);
       });
 
       return new SteamLibrary(steamLocation, isMainLibrary, games);
@@ -92,33 +92,33 @@ namespace SteamLibraryExplorer.SteamUtil {
       DiscoverGameSizeOnDiskRecursive(game, game.WorkshopLocation, cancellationToken);
     }
 
-    private static void DiscoverGameSizeOnDiskRecursive(SteamGame game, DirectoryInfo location, CancellationToken cancellationToken) {
+    private static void DiscoverGameSizeOnDiskRecursive(SteamGame game, FullPath directoryPath, CancellationToken cancellationToken) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
-      if (location == null || !location.Exists) {
+      if (directoryPath == null || !directoryPath.DirectoryExists) {
         return;
       }
-      var files = location.EnumerateFiles().ToList();
+      var files = directoryPath.EnumerateFiles().ToList();
       var fileBytes = files.Aggregate(0L, (s, x) => s + x.Length);
       game.SizeOnDisk.Value += fileBytes;
       game.FileCount.Value += files.Count;
-      foreach (var childDirectory in location.EnumerateDirectories()) {
+      foreach (var childDirectory in directoryPath.EnumerateDirectories()) {
         DiscoverGameSizeOnDiskRecursive(game, childDirectory, cancellationToken);
       }
     }
 
-    private static IEnumerable<DirectoryInfo> LoadGameDirectories(DirectoryInfo steamLocation) {
+    private static IEnumerable<FullPath> LoadGameDirectories(FullPath steamLocation) {
       return steamLocation.GetDirectory("steamapps").GetDirectory("common").EnumerateDirectories();
     }
 
-    private static IEnumerable<AcfFile> LoadAcfFiles(DirectoryInfo steamLocation) {
+    private static IEnumerable<AcfFile> LoadAcfFiles(FullPath steamLocation) {
       return steamLocation.GetDirectory("steamapps")
         .EnumerateFiles("*.acf")
         .Select(x => new AcfFile(x, File.ReadAllText(x.FullName)));
     }
 
-    private static IEnumerable<AcfFile> LoadWorkshopFiles(DirectoryInfo steamLocation) {
+    private static IEnumerable<AcfFile> LoadWorkshopFiles(FullPath steamLocation) {
       return steamLocation.GetDirectory("steamapps").GetDirectory("workshop")
         .EnumerateFiles("*.acf")
         .Select(x => new AcfFile(x, File.ReadAllText(x.FullName)));
@@ -132,19 +132,19 @@ namespace SteamLibraryExplorer.SteamUtil {
       return Task.Run(func);
     }
 
-    private DirectoryInfo LocateSteamUsingProcess() {
+    private FullPath LocateSteamUsingProcess() {
       var steamProcesses = Process.GetProcessesByName("Steam");
       return steamProcesses.Select(GetSteamProcessFolder).FirstOrDefault(x => x != null);
     }
 
-    private DirectoryInfo GetSteamProcessFolder(Process process) {
-      var file = new FileInfo(process.MainModule.FileName);
-      if (!file.Exists) {
+    private FullPath GetSteamProcessFolder(Process process) {
+      var processPath = new FullPath(process.MainModule.FileName);
+      if (!processPath.FileExists) {
         return null;
       }
 
-      var dir = file.Directory;
-      if (dir == null || !dir.Exists) {
+      var dir = processPath.Parent;
+      if (dir == null || !dir.DirectoryExists) {
         return null;
       }
 
@@ -161,19 +161,19 @@ namespace SteamLibraryExplorer.SteamUtil {
         for (var line = reader.ReadLine(); line != null; line = reader.ReadLine()) {
           var match = regex.Match(line);
           if (match.Success) {
-            return match.Groups["propValue"].Value;
+            return match.Groups["propValue"].Value.Replace("\\\\", "\\");
           }
         }
       }
       return null;
     }
 
-    public class DirectoryInfoComparer : IEqualityComparer<DirectoryInfo> {
-      public bool Equals(DirectoryInfo x, DirectoryInfo y) {
+    public class DirectoryInfoComparer : IEqualityComparer<FullPath> {
+      public bool Equals(FullPath x, FullPath y) {
         return StringComparer.OrdinalIgnoreCase.Equals(x.FullName, y.FullName);
       }
 
-      public int GetHashCode(DirectoryInfo obj) {
+      public int GetHashCode(FullPath obj) {
         return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.FullName);
       }
     }

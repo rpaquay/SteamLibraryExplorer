@@ -85,7 +85,7 @@ namespace SteamLibraryExplorer {
           ListViewGroupHeader = GetGroupHeaderText(library),
           ListViewGroupHeaderSortIndex = _gameLibraryCount,
           DisplayName = game.DisplayName,
-          AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.FileInfo.GetRelativePathTo(library.Location),
+          AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.Path.GetRelativePathTo(library.Location),
           AcfFileColor = game.AcfFile == null ? Brushes.Red : null,
           Location = game.Location == null ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
           LocationColor = game.Location == null ? Brushes.Red : null,
@@ -175,7 +175,7 @@ namespace SteamLibraryExplorer {
       _gameLibraryCount = 0;
     }
 
-    public void ShowSteamLocation(DirectoryInfo directoryInfo) {
+    public void ShowSteamLocation(FullPath directoryInfo) {
       //_mainForm.steamLocationTextBox.Text = directoryInfo.FullName;
       if (directoryInfo == null) {
         _viewModel.StatusText = "Steam location: <Not found>";

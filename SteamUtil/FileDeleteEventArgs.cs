@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class FileDeleteEventArgs {
-    public FileDeleteEventArgs(FileInfo file) {
-      File = file;
+    public FileDeleteEventArgs(FullPath path) {
+      Path = path;
     }
 
-    public FileInfo File { get; }
+    public FullPath Path { get; }
   }
 }

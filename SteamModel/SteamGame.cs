@@ -4,7 +4,7 @@ using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class SteamGame {
-    public SteamGame(DirectoryInfo location, AcfFile acfFile, AcfFile workshopFile) {
+    public SteamGame(FullPath location, AcfFile acfFile, AcfFile workshopFile) {
       Debug.Assert(location != null || acfFile != null);
       Debug.Assert(acfFile == null || workshopFile == null || acfFile.AppId == workshopFile.AppId);
       Location = location;
@@ -12,7 +12,7 @@ namespace SteamLibraryExplorer.SteamModel {
       WorkshopFile = workshopFile;
     }
 
-    public DirectoryInfo Location { get; }
+    public FullPath Location { get; }
     public AcfFile AcfFile { get; }
     public AcfFile WorkshopFile { get; }
 
@@ -44,13 +44,13 @@ namespace SteamLibraryExplorer.SteamModel {
     /// The value is <code>null</code> if there is no workshop file.
     /// The directory may not exist (if there are no workshop files).
     /// </summary>
-    public DirectoryInfo WorkshopLocation {
+    public FullPath WorkshopLocation {
       get {
         if (Location == null || WorkshopFile == null || WorkshopFile.AppId == null) {
           return null;
         }
 
-        return WorkshopFile.FileInfo.Directory.CombineDirectory("content").CombineDirectory(WorkshopFile.AppId);
+        return WorkshopFile.Path.Parent.CombineDirectory("content").CombineDirectory(WorkshopFile.AppId);
       }
     }
   }

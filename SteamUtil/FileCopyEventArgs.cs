@@ -1,13 +1,14 @@
 using System.IO;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class FileCopyEventArgs {
-    public FileCopyEventArgs(FileInfo sourceFile, FileInfo destinationFile) {
-      SourceFile = sourceFile;
-      DestinationFile = destinationFile;
+    public FileCopyEventArgs(FullPath sourcePath, FullPath destinationPath) {
+      SourcePath = sourcePath;
+      DestinationPath = destinationPath;
     }
 
-    public FileInfo SourceFile { get; }
-    public FileInfo DestinationFile { get; }
+    public FullPath SourcePath { get; }
+    public FullPath DestinationPath { get; }
   }
 }

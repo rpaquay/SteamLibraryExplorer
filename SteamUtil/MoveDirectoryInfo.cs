@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics;
-using System.IO;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class MoveDirectoryInfo {
-    public DirectoryInfo SourceDirectory { get; set; }
-    public DirectoryInfo DestinationDirectory { get; set; }
+    public FullPath SourceDirectory { get; set; }
+    public FullPath DestinationDirectory { get; set; }
     public MovePhase CurrentPhase { get; set; }
 
     public long MovedFileCount { get; set; }
@@ -19,8 +19,8 @@ namespace SteamLibraryExplorer.SteamUtil {
     public long MovedBytes { get; set; }
     public long TotalBytes { get; set; }
 
-    public DirectoryInfo CurrentDirectory { get; set; }
-    public FileInfo CurrentFile { get; set; }
+    public FullPath CurrentDirectory { get; set; }
+    public FullPath CurrentFile { get; set; }
     public long MovedBytesOfCurrentFile { get; set; }
     public long TotalBytesOfCurrentFile { get; set; }
 

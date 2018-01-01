@@ -4,7 +4,7 @@ using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class SteamConfiguration {
-    public PropertyValue<DirectoryInfo> Location { get; } = new PropertyValue<DirectoryInfo>();
+    public PropertyValue<FullPath> Location { get; } = new PropertyValue<FullPath>();
     public ObservableCollection<SteamLibrary> SteamLibraries { get; } = new ObservableCollection<SteamLibrary>();
   }
 }

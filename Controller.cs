@@ -6,6 +6,7 @@ using System.Windows;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.UserInterface;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer {
   class Controller {
@@ -22,10 +23,10 @@ namespace SteamLibraryExplorer {
       _steamDiscovery = new SteamDiscovery();
       _steamGameMover = new SteamGameMover();
       _steamGameMover.CopyingFile += (sender, args) => {
-        Trace.WriteLine($"Copying file \"{args.SourceFile.FullName}\" to \"{args.DestinationFile.FullName}\"");
+        Trace.WriteLine($"Copying file \"{args.SourcePath.FullName}\" to \"{args.DestinationPath.FullName}\"");
       };
       _steamGameMover.DeletingFile += (sender, args) => {
-        Trace.WriteLine($"Deleting file \"{args.File.FullName}\"");
+        Trace.WriteLine($"Deleting file \"{args.Path.FullName}\"");
       };
     }
 
@@ -64,7 +65,7 @@ namespace SteamLibraryExplorer {
 
         _currentGameMoveOperationView.Show();
 
-        var destinationLibrary = new DirectoryInfo(e.DestinationLibraryPath);
+        var destinationLibrary = new FullPath(e.DestinationLibraryPath);
 
         var result = await _steamGameMover.MoveSteamGameAsync(e.Game, destinationLibrary, progress, cancellationTokenSource.Token);
 

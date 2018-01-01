@@ -1,14 +1,14 @@
-﻿using System.IO;
-using SteamLibraryExplorer.SteamUtil;
+﻿using SteamLibraryExplorer.SteamUtil;
+using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class AcfFile {
-    public AcfFile(FileInfo fileInfo, string contents) {
-      FileInfo = fileInfo;
+    public AcfFile(FullPath path, string contents) {
+      Path = path;
       Contents = contents;
     }
 
-    public FileInfo FileInfo { get; }
+    public FullPath Path { get; }
     public string Contents { get; }
 
     public string AppId => GetProperty("appid");
