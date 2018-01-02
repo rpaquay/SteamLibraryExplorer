@@ -7,7 +7,7 @@ using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
-  public class SteamGameMover {
+  public class SteamGameMover : ISteamGameMover {
     public event EventHandler<FileCopyEventArgs> CopyingFile;
     public event EventHandler<PathEventArgs> DeletingFile;
     public event EventHandler<PathEventArgs> CreatingDirectory;

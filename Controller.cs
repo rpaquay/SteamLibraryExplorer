@@ -8,13 +8,13 @@ using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer {
-  class Controller {
+  public class Controller {
     private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(Controller));
 
     private readonly Model _model;
     private readonly MainView _mainView;
-    private readonly SteamDiscovery _steamDiscovery;
-    private readonly SteamGameMover _steamGameMover;
+    private readonly ISteamDiscovery _steamDiscovery;
+    private readonly ISteamGameMover _steamGameMover;
     private readonly DispatcherTimer _lookForSteamTimer;
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     private CopyProgressView _currentGameMoveOperationView;
@@ -43,18 +43,18 @@ namespace SteamLibraryExplorer {
       _lookForSteamTimer.Interval = TimeSpan.FromSeconds(2);
       _lookForSteamTimer.Tick += LookForSteamTimerOnTick;
       _lookForSteamTimer.Start();
-      _mainView.RefreshView += (sender, args) => FetchSteamConfigurationAsync();
+      _mainView.RefreshView += (sender, args) => FetchSteamConfigurationAsync(false);
       _mainView.CloseView += (sender, args) => Application.Current.Shutdown();
       _mainView.CopyGameInvoked += (sender, game) => MoveGameToOtherLibrary(game);
       _mainView.Run();
-      FetchSteamConfigurationAsync();
+      FetchSteamConfigurationAsync(true);
     }
 
     private async void LookForSteamTimerOnTick(object o, EventArgs eventArgs) {
       if (_model.SteamConfiguration.Location.Value == null) {
         var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
         if (steamLocation != null) {
-          FetchSteamConfigurationAsync();
+          FetchSteamConfigurationAsync(true);
         }
       }
     }
@@ -127,11 +127,11 @@ namespace SteamLibraryExplorer {
         _currentGameMoveOperationView = null;
 
         // Refresh view since things have changed
-        FetchSteamConfigurationAsync();
+        FetchSteamConfigurationAsync(true);
       }
     }
 
-    private async void FetchSteamConfigurationAsync() {
+    private async void FetchSteamConfigurationAsync(bool useCache) {
       // Cancel previous operation
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource = new CancellationTokenSource();
@@ -183,7 +183,7 @@ namespace SteamLibraryExplorer {
         }
 
         // Start background tasks of discovering game size on disk
-        await _steamDiscovery.DiscoverSizeOnDiskAsync(_model.SteamConfiguration.SteamLibraries, cancellationToken);
+        await _steamDiscovery.DiscoverSizeOnDiskAsync(_model.SteamConfiguration.SteamLibraries, useCache, cancellationToken);
       }
       finally {
         _mainView.StopProgress();

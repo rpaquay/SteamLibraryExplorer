@@ -74,6 +74,8 @@
     <Compile Include="CopyProgressView.cs" />
     <Compile Include="MoveGameEventArgs.cs" />
     <Compile Include="SteamUtil\FileCopyEventArgs.cs" />
+    <Compile Include="SteamUtil\ISteamDiscovery.cs" />
+    <Compile Include="SteamUtil\ISteamGameMover.cs" />
     <Compile Include="SteamUtil\MoveGameResultKind.cs" />
     <Compile Include="SteamUtil\PathEventArgs.cs" />
     <Compile Include="SteamUtil\MoveDirectoryInfo.cs" />

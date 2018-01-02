@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -14,8 +15,14 @@ using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
-  public class SteamDiscovery {
+  public class SteamDiscovery : ISteamDiscovery {
     private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(SteamDiscovery));
+    private readonly ConcurrentDictionary<FullPath, PathInfo> _pathInfos = new ConcurrentDictionary<FullPath, PathInfo>();
+
+    private class PathInfo {
+      public long FileCount { get; set; }
+      public long SizeOnDisk { get; set; }
+    }
 
     [NotNull]
     public Task<FullPath> LocateSteamFolderAsync() {
@@ -35,11 +42,10 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [NotNull]
-    public Task DiscoverSizeOnDiskAsync([NotNull] IEnumerable<SteamLibrary> libraries,
-      CancellationToken cancellationToken) {
+    public Task DiscoverSizeOnDiskAsync([NotNull] IEnumerable<SteamLibrary> libraries, bool useCache, CancellationToken cancellationToken) {
       // Copy collection, since it could be cleared if a Refresh occurs.
       var copy = libraries.ToList();
-      return RunAsync(() => DiscoverSizeOnDisk(copy, cancellationToken));
+      return RunAsync(() => DiscoverSizeOnDisk(copy, useCache, cancellationToken));
     }
 
     [NotNull]
@@ -104,8 +110,11 @@ namespace SteamLibraryExplorer.SteamUtil {
       return new SteamLibrary(libraryRootPath, isMainLibrary, games);
     }
 
-    private void DiscoverSizeOnDisk([NotNull] IEnumerable<SteamLibrary> libraries,
-      CancellationToken cancellationToken) {
+    private void DiscoverSizeOnDisk([NotNull] IEnumerable<SteamLibrary> libraries, bool useCache, CancellationToken cancellationToken) {
+      if (!useCache) {
+        _pathInfos.Clear();
+      }
+
       foreach (var library in libraries) {
         if (cancellationToken.IsCancellationRequested)
           break;
@@ -119,22 +128,45 @@ namespace SteamLibraryExplorer.SteamUtil {
         }
 
         foreach (var game in library.Games) {
-          DiscoverGameSizeOnDisk(game, cancellationToken);
+          DiscoverGameSizeOnDisk(game, useCache, cancellationToken);
         }
       }
     }
 
-    private static void DiscoverGameSizeOnDisk([NotNull] SteamGame game, CancellationToken cancellationToken) {
-      DiscoverGameSizeOnDiskRecursive(game, game.Location, cancellationToken);
-      DiscoverGameSizeOnDiskRecursive(game, game.WorkshopLocation, cancellationToken);
+    private void DiscoverGameSizeOnDisk([NotNull] SteamGame game, bool useCache, CancellationToken cancellationToken) {
+      DiscoverGameSizeOnDiskRecursive(game, game.Location, useCache, cancellationToken);
+      DiscoverGameSizeOnDiskRecursive(game, game.WorkshopLocation, useCache, cancellationToken);
     }
 
-    private static void DiscoverGameSizeOnDiskRecursive([NotNull] SteamGame game, [CanBeNull] FullPath directoryPath,
-      CancellationToken cancellationToken) {
+    private void DiscoverGameSizeOnDiskRecursive([NotNull] SteamGame game, [CanBeNull] FullPath directoryPath, bool useCache, CancellationToken cancellationToken) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
       if (directoryPath == null || !FileSystem.DirectoryExists(directoryPath)) {
+        return;
+      }
+      if (useCache) {
+        var pathInfo = _pathInfos.GetOrAdd(directoryPath, path => {
+          DiscoverGameSizeOnDiskRecursive2(game, directoryPath, cancellationToken);
+          return new PathInfo {
+            FileCount = game.FileCount.Value,
+            SizeOnDisk = game.SizeOnDisk.Value
+          };
+        });
+        game.FileCount.Value = pathInfo.FileCount;
+        game.SizeOnDisk.Value = pathInfo.SizeOnDisk;
+      }
+      else {
+        DiscoverGameSizeOnDiskRecursive2(game, directoryPath, cancellationToken);
+        _pathInfos[directoryPath] = new PathInfo {
+          FileCount = game.FileCount.Value,
+          SizeOnDisk = game.SizeOnDisk.Value
+        };
+      }
+    }
+
+    private static void DiscoverGameSizeOnDiskRecursive2([NotNull] SteamGame game, [CanBeNull] FullPath directoryPath, CancellationToken cancellationToken) {
+      if (cancellationToken.IsCancellationRequested) {
         return;
       }
       var files = FileSystem.EnumerateFiles(directoryPath).ToList();
@@ -142,7 +174,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       game.SizeOnDisk.Value += fileBytes;
       game.FileCount.Value += files.Count;
       foreach (var childDirectory in FileSystem.EnumerateDirectories(directoryPath)) {
-        DiscoverGameSizeOnDiskRecursive(game, childDirectory, cancellationToken);
+        DiscoverGameSizeOnDiskRecursive2(game, childDirectory, cancellationToken);
       }
     }
 

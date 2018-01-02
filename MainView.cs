@@ -82,12 +82,12 @@ namespace SteamLibraryExplorer {
     }
 
     public void ShowInfo([NotNull]string text) {
-      Logger.Warn("ShowInfo: {0}", text);
+      Logger.Info("ShowInfo: {0}", text);
       MessageBox.Show(_mainForm, text, "Information", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     public bool ShowYesNo(string text) {
-      Logger.Warn("ShowYesNo: {0}", text);
+      Logger.Info("ShowYesNo: {0}", text);
       var result = MessageBox.Show(_mainForm, text, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
       return result == MessageBoxResult.Yes;
     }
