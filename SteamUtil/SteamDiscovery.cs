@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +16,8 @@ using SteamLibraryExplorer.Utils;
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamDiscovery : ISteamDiscovery {
     private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(SteamDiscovery));
-    private readonly ConcurrentDictionary<FullPath, PathInfo> _pathInfos = new ConcurrentDictionary<FullPath, PathInfo>();
+    private readonly Dictionary<FullPath, PathInfo> _pathInfos = new Dictionary<FullPath, PathInfo>();
+    private readonly object _pathInfosLock = new object();
 
     private class PathInfo {
       public long FileCount { get; set; }
@@ -53,8 +53,8 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [NotNull]
-    public Task<bool> RestartSteamAsync() {
-      return RunAsync(RestartSteam);
+    public Task<bool> RestartSteamAsync([NotNull] FullPath steamExePath) {
+      return RunAsync(() => RestartSteam(steamExePath));
     }
 
     [NotNull]
@@ -115,8 +115,11 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     private void DiscoverSizeOnDisk([NotNull] IEnumerable<SteamLibrary> libraries, bool useCache, CancellationToken cancellationToken) {
+      // Clear cache if not using it
       if (!useCache) {
-        _pathInfos.Clear();
+        lock (_pathInfosLock) {
+          _pathInfos.Clear();
+        }
       }
 
       foreach (var library in libraries) {
@@ -149,27 +152,35 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (directoryPath == null || !FileSystem.DirectoryExists(directoryPath)) {
         return;
       }
+
+      // Try cache lookup first
       if (useCache) {
-        var pathInfo = _pathInfos.GetOrAdd(directoryPath, path => {
-          DiscoverGameSizeOnDiskRecursive2(game, directoryPath, cancellationToken);
-          return new PathInfo {
-            FileCount = game.FileCount.Value,
-            SizeOnDisk = game.SizeOnDisk.Value
-          };
-        });
-        game.FileCount.Value = pathInfo.FileCount;
-        game.SizeOnDisk.Value = pathInfo.SizeOnDisk;
+        lock (_pathInfosLock) {
+          PathInfo pathInfo;
+          if (_pathInfos.TryGetValue(directoryPath, out pathInfo)) {
+            game.FileCount.Value = pathInfo.FileCount;
+            game.SizeOnDisk.Value = pathInfo.SizeOnDisk;
+            return;
+          }
+        }
       }
-      else {
-        DiscoverGameSizeOnDiskRecursive2(game, directoryPath, cancellationToken);
-        _pathInfos[directoryPath] = new PathInfo {
-          FileCount = game.FileCount.Value,
-          SizeOnDisk = game.SizeOnDisk.Value
-        };
+
+      DiscoverGameSizeOnDiskRecursiveImpl(game, directoryPath, cancellationToken);
+
+      // Store in cache (only if operation was completed!)
+      if (useCache) {
+        if (!cancellationToken.IsCancellationRequested) {
+          lock (_pathInfosLock) {
+            _pathInfos[directoryPath] = new PathInfo {
+              FileCount = game.FileCount.Value,
+              SizeOnDisk = game.SizeOnDisk.Value
+            };
+          }
+        }
       }
     }
 
-    private static void DiscoverGameSizeOnDiskRecursive2([NotNull] SteamGame game, [CanBeNull] FullPath directoryPath, CancellationToken cancellationToken) {
+    private static void DiscoverGameSizeOnDiskRecursiveImpl([NotNull] SteamGame game, [NotNull] FullPath directoryPath, CancellationToken cancellationToken) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
@@ -178,7 +189,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       game.SizeOnDisk.Value += fileBytes;
       game.FileCount.Value += files.Count;
       foreach (var childDirectory in FileSystem.EnumerateDirectories(directoryPath)) {
-        DiscoverGameSizeOnDiskRecursive2(game, childDirectory, cancellationToken);
+        DiscoverGameSizeOnDiskRecursiveImpl(game, childDirectory, cancellationToken);
       }
     }
 
@@ -260,34 +271,52 @@ namespace SteamLibraryExplorer.SteamUtil {
       return dir;
     }
 
-    private bool RestartSteam() {
+    private bool RestartSteam([NotNull] FullPath steamExePath) {
       var process = FindSteamProcess();
-      if (process == null) {
-        Logger.Info("Steam does not need to be restarted because it is not running");
-        return true;
-      }
 
-      var path = new FullPath(process.MainModule.FileName);
-      if (process.MainWindowHandle != IntPtr.Zero) {
-        Logger.Info("Closing Steam using the main window handle");
-        SendEndSessionMessageToWindow(process.MainWindowHandle);
-      } else {
-        foreach (var handle in EnumerateProcessWindowHandles(process)) {
-          Logger.Info("Closing Steam using one of the process window handles");
-          SendEndSessionMessageToWindow(handle);
-          if (process.WaitForExit((int) TimeSpan.FromSeconds(0.1).TotalMilliseconds)) {
+      // Stop process if still running
+      if (process != null) {
+        if (process.MainWindowHandle != IntPtr.Zero) {
+          Logger.Info("Closing Steam using the main window handle");
+          SendEndSessionMessageToWindow(process.MainWindowHandle);
+        }
+        else {
+          foreach (var handle in EnumerateProcessWindowHandles(process)) {
+            Logger.Info("Closing Steam using one of the process window handles");
+            SendEndSessionMessageToWindow(handle);
+            if (process.WaitForExit((int) TimeSpan.FromSeconds(0.1).TotalMilliseconds)) {
+              break;
+            }
+          }
+
+          if (!process.WaitForExit((int) TimeSpan.FromSeconds(10).TotalMilliseconds)) {
+            Logger.Warn("Steam not restarted because it took more than 10 seconds to close");
+            return false;
+          }
+        }
+
+        // Wait for the steam helper processes to stop (10 seconds max).
+        //
+        // Note: We use a busy loop to avod calling into C#/Win32 API on process
+        //       handles to avoid potential "Access Denied" accessing process handles.
+        var endWait = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+        var allProcessesExited = false;
+        while (DateTime.UtcNow < endWait) {
+          var helperProcesses = FindSteamHelperProcesses();
+          if (helperProcesses.Count == 0) {
+            allProcessesExited = true;
             break;
           }
+          Thread.Sleep(100);
+        }
+        if (!allProcessesExited) {
+          Logger.Warn("One of the steam helper process took more than 10 seconds to close. Restarting Steam may fail.");
         }
       }
 
-      if (!process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds)) {
-        Logger.Warn("Steam not restarted because it took more than 10 seconds to close");
-        return false;
-      }
-
+      // Re-start steam now
       try {
-        var si = new ProcessStartInfo(path.FullName);
+        var si = new ProcessStartInfo(steamExePath.FullName);
         si.WindowStyle = ProcessWindowStyle.Minimized;
         var newProcess = Process.Start(si);
         if (newProcess == null) {
@@ -302,9 +331,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       return true;
     }
 
+    private List<Process> FindSteamHelperProcesses() {
+      return Process.GetProcessesByName("steamwebhelper").Concat(Process.GetProcessesByName("steamservice")).ToList();
+    }
+
     private Process FindSteamProcess() {
-      var steamProcesses = Process.GetProcessesByName("Steam");
-      return steamProcesses.Where(IsSteamProcess).FirstOrDefault(x => x != null);
+      return Process.GetProcessesByName("Steam")
+        .Where(IsSteamProcess)
+        .FirstOrDefault(x => x != null);
     }
 
 

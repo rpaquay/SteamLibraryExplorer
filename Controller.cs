@@ -59,78 +59,6 @@ namespace SteamLibraryExplorer {
       }
     }
 
-    private async void MoveGameToOtherLibrary(MoveGameEventArgs e) {
-      if (_currentGameMoveOperationView != null) {
-        _mainView.ShowError("Cannot move game because another game is currently being move.\r\n" +
-          "Please wait for the operation to finish, or cancel it.");
-        return;
-      }
-
-      if (!FileSystem.DirectoryExists(e.Game.Location)) {
-        _mainView.ShowError($"Cannot move game because the directory \"{e.Game.Location}\" does not exist");
-        return;
-      }
-
-      if (e.Game.AcfFile == null) {
-        _mainView.ShowError("Cannot move game because it does not have a valid ACF file.");
-        return;
-      }
-
-      var cancellationTokenSource = new CancellationTokenSource();
-      _currentGameMoveOperationView = new CopyProgressView(_mainView.CreateCopyPropgressWindow());
-      try {
-        _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
-        Action<MoveDirectoryInfo> progress = info => {
-          _currentGameMoveOperationView.ReportProgress(info);
-        };
-
-        _currentGameMoveOperationView.Show();
-
-        var destinationLibrary = new FullPath(e.DestinationLibraryPath);
-
-        var result = await _steamGameMover.MoveSteamGameAsync(e.Game, destinationLibrary, progress, cancellationTokenSource.Token);
-
-        if (result.Kind == MoveGameResultKind.Error) {
-          Debug.Assert(result.Error != null);
-          _mainView.ShowError(
-            $"Error moving steam game to library \"{destinationLibrary}\":\r\n\r\n" +
-            $"{result.Error.Message}");
-        } else if (result.Kind == MoveGameResultKind.Ok) {
-          await _steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration);
-          var steamProcess = await _steamDiscovery.FindSteamProcessAsync();
-          _currentGameMoveOperationView.Close();
-
-          var successMessage =
-            $"\"{e.Game.DisplayName}\" has been successfully moved to the library located at \"{e.DestinationLibraryPath}\".";
-          if (steamProcess == null) {
-            _mainView.ShowInfo(successMessage);
-          }
-          else {
-            var yes = _mainView.ShowYesNo(successMessage + "\r\n\r\n" +
-              "Steam should be restarted now to make sure the new game location is taken into account.\r\n\r\n" +
-              "Do you want to automatically restart Steam now?");
-
-            if (yes) {
-              var success = await _steamDiscovery.RestartSteamAsync();
-              if (success) {
-                _mainView.ShowInfo("Steam was successfully restarted");
-              }
-              else {
-                _mainView.ShowInfo("Steam could not be restarted. Please restart manually.");
-              }
-            }
-          }
-        }
-      }
-      finally {
-        _currentGameMoveOperationView.Close();
-        _currentGameMoveOperationView = null;
-
-        // Refresh view since things have changed
-        FetchSteamConfigurationAsync(true);
-      }
-    }
-
     private async void FetchSteamConfigurationAsync(bool useCache) {
       // Cancel previous operation
       _cancellationTokenSource.Cancel();
@@ -184,9 +112,111 @@ namespace SteamLibraryExplorer {
 
         // Start background tasks of discovering game size on disk
         await _steamDiscovery.DiscoverSizeOnDiskAsync(_model.SteamConfiguration.SteamLibraries, useCache, cancellationToken);
+      } finally {
+        _mainView.StopProgress();
+      }
+    }
+
+    private async void MoveGameToOtherLibrary(MoveGameEventArgs e) {
+      if (_currentGameMoveOperationView != null) {
+        _mainView.ShowError("Cannot move game because another game is currently being moved.\r\n\r\n" +
+                            "Please wait for the operation to finish, or cancel it.");
+        return;
+      }
+
+      if (!FileSystem.DirectoryExists(e.Game.Location)) {
+        _mainView.ShowError($"Cannot move game because the directory \"{e.Game.Location}\" does not exist");
+        return;
+      }
+
+      if (e.Game.AcfFile == null) {
+        _mainView.ShowError("Cannot move game because it does not have a valid ACF file.");
+        return;
+      }
+
+      var destinationLibrary = new FullPath(e.DestinationLibraryPath);
+      if (!FileSystem.DirectoryExists(destinationLibrary)) {
+        _mainView.ShowError($"Cannot move game because the destination library path \"{destinationLibrary.FullName}\" does not exist.");
+        return;
+      }
+
+      _currentGameMoveOperationView = new CopyProgressView(_mainView.CreateCopyPropgressWindow());
+      try {
+        var cancellationTokenSource = new CancellationTokenSource();
+
+        // Show modeless progess dialog
+        _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
+        Action<MoveDirectoryInfo> progress = info => {
+          _currentGameMoveOperationView.ReportProgress(info);
+        };
+        _currentGameMoveOperationView.Show();
+
+        // Perform the (long running) move operation
+        var result = await _steamGameMover.MoveSteamGameAsync(e.Game, destinationLibrary, progress, cancellationTokenSource.Token);
+
+        // Check the result
+        switch (result.Kind) {
+          case MoveGameResultKind.Cancelled:
+            // If user cancelled, there is nothing else to do
+            break;
+
+          case MoveGameResultKind.Error:
+            // If there was an error, display error to the user
+            Debug.Assert(result.Error != null);
+            _mainView.ShowError(
+              $"Error moving steam game to library \"{destinationLibrary.FullName}\":\r\n\r\n" +
+              $"{result.Error.Message}");
+            break;
+
+          case MoveGameResultKind.Ok:
+            //
+            // If the move is complete, show success message and restart steam (if it is running)
+            //
+
+            // Delete the steam application cache so that Steam is aware things have changed
+            // wrt to the location of games on disk. Steam will automatically rebuild the cache
+            // next time is starts. It only takes a couple of seconds.
+            await _steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration);
+            var steamProcess = await _steamDiscovery.FindSteamProcessAsync();
+
+            // Hide the progress dialog now, since we are about to show info messages
+            _currentGameMoveOperationView.Close();
+
+            // Display sucess message and restart Steam
+            var successMessage =
+              $"The game \"{e.Game.DisplayName}\" has been successfully moved to " +
+              $"the library located at \"{destinationLibrary.FullName}\".";
+            if (steamProcess == null) {
+              _mainView.ShowInfo(successMessage);
+            }
+            else {
+              var steamExePath = new FullPath(steamProcess.MainModule.FileName);
+              var yes = _mainView.ShowYesNo(
+                successMessage + "\r\n\r\n" +
+                "Steam should be restarted now to make sure the new game location is taken into account.\r\n\r\n" +
+                "Do you want to automatically restart Steam now?");
+
+              if (yes) {
+                var success = await _steamDiscovery.RestartSteamAsync(steamExePath);
+                if (success) {
+                  _mainView.ShowInfo("Steam was successfully restarted");
+                }
+                else {
+                  _mainView.ShowInfo("Steam could not be restarted. Please restart manually.");
+                }
+              }
+            }
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
       }
       finally {
-        _mainView.StopProgress();
+        _currentGameMoveOperationView.Close();
+        _currentGameMoveOperationView = null;
+
+        // Refresh view since things have changed
+        FetchSteamConfigurationAsync(true);
       }
     }
   }

@@ -25,12 +25,12 @@ namespace SteamLibraryExplorer.Utils.NLogUtils {
       consoleTarget.Layout = layout;
 
       fileTarget.FileName = "${tempdir}/${processname}.log";
-      fileTarget.Layout = layout; ;
+      fileTarget.Layout = layout;
       fileTarget.KeepFileOpen = true; // For performance
       fileTarget.DeleteOldFileOnStartup = true;
 
       errorFileTarget.FileName = "${tempdir}/${processname}-${shortdate}.errors.log";
-      errorFileTarget.Layout = layout; ;
+      errorFileTarget.Layout = layout;
       errorFileTarget.KeepFileOpen = true; // For performance
 
       // Step 4. Define rules
