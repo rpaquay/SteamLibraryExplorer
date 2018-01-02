@@ -8,13 +8,12 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using NLog;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamDiscovery {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(SteamDiscovery));
 
     [NotNull]
     public Task<FullPath> LocateSteamFolderAsync() {

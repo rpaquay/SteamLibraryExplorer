@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using JetBrains.Annotations;
-using NLog;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
@@ -14,7 +13,7 @@ using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer {
   public class MainView {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(MainView));
 
     private readonly MainWindow _mainForm;
     private readonly Model _model;

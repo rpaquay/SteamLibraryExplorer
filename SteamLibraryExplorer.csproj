@@ -90,7 +90,8 @@
     <Compile Include="Utils\FileSystemImpl.cs" />
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FullPath.cs" />
-    <Compile Include="Utils\NLogUtils.cs" />
+    <Compile Include="Utils\LoggerManagerFacade.cs" />
+    <Compile Include="Utils\NLogUtils\NLogUtils.cs" />
     <Compile Include="Utils\PropertyValue.cs" />
     <Compile Include="SteamModel\SteamConfiguration.cs" />
     <Compile Include="SteamUtil\SteamDiscovery.cs" />

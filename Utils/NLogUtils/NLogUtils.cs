@@ -2,8 +2,8 @@
 using NLog.Config;
 using NLog.Targets;
 
-namespace SteamLibraryExplorer.Utils {
-  class NLogUtils {
+namespace SteamLibraryExplorer.Utils.NLogUtils {
+  public class NLogUtils {
     public static void ConfigureApplication() {
       // Step 1. Create configuration object 
       var config = new LoggingConfiguration();
@@ -43,6 +43,30 @@ namespace SteamLibraryExplorer.Utils {
 
       // Step 5. Activate the configuration
       LogManager.Configuration = config;
+    }
+
+    public static ILoggerFacade GetLogger(string typeFullName) {
+      return new LoggerFacade(LogManager.GetLogger(typeFullName));
+    }
+
+    public class LoggerFacade : ILoggerFacade {
+      private readonly Logger _logger;
+
+      public LoggerFacade(Logger logger) {
+        _logger = logger;
+      }
+
+      public void Info(string format, params object[] args) {
+        _logger.Info(format, args);
+      }
+
+      public void Warn(string format, params object[] args) {
+        _logger.Warn(format, args);
+      }
+
+      public void Error(string format, params object[] args) {
+        _logger.Error(format, args);
+      }
     }
   }
 }

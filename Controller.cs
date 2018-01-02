@@ -3,14 +3,13 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using NLog;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.SteamUtil;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer {
   class Controller {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(Controller));
 
     private readonly Model _model;
     private readonly MainView _mainView;

@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using NLog;
 using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer {
@@ -7,12 +6,12 @@ namespace SteamLibraryExplorer {
   /// Interaction logic for App.xaml
   /// </summary>
   public partial class App : Application {
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(App));
 
     public App() {
-      NLogUtils.ConfigureApplication();
-      _logger.Info("Application is starting");
-      this.Exit += (sender, args) => _logger.Info("Application is exiting");
+      LoggerManagerFacade.Configure();
+      Logger.Info("Application is starting");
+      this.Exit += (sender, args) => Logger.Info("Application is exiting");
     }
   }
 }
