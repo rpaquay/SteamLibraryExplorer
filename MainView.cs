@@ -221,6 +221,24 @@ namespace SteamLibraryExplorer {
         gameViewModel.FileCount = game.FileCount.Value;
         gameViewModel.FileCountColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null;
 
+        // Note: The order is important for concurrency correctness: we want to register to
+        //       the "ValueChanged" event before we initialize the value of the ViewModel.
+        game.WorkshopSizeOnDisk.ValueChanged += (sender, arg) => {
+          _throttledDispatcher.Enqeue(game.Location.FullName + "-" + nameof(gameViewModel.WorkshopSizeOnDisk), () => {
+            gameViewModel.WorkshopSizeOnDisk = arg.NewValue;
+          });
+        };
+        gameViewModel.WorkshopSizeOnDisk = game.WorkshopSizeOnDisk.Value;
+
+        // Note: The order is important for concurrency correctness: we want to register to
+        //       the "ValueChanged" event before we initialize the value of the ViewModel.
+        game.WorkshopFileCount.ValueChanged += (sender, arg) => {
+          _throttledDispatcher.Enqeue(game.Location.FullName + "-" + nameof(gameViewModel.WorkshopFileCount), () => {
+            gameViewModel.WorkshopFileCount = arg.NewValue;
+          });
+        };
+        gameViewModel.WorkshopFileCount = game.WorkshopFileCount.Value;
+
         gameViewModel.MoveGameToLibraryInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
 
         _viewModel.SteamGames.Add(gameViewModel);

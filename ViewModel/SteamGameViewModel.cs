@@ -21,6 +21,8 @@ namespace SteamLibraryExplorer.ViewModel {
     private Brush _wokrshopAcfFileColor;
     private string _workshopRelativePath;
     private Brush _workshopRelativePathColor;
+    private long _workshopSizeOnDisk;
+    private long _workshopFileCount;
 
     /// <summary>
     /// Event raised when a "Move Game To Library" command is invoked
@@ -126,6 +128,16 @@ namespace SteamLibraryExplorer.ViewModel {
     public Brush WorkshopRelativePathColor {
       get { return _workshopRelativePathColor ?? Brushes.Black; }
       set { UpdateProperty(ref _workshopRelativePathColor, value, nameof(WorkshopRelativePathColor)); }
+    }
+
+    public long WorkshopSizeOnDisk {
+      get { return _workshopSizeOnDisk; }
+      set { UpdateProperty(ref _workshopSizeOnDisk, value, nameof(WorkshopSizeOnDisk)); }
+    }
+
+    public long WorkshopFileCount {
+      get { return _workshopFileCount; }
+      set { UpdateProperty(ref _workshopFileCount, value, nameof(WorkshopFileCount)); }
     }
 
     protected virtual void OnMoveGameToLibraryInvoked(object libraryPath) {

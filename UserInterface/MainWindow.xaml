@@ -130,7 +130,7 @@
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
-          <GridViewColumn Width="240">
+          <GridViewColumn Width="280">
             <GridViewColumn.Header>
               <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click">Workshop ACF File</GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -147,6 +147,26 @@
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding WorkshopRelativePath}" TextAlignment="Left" Foreground="{Binding WorkshopRelativePathColor}" />
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Width="80">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
+            </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding WorkshopSizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" />
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Width="80">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
+            </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding WorkshopFileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
