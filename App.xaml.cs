@@ -9,7 +9,6 @@ namespace SteamLibraryExplorer {
     private static readonly ILoggerFacade Logger = LoggerManagerFacade.GetLogger(typeof(App));
 
     public App() {
-      LoggerManagerFacade.Configure();
       Logger.Info("Application is starting");
       this.Exit += (sender, args) => Logger.Info("Application is exiting");
     }

@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using System;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
 
@@ -32,7 +33,7 @@ namespace SteamLibraryExplorer.Utils.NLogUtils {
       errorFileTarget.KeepFileOpen = true; // For performance
 
       // Step 4. Define rules
-      var rule1 = new LoggingRule("*", LogLevel.Info, consoleTarget);
+      var rule1 = new LoggingRule("*", LogLevel.Warn, consoleTarget);
       config.LoggingRules.Add(rule1);
 
       var rule2 = new LoggingRule("*", LogLevel.Info, fileTarget);
@@ -66,6 +67,10 @@ namespace SteamLibraryExplorer.Utils.NLogUtils {
 
       public void Error(string format, params object[] args) {
         _logger.Error(format, args);
+      }
+
+      public void Error(Exception e, string format, params object[] args) {
+        _logger.Error(e, format, args);
       }
     }
   }

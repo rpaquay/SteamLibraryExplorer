@@ -90,6 +90,7 @@
     <Compile Include="Utils\FileSystemImpl.cs" />
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FullPath.cs" />
+    <Compile Include="Utils\ILoggerFacade.cs" />
     <Compile Include="Utils\LoggerManagerFacade.cs" />
     <Compile Include="Utils\NLogUtils\NLogFacade.cs" />
     <Compile Include="Utils\PropertyValue.cs" />

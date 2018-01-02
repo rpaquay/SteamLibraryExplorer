@@ -97,10 +97,29 @@ namespace SteamLibraryExplorer {
             $"{result.Error.Message}");
         } else if (result.Kind == MoveGameResultKind.Ok) {
           await _steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration);
+          var steamProcess = await _steamDiscovery.FindSteamProcessAsync();
+          _currentGameMoveOperationView.Close();
 
-          _mainView.ShowInfo(
-            $"\"{e.Game.DisplayName}\" has successfully been moved to the library located at \"{e.DestinationLibraryPath}\".\r\n\r\n" +
-            "Please restart the Steam application to make sure the new game location is taken into account.");
+          var successMessage =
+            $"\"{e.Game.DisplayName}\" has been successfully moved to the library located at \"{e.DestinationLibraryPath}\".";
+          if (steamProcess == null) {
+            _mainView.ShowInfo(successMessage);
+          }
+          else {
+            var yes = _mainView.ShowYesNo(successMessage + "\r\n\r\n" +
+              "Steam should be restarted now to make sure the new game location is taken into account.\r\n\r\n" +
+              "Do you want to automatically restart Steam now?");
+
+            if (yes) {
+              var success = await _steamDiscovery.RestartSteamAsync();
+              if (success) {
+                _mainView.ShowInfo("Steam was successfully restarted");
+              }
+              else {
+                _mainView.ShowInfo("Steam could not be restarted. Please restart manually.");
+              }
+            }
+          }
         }
       }
       finally {
@@ -142,7 +161,7 @@ namespace SteamLibraryExplorer {
           _model.SteamConfiguration.Location.Value = steamLocation;
         }
 
-        if (_model.SteamConfiguration.Location.Value == null) {
+        if (steamLocation == null) {
           _mainView.ShowError(
             "Cannot locate Steam installation folder.\r\n\r\n" +
             "Try starting the Steam application and select \"File > Refresh\".");

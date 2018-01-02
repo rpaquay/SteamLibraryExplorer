@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -39,6 +40,16 @@ namespace SteamLibraryExplorer.SteamUtil {
       // Copy collection, since it could be cleared if a Refresh occurs.
       var copy = libraries.ToList();
       return RunAsync(() => DiscoverSizeOnDisk(copy, cancellationToken));
+    }
+
+    [NotNull]
+    public Task<bool> RestartSteamAsync() {
+      return RunAsync(RestartSteam);
+    }
+
+    [NotNull]
+    public Task<Process> FindSteamProcessAsync() {
+      return RunAsync(FindSteamProcess);
     }
 
     [NotNull]
@@ -84,7 +95,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         var workshopFile = workshopFiles
           .FirstOrDefault(wsFile => acfFile != null &&
                                     StringComparer.OrdinalIgnoreCase.Equals(wsFile.AppId, acfFile.AppId));
-        Logger.Info("Found game: Directory=\"{0}\", ACF file=\"{1}\", Workshop file=\"{2}\"", 
+        Logger.Info("Found game: Directory=\"{0}\", ACF file=\"{1}\", Workshop file=\"{2}\"",
           gameDir.FullName, acfFile?.Path.FullName ?? "<None>", workshopFile?.Path.FullName ?? "<None>");
         return new SteamGame(gameDir, acfFile, workshopFile);
       }).ToList();
@@ -102,9 +113,9 @@ namespace SteamLibraryExplorer.SteamUtil {
         ulong userFreeBytes;
         ulong totalBytes;
         ulong freeBytes;
-        if (GetDiskFreeSpaceEx(library.Location.FullName, out userFreeBytes, out totalBytes, out freeBytes)) {
-          library.FreeDiskSize.Value = (long) freeBytes;
-          library.TotalDiskSize.Value = (long) totalBytes;
+        if (NativeMethods.GetDiskFreeSpaceEx(library.Location.FullName, out userFreeBytes, out totalBytes, out freeBytes)) {
+          library.FreeDiskSize.Value = (long)freeBytes;
+          library.TotalDiskSize.Value = (long)totalBytes;
         }
 
         foreach (var game in library.Games) {
@@ -185,12 +196,11 @@ namespace SteamLibraryExplorer.SteamUtil {
           return null;
         }
         using (key) {
-          var path = (string) key.GetValue("SteamPath");
+          var path = (string)key.GetValue("SteamPath");
           var installDir = new FullPath(path.Replace("/", "\\"));
           return FileSystem.DirectoryExists(installDir) ? installDir : null;
         }
-      }
-      catch (Exception) {
+      } catch (Exception) {
         return null;
       }
     }
@@ -214,6 +224,91 @@ namespace SteamLibraryExplorer.SteamUtil {
       return dir;
     }
 
+    private bool RestartSteam() {
+      var process = FindSteamProcess();
+      if (process == null) {
+        Logger.Info("Steam does not need to be restarted because it is not running");
+        return true;
+      }
+
+      var path = new FullPath(process.MainModule.FileName);
+      if (process.MainWindowHandle != IntPtr.Zero) {
+        Logger.Info("Closing Steam using the main window handle");
+        SendEndSessionMessageToWindow(process.MainWindowHandle);
+      } else {
+        foreach (var handle in EnumerateProcessWindowHandles(process)) {
+          Logger.Info("Closing Steam using one of the process window handles");
+          SendEndSessionMessageToWindow(handle);
+          if (process.WaitForExit((int) TimeSpan.FromSeconds(0.1).TotalMilliseconds)) {
+            break;
+          }
+        }
+      }
+
+      if (!process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds)) {
+        Logger.Warn("Steam not restarted because it took more than 10 seconds to close");
+        return false;
+      }
+
+      try {
+        var si = new ProcessStartInfo(path.FullName);
+        si.WindowStyle = ProcessWindowStyle.Minimized;
+        var newProcess = Process.Start(si);
+        if (newProcess == null) {
+          Logger.Info("There was an error restarting Steam");
+        } else {
+          Logger.Info("Steam has been successfully restarted");
+        }
+      } catch (Exception e) {
+        Logger.Error(e, "Steam not restarted because Start process failed");
+        return false;
+      }
+      return true;
+    }
+
+    private Process FindSteamProcess() {
+      var steamProcesses = Process.GetProcessesByName("Steam");
+      return steamProcesses.Where(IsSteamProcess).FirstOrDefault(x => x != null);
+    }
+
+
+    private static void SendEndSessionMessageToWindow(IntPtr handle) {
+      // From https://msdn.microsoft.com/en-us/library/windows/desktop/aa376890(v=vs.85).aspx:
+      //
+      // ""Applications should respect the user's intentions and return TRUE. By default, the DefWindowProc
+      // function returns TRUE for this message.
+      // If shutting down would corrupt the system or media that is being burned, the application can
+      // return FALSE.However, it is good practice to respect the user's actions.""
+      var result = NativeMethods.SendMessage(handle, NativeMethods.WM_QUERYENDSESSION,
+        new IntPtr(0), new IntPtr(NativeMethods.ENDSESSION_CLOSEAPP));
+      if (result != 0) {
+        Logger.Info("Steam has accepted the WM_QUERYENDSESSION message");
+      }
+      result = NativeMethods.SendMessage(handle, NativeMethods.WM_ENDSESSION, new IntPtr(1),
+        new IntPtr(NativeMethods.ENDSESSION_CLOSEAPP));
+      if (result == 0) {
+        Logger.Info("Steam has accepted closing the main window handle");
+      }
+    }
+
+    private bool IsSteamProcess(Process process) {
+      var processPath = new FullPath(process.MainModule.FileName);
+      if (!FileSystem.FileExists(processPath)) {
+        return false;
+      }
+
+      var dir = processPath.Parent;
+      if (dir == null || !FileSystem.DirectoryExists(dir)) {
+        return false;
+      }
+
+      if (!FileSystem.DirectoryExists(dir.Combine("steamapps"))) {
+        return false;
+      }
+
+      return true;
+    }
+
     [CanBeNull]
     public static string GetProperty([NotNull] string contents, [NotNull] string propName) {
       var regex = new Regex("^.*\"" + propName + "\".*\"(?<propValue>.+)\"$", RegexOptions.IgnoreCase);
@@ -228,11 +323,39 @@ namespace SteamLibraryExplorer.SteamUtil {
       return null;
     }
 
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    static extern bool GetDiskFreeSpaceEx([NotNull] string lpDirectoryName,
-      out ulong lpFreeBytesAvailable,
-      out ulong lpTotalNumberOfBytes,
-      out ulong lpTotalNumberOfFreeBytes);
+    static IList<IntPtr> EnumerateProcessWindowHandles(Process process) {
+      var handles = new List<IntPtr>();
+
+      foreach (ProcessThread thread in process.Threads)
+        NativeMethods.EnumThreadWindows(thread.Id,
+          (hWnd, lParam) => {
+            handles.Add(hWnd);
+            return true;
+          }, IntPtr.Zero);
+
+      return handles;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    private static class NativeMethods {
+      public const int WM_QUERYENDSESSION = 0x0011;
+      public const int ENDSESSION_CLOSEAPP = 0x1;
+      public const int WM_ENDSESSION = 0x0016;
+
+      [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+      [return: MarshalAs(UnmanagedType.Bool)]
+      public static extern bool GetDiskFreeSpaceEx([NotNull] string lpDirectoryName,
+        out ulong lpFreeBytesAvailable,
+        out ulong lpTotalNumberOfBytes,
+        out ulong lpTotalNumberOfFreeBytes);
+
+      [DllImport("user32.dll")]
+      public static extern int SendMessage(IntPtr hWnd, int wMsg, IntPtr wParam, IntPtr lParam);
+
+      public delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+
+      [DllImport("user32.dll")]
+      public static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+    }
   }
 }
