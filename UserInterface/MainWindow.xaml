@@ -102,11 +102,11 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="Location" Click="ListViewColumnHeader_Click">Location</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click">Location</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding Location}" TextAlignment="Left" Foreground="{Binding LocationColor}" />
+                <TextBlock Text="{Binding RelativePath}" TextAlignment="Left" Foreground="{Binding RelativePathColor}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>

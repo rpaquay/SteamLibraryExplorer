@@ -8,11 +8,11 @@ namespace SteamLibraryExplorer.ViewModel {
     private string _listViewGroupHeader;
     private int _listViewGroupHeaderSortIndex;
     private string _displayName;
-    private string _location;
+    private string _relativePath;
     private string _acfFile;
     private long _sizeOnDisk;
     private long _fileCount;
-    private Brush _locationColor;
+    private Brush _relativePathColor;
     private Brush _acfFileColor;
     private Brush _sizeOnDiskColor;
     private Brush _fileCountColor;
@@ -64,14 +64,14 @@ namespace SteamLibraryExplorer.ViewModel {
       set { UpdateProperty(ref _displayName, value, nameof(DisplayName)); }
     }
 
-    public string Location {
-      get { return _location; }
-      set { UpdateProperty(ref _location, value, nameof(Location)); }
+    public string RelativePath {
+      get { return _relativePath; }
+      set { UpdateProperty(ref _relativePath, value, nameof(RelativePath)); }
     }
 
-    public Brush LocationColor {
-      get { return _locationColor ?? Brushes.Black; }
-      set { UpdateProperty(ref _locationColor, value, nameof(LocationColor)); }
+    public Brush RelativePathColor {
+      get { return _relativePathColor ?? Brushes.Black; }
+      set { UpdateProperty(ref _relativePathColor, value, nameof(RelativePathColor)); }
     }
 
     public string AcfFile {
