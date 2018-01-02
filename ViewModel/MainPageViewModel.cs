@@ -13,7 +13,12 @@ namespace SteamLibraryExplorer.ViewModel {
     public string WindowTitle {
       get {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return $"Steam Library Explorer {version.Major}.{version.Minor}";
+        if (version.Build == 0) {
+          return $"Steam Library Explorer {version.Major}.{version.Minor}";
+        }
+        else {
+          return $"Steam Library Explorer {version.Major}.{version.Minor}.{version.Build}";
+        }
       }
     }
 
