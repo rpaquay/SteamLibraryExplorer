@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Win32;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 
@@ -17,7 +18,7 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     [NotNull]
     public Task<FullPath> LocateSteamFolderAsync() {
-      return RunAsync(LocateSteamUsingProcess);
+      return RunAsync(LocateSteamFolder);
     }
 
     [NotNull]
@@ -162,9 +163,36 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [CanBeNull]
+    private FullPath LocateSteamFolder() {
+      var result = LocateSteamUsingProcess();
+      if (result == null) {
+        result = LocateSteamUsingRegistry();
+      }
+      return result;
+    }
+
+    [CanBeNull]
     private FullPath LocateSteamUsingProcess() {
       var steamProcesses = Process.GetProcessesByName("Steam");
       return steamProcesses.Select(GetSteamProcessFolder).FirstOrDefault(x => x != null);
+    }
+
+    [CanBeNull]
+    private FullPath LocateSteamUsingRegistry() {
+      try {
+        var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
+        if (key == null) {
+          return null;
+        }
+        using (key) {
+          var path = (string) key.GetValue("SteamPath");
+          var installDir = new FullPath(path.Replace("/", "\\"));
+          return FileSystem.DirectoryExists(installDir) ? installDir : null;
+        }
+      }
+      catch (Exception) {
+        return null;
+      }
     }
 
     [CanBeNull]
