@@ -5,10 +5,14 @@ using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class MoveDirectoryInfo {
-    [CanBeNull]
-    public FullPath SourceDirectory { get; set; }
-    [CanBeNull]
-    public FullPath DestinationDirectory { get; set; }
+    public MoveDirectoryInfo([NotNull] FullPath sourceDirectory, [NotNull] FullPath destinationDirectory) {
+      SourceDirectory = sourceDirectory;
+      DestinationDirectory = destinationDirectory;
+    }
+    [NotNull]
+    public FullPath SourceDirectory { get; }
+    [NotNull]
+    public FullPath DestinationDirectory { get; }
     public MovePhase CurrentPhase { get; set; }
 
     public long MovedFileCount { get; set; }
@@ -38,9 +42,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     public long RemainingFileToDeleteCount => MovedFileCount - DeletedFileCount;
 
     public MoveDirectoryInfo Clone() {
-      return new MoveDirectoryInfo {
-        SourceDirectory = SourceDirectory,
-        DestinationDirectory = DestinationDirectory,
+      return new MoveDirectoryInfo(SourceDirectory, DestinationDirectory) {
         CurrentPhase = CurrentPhase,
         MovedFileCount = MovedFileCount,
         TotalFileCount = TotalFileCount,
@@ -70,7 +72,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         }
 
         // 0.8 means there is 80% of the work done
-        var progressRatio = (double) MovedBytes / TotalBytes;
+        var progressRatio = (double)MovedBytes / TotalBytes;
         Debug.Assert(progressRatio >= 0.0);
         Debug.Assert(progressRatio <= 1.0);
 

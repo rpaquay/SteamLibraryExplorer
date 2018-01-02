@@ -22,6 +22,10 @@ namespace SteamLibraryExplorer.SteamUtil {
     private class PathInfo {
       public long FileCount { get; set; }
       public long SizeOnDisk { get; set; }
+
+      public override string ToString() {
+        return $"[FileCount={FileCount:n0}, SizeOnDisk={SizeOnDisk:n0}]";
+      }
     }
 
     [NotNull]

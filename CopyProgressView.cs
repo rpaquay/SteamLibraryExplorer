@@ -6,6 +6,15 @@ using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer {
   public class CopyProgressView {
+    /// <summary>
+    /// We assume copying file to destination takes 99% of the time, while deleting files from the source
+    /// takes 1% of the time
+    /// </summary>
+    private const double CopyVersusDeleteFraction = 0.99;
+    /// <summary>
+    /// The opposite value of <see cref="CopyVersusDeleteFraction"/>
+    /// </summary>
+    private const double DeleteVersusCopyFraction = 1.0 - CopyVersusDeleteFraction;
     private readonly CopyProgressWindow _progressWindow;
     private readonly CopyProgressViewModel _viewModel;
     private readonly ThrottledDispatcher _throttledDispatcher = new ThrottledDispatcher();
@@ -39,10 +48,6 @@ namespace SteamLibraryExplorer {
     }
 
     private void UpdateViewModel(MoveDirectoryInfo info) {
-      // We assume copy takes 90% of the time, and delete source takes 10% of the time
-      var copyVersusDeleteFraction = 0.9;
-      var deleteVersusCopyFraction = 1.0 - copyVersusDeleteFraction;
-
       switch (info.CurrentPhase) {
         case MovePhase.DiscoveringSourceFiles:
           _viewModel.MessageText = string.Format("Discovering files and directories: {0:n0} files", info.TotalFileCount);
@@ -51,7 +56,7 @@ namespace SteamLibraryExplorer {
         case MovePhase.CopyingFiles:
           _viewModel.MessageText = string.Format("Copying {0:n0} items from \"{1}\" to \"{2}\"",
             info.TotalFileCount, info.SourceDirectory.FullName, info.DestinationDirectory.FullName);
-          _viewModel.TotalProgressFraction = ProgressFraction(info.MovedBytes, info.TotalBytes)  * copyVersusDeleteFraction;
+          _viewModel.TotalProgressFraction = ProgressFraction(info.MovedBytes, info.TotalBytes)  * CopyVersusDeleteFraction;
           _viewModel.TotalProgressText = string.Format("{0} of {1}",
             MainView.HumanReadableDiskSize(info.MovedBytes),
             MainView.HumanReadableDiskSize(info.TotalBytes));
@@ -60,7 +65,7 @@ namespace SteamLibraryExplorer {
           _viewModel.SpeedTextText = ThroughputText(info.MovedBytes, info.ElapsedTime);
           _viewModel.ElapsedTime = TimeSpanText(info.ElapsedTime);
           _viewModel.RemainingTime = "About " + TimeSpanText(info.EstimatedRemainingTime);
-          _viewModel.ItemsRemainingText = string.Format("{0:n0} ({1:n0})",
+          _viewModel.ItemsRemainingText = string.Format("{0:n0} ({1})",
             info.RemainingFileCount, MainView.HumanReadableDiskSize(info.RemainingBytes));
 
           _viewModel.CurrentFilePath = info.CurrentFile?.Name ?? "";
@@ -72,7 +77,7 @@ namespace SteamLibraryExplorer {
 
         case MovePhase.DeletingSourceDirectory:
           _viewModel.MessageText = "Deleting source directory after successful copy";
-          _viewModel.TotalProgressFraction = copyVersusDeleteFraction + ProgressFraction(info.DeletedFileCount, info.MovedFileCount) * deleteVersusCopyFraction;
+          _viewModel.TotalProgressFraction = CopyVersusDeleteFraction + ProgressFraction(info.DeletedFileCount, info.MovedFileCount) * DeleteVersusCopyFraction;
           _viewModel.TotalProgressText = "";
           _viewModel.PercentCompleteText = string.Format("{0:n0}% complete", _viewModel.TotalProgressFraction * 100);
 
@@ -109,7 +114,7 @@ namespace SteamLibraryExplorer {
       if (elapsedTime == TimeSpan.Zero) {
         return "-";
       }
-      var bytesPerSecond = (double)currentBytes / elapsedTime.TotalSeconds;
+      var bytesPerSecond = currentBytes / elapsedTime.TotalSeconds;
       return MainView.HumanReadableDiskSize((long)bytesPerSecond) + "/s";
     }
 

@@ -97,9 +97,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         destinationAcfFile, destinationGameLocation,
         destinationWorkshopFile, destinatioWorkshopLocation);
 
-      var moveInfo = new MoveDirectoryInfo {
-        SourceDirectory = game.Location,
-        DestinationDirectory = destinationGameLocation,
+      var moveInfo = new MoveDirectoryInfo(game.Location, destinationGameLocation) {
         StartTime = DateTime.UtcNow,
         CurrentTime = DateTime.UtcNow,
       };
