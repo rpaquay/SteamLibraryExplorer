@@ -5,7 +5,7 @@ namespace SteamLibraryExplorer.Utils {
     private static bool _nlogAvailable;
     public static void Configure() {
       try {
-        NLogUtils.NLogUtils.ConfigureApplication();
+        NLogUtils.NLogFacade.ConfigureApplication();
       }
       catch (Exception) {
         _nlogAvailable = false;
@@ -18,7 +18,7 @@ namespace SteamLibraryExplorer.Utils {
         return new NullLoggerFacade();
       }
       try {
-        return NLogUtils.NLogUtils.GetLogger(type.FullName);
+        return NLogUtils.NLogFacade.GetLogger(type.FullName);
       }
       catch (Exception) {
         return new NullLoggerFacade();

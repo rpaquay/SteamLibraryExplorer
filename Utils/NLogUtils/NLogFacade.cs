@@ -3,7 +3,7 @@ using NLog.Config;
 using NLog.Targets;
 
 namespace SteamLibraryExplorer.Utils.NLogUtils {
-  public class NLogUtils {
+  public class NLogFacade {
     public static void ConfigureApplication() {
       // Step 1. Create configuration object 
       var config = new LoggingConfiguration();
