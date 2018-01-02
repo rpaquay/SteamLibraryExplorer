@@ -71,7 +71,7 @@
             <MenuItem.Resources>
               <Style TargetType="MenuItem">
                 <Setter Property="DataContext" Value="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                <Setter Property="Command" Value="{Binding PlacementTarget.SelectedItem.CopyGameCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                <Setter Property="Command" Value="{Binding PlacementTarget.SelectedItem.MoveGameToLibraryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                 <Setter Property="CommandParameter" Value="{Binding}" />
               </Style>
             </MenuItem.Resources>

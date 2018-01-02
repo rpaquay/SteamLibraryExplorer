@@ -217,7 +217,7 @@ namespace SteamLibraryExplorer {
         gameViewModel.FileCount = game.FileCount.Value;
         gameViewModel.FileCountColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null;
 
-        gameViewModel.CopyGameInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
+        gameViewModel.MoveGameToLibraryInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
 
         _viewModel.SteamGames.Add(gameViewModel);
         gamesViewModel.Add(gameViewModel);

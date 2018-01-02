@@ -16,8 +16,23 @@ namespace SteamLibraryExplorer.ViewModel {
     private Brush _acfFileColor;
     private Brush _sizeOnDiskColor;
     private Brush _fileCountColor;
-    private RelayExecuteCommand _copyGameCommand;
+    private RelayExecuteCommand _moveGameToLibraryCommand;
 
+    /// <summary>
+    /// Event raised when a "Move Game To Library" command is invoked
+    /// The parameter is the library path.
+    /// </summary>
+    public event EventHandler<string> MoveGameToLibraryInvoked;
+
+    /// <summary>
+    /// The command invoked when a "Move To Library" menu item is clicked.
+    /// </summary>
+    public RelayExecuteCommand MoveGameToLibraryCommand =>
+      _moveGameToLibraryCommand ?? (_moveGameToLibraryCommand = new RelayExecuteCommand(OnMoveGameToLibraryInvoked));
+
+    /// <summary>
+    /// The label of group header in the livet view
+    /// </summary>
     public string ListViewGroupHeader {
       get { return _listViewGroupHeader; }
       set {
@@ -26,19 +41,24 @@ namespace SteamLibraryExplorer.ViewModel {
       }
     }
 
+    /// <summary>
+    /// The sort index of group headers (since display name is not a valid sorting key).
+    /// </summary>
     public int ListViewGroupHeaderSortIndex {
       get { return _listViewGroupHeaderSortIndex; }
       set { UpdateProperty(ref _listViewGroupHeaderSortIndex, value, nameof(ListViewGroupHeaderSortIndex)); }
     }
 
-    public RelayExecuteCommand CopyGameCommand {
-      get { return _copyGameCommand ?? (_copyGameCommand = new RelayExecuteCommand(OnCopyGameInvoked)); }
-    }
-
-    public event EventHandler<string> CopyGameInvoked;
-
+    /// <summary>
+    /// The list of libraries the game can be moved to.
+    /// The string is the path of the destination library.
+    /// </summary>
     public ObservableCollection<string> MoveToLibraries { get; } = new ObservableCollection<string>();
 
+    /// <summary>
+    /// The game label in the list view. Usually the name of the game, or the directory name
+    /// if the ACF file is missing.
+    /// </summary>
     public string DisplayName {
       get { return _displayName; }
       set { UpdateProperty(ref _displayName, value, nameof(DisplayName)); }
@@ -84,8 +104,8 @@ namespace SteamLibraryExplorer.ViewModel {
       set { UpdateProperty(ref _fileCountColor, value, nameof(FileCountColor)); }
     }
 
-    protected virtual void OnCopyGameInvoked(object libraryPath) {
-      CopyGameInvoked?.Invoke(this, (string) libraryPath);
+    protected virtual void OnMoveGameToLibraryInvoked(object libraryPath) {
+      MoveGameToLibraryInvoked?.Invoke(this, (string)libraryPath);
     }
   }
 }
