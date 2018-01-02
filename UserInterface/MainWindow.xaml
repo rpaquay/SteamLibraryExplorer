@@ -130,6 +130,26 @@
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
+          <GridViewColumn Width="240">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click">Workshop ACF File</GridViewColumnHeader>
+            </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding WorkshopAcfFile}" TextAlignment="Left" Foreground="{Binding WorkshopAcfFileColor}"/>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Width="240">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click">Workshop Folder</GridViewColumnHeader>
+            </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding WorkshopRelativePath}" TextAlignment="Left" Foreground="{Binding WorkshopRelativePathColor}" />
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
         </GridView>
       </ListView.View>
       <ListView.ItemContainerStyle>

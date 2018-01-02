@@ -188,6 +188,10 @@ namespace SteamLibraryExplorer {
           AcfFileColor = game.AcfFile == null ? Brushes.Red : null,
           RelativePath = !FileSystem.DirectoryExists(game.Location) ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
           RelativePathColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null,
+          WorkshopAcfFile = game.WorkshopFile == null ? "n/a" : game.WorkshopFile.Path.GetRelativePathTo(library.Location),
+          WorkshopAcfFileColor = game.WorkshopFile == null ? Brushes.DarkSlateBlue : null,
+          WorkshopRelativePath = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation) ? "n/a" : game.WorkshopLocation.GetRelativePathTo(library.Location),
+          WorkshopRelativePathColor = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation) ? Brushes.DarkSlateBlue : null,
         };
 
         // Add existing libraries to list of "MoveToLibraries" destination
