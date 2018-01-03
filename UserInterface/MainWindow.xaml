@@ -232,10 +232,10 @@
       </ListView.View>
       <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
+          <Setter Property="Template" Value="{StaticResource ListViewItemCustomTemplate}" />
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
       </ListView.ItemContainerStyle>
-
       <ListView.GroupStyle>
         <GroupStyle>
           <GroupStyle.ContainerStyle>
@@ -262,10 +262,3 @@
     </ListView>
   </DockPanel>
 </Window>
-
-
-
-
-
-
-
