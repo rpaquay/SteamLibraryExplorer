@@ -47,6 +47,25 @@
         <TextBlock Text="Refresh"></TextBlock>
       </Button>
     </ToolBar>
+    <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
+      <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="5"
+               HorizontalAlignment="Stretch"  VerticalAlignment="Center"
+               x:Name="SearchTermTextBox" TextChanged="TextBoxBase_OnTextChanged" />
+      <!-- Watermark for the textbox above !-->
+      <TextBlock IsHitTestVisible="False" Text="Enter Search Term Here"
+                 VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+        <TextBlock.Style>
+          <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
+                <Setter Property="Visibility" Value="Visible"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+    </Grid>
     <StatusBar DockPanel.Dock="Bottom">
       <StatusBarItem>
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
@@ -58,10 +77,6 @@
         </Grid>
       </StatusBarItem>
     </StatusBar>
-    <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
-      <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-               HorizontalAlignment="Stretch" TextChanged="TextBoxBase_OnTextChanged" />
-    </Grid>
     <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}">
       <ListView.Resources>
         <Style TargetType="{x:Type GridViewColumnHeader}">
@@ -176,11 +191,11 @@
           </GridViewColumn>
         </GridView>
       </ListView.View>
-      <!--<ListView.ItemContainerStyle>
+      <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
-      </ListView.ItemContainerStyle>-->
+      </ListView.ItemContainerStyle>
       <ListView.GroupStyle>
         <GroupStyle>
           <GroupStyle.ContainerStyle>
@@ -193,7 +208,7 @@
                       <Expander.Header>
                         <DockPanel Margin="0,6,0,6">
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
-                           <!-- Note that "Name" is a property of the implicit CollectionViewGroup type !-->
+                          <!-- Note that "Name" is a property of the implicit CollectionViewGroup type !-->
                           <TextBlock Margin="2,0,2,0" Text="{Binding Name}" DockPanel.Dock="Left" FontSize="14" />
                           <Separator Margin="2,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
