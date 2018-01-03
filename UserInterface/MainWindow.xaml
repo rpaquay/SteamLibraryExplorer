@@ -28,6 +28,11 @@
     <SolidColorBrush x:Key="WorkshopMissingBrush" Color="CadetBlue" />
     <!-- Override text to be "light gray" instead of white -->
     <SolidColorBrush x:Key="TextBrush" Color="#FFF0F0F0" />
+    <!-- Set background color of list view column headers -->
+    <Style x:Key="MyGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+      <Setter Property="Background" Value="{StaticResource ButtonNormalBorder}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    </Style>
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding x:Name="CloseCommand" Command="ApplicationCommands.Close"/>
@@ -83,7 +88,8 @@
         </Grid>
       </StatusBarItem>
     </StatusBar>
-    <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}">
+    <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}"
+              VirtualizingPanel.IsVirtualizingWhenGrouping="True">
       <ListView.Resources>
         <Style TargetType="{x:Type GridViewColumnHeader}">
           <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -104,12 +110,11 @@
         </ContextMenu>
       </ListView.ContextMenu>
       <ListView.View>
-        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
+        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}" ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
           <GridViewColumn Width="220">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 Game
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -121,9 +126,8 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 ACF File
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -135,9 +139,8 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 Location
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -149,9 +152,8 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 Size
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -163,9 +165,8 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 # of files
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -177,9 +178,8 @@
           </GridViewColumn>
           <GridViewColumn Width="280">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 Workshop ACF File
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -191,9 +191,8 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 Workshop Folder
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -205,9 +204,8 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 Size
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -219,9 +217,8 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click" 
-                                    Background="{StaticResource ButtonNormalBorder}"
-                                    Foreground="{StaticResource TextBrush}">
+              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click"
+                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
                 # of files
               </GridViewColumnHeader>
             </GridViewColumn.Header>
@@ -251,7 +248,6 @@
                         <DockPanel Margin="0,6,0,6" d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
                           <TextBlock Margin="2,0,2,0" Text="{Binding ListViewGroupHeader}" DockPanel.Dock="Left" FontSize="14" />
-                          <Separator Margin="2,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
                       </Expander.Header>
                       <ItemsPresenter />
