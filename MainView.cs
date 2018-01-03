@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using JetBrains.Annotations;
@@ -40,10 +41,33 @@ namespace SteamLibraryExplorer {
       _mainForm.RefreshCommand.Executed += (sender, args) => OnRefreshView();
 
       _mainForm.GamesListViewColumnsHeaderClick += (sender, header) => _listViewColumnSorter.SortColumn(_mainForm.ListView, header);
+      _mainForm.FilterGameEntry += MainFormOnFilterGameEntry;
+      _mainForm.SearchTextChanged += MainFormOnSearchTextChanged;
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
 
-      _throttledDispatcher.Start(TimeSpan.FromMilliseconds(200));
+      _throttledDispatcher.Start(TimeSpan.FromMilliseconds(500));
+    }
+
+    private void MainFormOnSearchTextChanged(object o, TextChangedEventArgs textChangedEventArgs) {
+      _throttledDispatcher.Enqeue(nameof(MainFormOnSearchTextChanged), () => {
+        // Refresh list view (filter) when seatch text changes
+        CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource).Refresh();
+      });
+    }
+
+    /// <summary>
+    /// Filter a list view item, i.e. a <see cref="SteamGameViewModel"/> according to
+    /// <see cref="MainPageViewModel.SearchText"/>
+    /// </summary>
+    private void MainFormOnFilterGameEntry(object o, FilterEventArgs e) {
+      var gameViewModel = e.Item as SteamGameViewModel;
+      if (gameViewModel != null) {
+        var searchText = (_viewModel.SearchText ?? "").Trim();
+        if (searchText.Length > 0) {
+          e.Accepted = gameViewModel.DisplayName.IndexOf(searchText, StringComparison.CurrentCultureIgnoreCase) >= 0;
+        }
+      }
     }
 
     public static string HumanReadableFileCount(long value) {

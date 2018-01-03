@@ -9,6 +9,7 @@ namespace SteamLibraryExplorer.ViewModel {
   public class MainPageViewModel : ObservableObject {
     private string _statusText;
     private bool _isDiscoveringSteamFiles;
+    private string _searchText;
 
     public string WindowTitle {
       get {
@@ -30,6 +31,11 @@ namespace SteamLibraryExplorer.ViewModel {
     public bool IsDiscoveringSteamFiles {
       get { return _isDiscoveringSteamFiles; }
       set { UpdateProperty(ref _isDiscoveringSteamFiles, value, nameof(IsDiscoveringSteamFiles)); }
+    }
+
+    public string SearchText {
+      get { return _searchText; }
+      set { UpdateProperty(ref _searchText, value, nameof(SearchText)); }
     }
 
     public ObservableCollection<SteamGameViewModel> SteamGames { get; } =

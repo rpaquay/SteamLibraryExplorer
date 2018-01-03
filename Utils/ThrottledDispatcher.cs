@@ -13,7 +13,7 @@ namespace SteamLibraryExplorer.Utils {
     private IDictionary<string, Action> _callbacks = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
 
     public void Start(TimeSpan period) {
-      _timer.Interval = TimeSpan.FromMilliseconds(200);
+      _timer.Interval = period;
       _timer.Tick += TimerOnTick;
       _timer.Start();
     }

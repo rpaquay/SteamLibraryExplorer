@@ -15,7 +15,7 @@
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
-    <CollectionViewSource Source="{Binding SteamGames}" x:Key="SteamGamesCollectionViewSource">
+    <CollectionViewSource Source="{Binding SteamGames}" Filter="SteamGamesCollectionViewSource_OnFilter" x:Key="SteamGamesCollectionViewSource">
       <!--<CollectionViewSource.SortDescriptions>
         <componentModel:SortDescription PropertyName="ListViewGroupHeaderIndex" Direction="Ascending"/>
         <componentModel:SortDescription PropertyName="DisplayName" Direction="Ascending"/>
@@ -58,6 +58,10 @@
         </Grid>
       </StatusBarItem>
     </StatusBar>
+    <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
+      <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+               HorizontalAlignment="Stretch" TextChanged="TextBoxBase_OnTextChanged" />
+    </Grid>
     <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}">
       <ListView.Resources>
         <Style TargetType="{x:Type GridViewColumnHeader}">
@@ -79,7 +83,7 @@
         </ContextMenu>
       </ListView.ContextMenu>
       <ListView.View>
-        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
+        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}" VirtualizingPanel.IsVirtualizingWhenGrouping="True">
           <GridViewColumn Width="220">
             <GridViewColumn.Header>
               <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
@@ -172,11 +176,11 @@
           </GridViewColumn>
         </GridView>
       </ListView.View>
-      <ListView.ItemContainerStyle>
+      <!--<ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
-      </ListView.ItemContainerStyle>
+      </ListView.ItemContainerStyle>-->
       <ListView.GroupStyle>
         <GroupStyle>
           <GroupStyle.ContainerStyle>
@@ -189,8 +193,8 @@
                       <Expander.Header>
                         <DockPanel Margin="0,6,0,6">
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
-                          <!-- Note that "Name" is predefine of the implicit CollectionViewGroup type !-->
-                          <TextBlock Margin="2,0,2,0" Text="{Binding Name}" DockPanel.Dock="Left" FontSize="13.333" />
+                           <!-- Note that "Name" is a property of the implicit CollectionViewGroup type !-->
+                          <TextBlock Margin="2,0,2,0" Text="{Binding Name}" DockPanel.Dock="Left" FontSize="14" />
                           <Separator Margin="2,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
                       </Expander.Header>
