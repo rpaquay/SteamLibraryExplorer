@@ -9,6 +9,7 @@ namespace SteamLibraryExplorer.ViewModel {
     private int _listViewGroupHeaderSortIndex;
     private string _displayName;
     private string _relativePath;
+    private bool _isRelativePathValid;
     private string _acfFile;
     private long _sizeOnDisk;
     private long _fileCount;
@@ -78,6 +79,11 @@ namespace SteamLibraryExplorer.ViewModel {
     public Brush RelativePathColor {
       get { return _relativePathColor ?? Brushes.Black; }
       set { UpdateProperty(ref _relativePathColor, value, nameof(RelativePathColor)); }
+    }
+
+    public bool IsRelativePathValid {
+      get { return _isRelativePathValid; }
+      set { UpdateProperty(ref _isRelativePathValid, value, nameof(IsRelativePathValid)); }
     }
 
     public string AcfFile {

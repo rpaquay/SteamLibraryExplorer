@@ -11,20 +11,23 @@
   <Window.DataContext>
     <viewModel:MainPageViewModel/>
   </Window.DataContext>
+  <Window.Background>
+    <StaticResource ResourceKey="WindowBackgroundBrush" />
+  </Window.Background>
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
     <CollectionViewSource Source="{Binding SteamGames}" Filter="SteamGamesCollectionViewSource_OnFilter" x:Key="SteamGamesCollectionViewSource">
-      <!--<CollectionViewSource.SortDescriptions>
-        <componentModel:SortDescription PropertyName="ListViewGroupHeaderIndex" Direction="Ascending"/>
-        <componentModel:SortDescription PropertyName="DisplayName" Direction="Ascending"/>
-      </CollectionViewSource.SortDescriptions>-->
       <!-- Group by property "ListViewGroupHeader" of SteamGameViewModel!-->
       <CollectionViewSource.GroupDescriptions>
         <PropertyGroupDescription PropertyName="ListViewGroupHeader" />
       </CollectionViewSource.GroupDescriptions>
     </CollectionViewSource>
+    <SolidColorBrush x:Key="GameLocationErrorBrush" Color="Red" />
+    <SolidColorBrush x:Key="WorkshopMissingBrush" Color="CadetBlue" />
+    <!-- Override text to be "light gray" instead of white -->
+    <SolidColorBrush x:Key="TextBrush" Color="#FFF0F0F0" />
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding x:Name="CloseCommand" Command="ApplicationCommands.Close"/>
@@ -42,30 +45,33 @@
         <MenuItem Header="_Exit" Command="ApplicationCommands.Close"/>
       </MenuItem>
     </Menu>
-    <ToolBar DockPanel.Dock="Top">
-      <Button Command="NavigationCommands.Refresh">
-        <TextBlock Text="Refresh"></TextBlock>
-      </Button>
-    </ToolBar>
-    <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
-      <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="5"
-               HorizontalAlignment="Stretch"  VerticalAlignment="Center"
-               x:Name="SearchTermTextBox" TextChanged="TextBoxBase_OnTextChanged" />
-      <!-- Watermark for the textbox above !-->
-      <TextBlock IsHitTestVisible="False" Text="Enter Search Term Here"
-                 VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
-        <TextBlock.Style>
-          <Style TargetType="{x:Type TextBlock}">
-            <Setter Property="Visibility" Value="Collapsed"/>
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
-                <Setter Property="Visibility" Value="Visible"/>
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </TextBlock.Style>
-      </TextBlock>
-    </Grid>
+    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Stretch">
+      <Button DockPanel.Dock="Left" Command="NavigationCommands.Refresh" HorizontalAlignment="Left"
+              Width="50"
+              Content="&#x21ba;" FontSize="16" FontFamily="Segoe UI Emoji" />
+      <Grid HorizontalAlignment="Stretch">
+        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Padding="5"
+                 HorizontalAlignment="Stretch"  VerticalAlignment="Center"
+                 x:Name="SearchTermTextBox" TextChanged="TextBoxBase_OnTextChanged" />
+        <!-- Watermark for the textbox above !-->
+        <TextBlock IsHitTestVisible="False" Text="Search" 
+                   VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray" FontStyle="Italic">
+          <TextBlock.Style>
+            <Style TargetType="{x:Type TextBlock}">
+              <Setter Property="Visibility" Value="Collapsed"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
+                  <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsFocused, ElementName=SearchTermTextBox}" Value="True">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+      </Grid>
+    </DockPanel>
     <StatusBar DockPanel.Dock="Bottom">
       <StatusBarItem>
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>
@@ -73,7 +79,7 @@
       <StatusBarItem HorizontalAlignment="Right">
         <Grid Margin="0,0,10,0" Visibility="{Binding Path=IsDiscoveringSteamFiles, Converter={StaticResource BooleanToVisibilityConverter}}">
           <ProgressBar Width="300" Height="16" Minimum="0" Maximum="100" IsIndeterminate="True" />
-          <TextBlock Text="Discovering Steam games" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <TextBlock Text="Discovering Steam games" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextBrush}"/>
         </Grid>
       </StatusBarItem>
     </StatusBar>
@@ -98,10 +104,14 @@
         </ContextMenu>
       </ListView.ContextMenu>
       <ListView.View>
-        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}" VirtualizingPanel.IsVirtualizingWhenGrouping="True">
+        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
           <GridViewColumn Width="220">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                Game
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -111,7 +121,11 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click">ACF File</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                ACF File
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -121,7 +135,11 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click">Location</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                Location
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -131,7 +149,11 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                Size
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -141,7 +163,11 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                # of files
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -151,7 +177,11 @@
           </GridViewColumn>
           <GridViewColumn Width="280">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click">Workshop ACF File</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                Workshop ACF File
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -161,7 +191,11 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click">Workshop Folder</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                Workshop Folder
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -171,7 +205,11 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                Size
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -181,7 +219,11 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click" 
+                                    Background="{StaticResource ButtonNormalBorder}"
+                                    Foreground="{StaticResource TextBrush}">
+                # of files
+              </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -196,6 +238,7 @@
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
       </ListView.ItemContainerStyle>
+
       <ListView.GroupStyle>
         <GroupStyle>
           <GroupStyle.ContainerStyle>
@@ -203,13 +246,11 @@
               <Setter Property="Template">
                 <Setter.Value>
                   <ControlTemplate>
-                    <Expander IsExpanded="True" Template="{DynamicResource StretchExpanderControlTemplate}"
-                              d:DataContext="{d:DesignInstance CollectionViewGroup}">
+                    <Expander IsExpanded="True" d:DataContext="{d:DesignInstance CollectionViewGroup}" DataContext="{Binding Items}">
                       <Expander.Header>
-                        <DockPanel Margin="0,6,0,6">
+                        <DockPanel Margin="0,6,0,6" d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
                           <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
-                          <!-- Note that "Name" is a property of the implicit CollectionViewGroup type !-->
-                          <TextBlock Margin="2,0,2,0" Text="{Binding Name}" DockPanel.Dock="Left" FontSize="14" />
+                          <TextBlock Margin="2,0,2,0" Text="{Binding ListViewGroupHeader}" DockPanel.Dock="Left" FontSize="14" />
                           <Separator Margin="2,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
                       </Expander.Header>
@@ -225,3 +266,10 @@
     </ListView>
   </DockPanel>
 </Window>
+
+
+
+
+
+
+

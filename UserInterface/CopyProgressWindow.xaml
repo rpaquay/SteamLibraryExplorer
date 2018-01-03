@@ -13,7 +13,10 @@
   <Window.DataContext>
     <viewModel:CopyProgressViewModel/>
   </Window.DataContext>
-  <DockPanel LastChildFill="True" >
+  <Window.Background>
+    <StaticResource ResourceKey="WindowBackgroundBrush" />
+  </Window.Background>
+  <DockPanel LastChildFill="True">
     
     <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,10">
       <Button Content="Cancel" Width="100" Name="CancelButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" />

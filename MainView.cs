@@ -19,6 +19,9 @@ namespace SteamLibraryExplorer {
     private readonly MainWindow _mainForm;
     private readonly Model _model;
     private readonly MainPageViewModel _viewModel;
+    private readonly Brush _gameLocationInvalidBrush;
+    private readonly Brush _textBrush;
+    private readonly Brush _workshopMissingBrush;
     private readonly ThrottledDispatcher _throttledDispatcher = new ThrottledDispatcher();
     private readonly ThrottledDispatcher _searchThrottledDispatcher = new ThrottledDispatcher();
     private readonly ListViewColumnSorter _listViewColumnSorter = new ListViewColumnSorter();
@@ -29,6 +32,9 @@ namespace SteamLibraryExplorer {
       _model = model;
       _mainForm = mainForm;
       _viewModel = (MainPageViewModel)_mainForm.DataContext;
+      _gameLocationInvalidBrush = (Brush)_mainForm.FindResource("GameLocationErrorBrush");
+      _textBrush = (Brush)_mainForm.FindResource("TextBrush");
+      _workshopMissingBrush = (Brush)_mainForm.FindResource("WorkshopMissingBrush");
     }
 
     public event EventHandler RefreshView;
@@ -211,13 +217,14 @@ namespace SteamLibraryExplorer {
           ListViewGroupHeaderSortIndex = _gameLibraryCount,
           DisplayName = game.DisplayName,
           AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.Path.GetRelativePathTo(library.Location),
-          AcfFileColor = game.AcfFile == null ? Brushes.Red : null,
+          AcfFileColor = game.AcfFile == null ? _gameLocationInvalidBrush : _textBrush,
           RelativePath = !FileSystem.DirectoryExists(game.Location) ? "<Not found>" : game.Location.GetRelativePathTo(library.Location),
-          RelativePathColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null,
+          IsRelativePathValid = FileSystem.DirectoryExists(game.Location),
+          RelativePathColor = !FileSystem.DirectoryExists(game.Location) ? _gameLocationInvalidBrush : _textBrush,
           WorkshopAcfFile = game.WorkshopFile == null ? "n/a" : game.WorkshopFile.Path.GetRelativePathTo(library.Location),
-          WorkshopAcfFileColor = game.WorkshopFile == null ? Brushes.DarkSlateBlue : null,
+          WorkshopAcfFileColor = game.WorkshopFile == null ? _workshopMissingBrush : _textBrush,
           WorkshopRelativePath = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation) ? "n/a" : game.WorkshopLocation.GetRelativePathTo(library.Location),
-          WorkshopRelativePathColor = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation) ? Brushes.DarkSlateBlue : null,
+          WorkshopRelativePathColor = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation) ? _workshopMissingBrush : _textBrush,
         };
 
         // Add existing libraries to list of "MoveToLibraries" destination
@@ -235,7 +242,7 @@ namespace SteamLibraryExplorer {
           });
         };
         gameViewModel.SizeOnDisk = game.SizeOnDisk.Value;
-        gameViewModel.SizeOnDiskColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null;
+        gameViewModel.SizeOnDiskColor = !FileSystem.DirectoryExists(game.Location) ? _gameLocationInvalidBrush : _textBrush;
 
         // Note: The order is important for concurrency correctness: we want to register to
         //       the "ValueChanged" event before we initialize the value of the ViewModel.
@@ -245,7 +252,7 @@ namespace SteamLibraryExplorer {
           });
         };
         gameViewModel.FileCount = game.FileCount.Value;
-        gameViewModel.FileCountColor = !FileSystem.DirectoryExists(game.Location) ? Brushes.Red : null;
+        gameViewModel.FileCountColor = !FileSystem.DirectoryExists(game.Location) ? _gameLocationInvalidBrush : _textBrush;
 
         // Note: The order is important for concurrency correctness: we want to register to
         //       the "ValueChanged" event before we initialize the value of the ViewModel.
