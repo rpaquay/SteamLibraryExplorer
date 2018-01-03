@@ -20,6 +20,7 @@ namespace SteamLibraryExplorer {
     private readonly Model _model;
     private readonly MainPageViewModel _viewModel;
     private readonly ThrottledDispatcher _throttledDispatcher = new ThrottledDispatcher();
+    private readonly ThrottledDispatcher _searchThrottledDispatcher = new ThrottledDispatcher();
     private readonly ListViewColumnSorter _listViewColumnSorter = new ListViewColumnSorter();
     private int _gameLibraryCount;
     private int _progressCount;
@@ -47,10 +48,11 @@ namespace SteamLibraryExplorer {
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
 
       _throttledDispatcher.Start(TimeSpan.FromMilliseconds(500));
+      _searchThrottledDispatcher.Start(TimeSpan.FromMilliseconds(750));
     }
 
     private void MainFormOnSearchTextChanged(object o, TextChangedEventArgs textChangedEventArgs) {
-      _throttledDispatcher.Enqeue(nameof(MainFormOnSearchTextChanged), () => {
+      _searchThrottledDispatcher.Enqeue(nameof(MainFormOnSearchTextChanged), () => {
         // Refresh list view (filter) when seatch text changes
         CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource).Refresh();
       });
