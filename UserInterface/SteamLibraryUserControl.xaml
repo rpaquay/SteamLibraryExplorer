@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:SteamLibraryExplorer.UserInterface"
              xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
              xmlns:wpfUtils="clr-namespace:SteamLibraryExplorer.WpfUtils"
              mc:Ignorable="d" 
@@ -14,7 +13,9 @@
     <wpfUtils:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
     <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}"
                            Filter="SteamGamesCollectionViewSource_OnFilter" />
+    <!-- ReSharper disable once Xaml.RedundantResource -->
     <SolidColorBrush x:Key="GameLocationErrorBrush" Color="Red" />
+    <!-- ReSharper disable once Xaml.RedundantResource -->
     <SolidColorBrush x:Key="WorkshopMissingBrush" Color="CadetBlue" />
     <!-- Override text to be "light gray" instead of white -->
     <SolidColorBrush x:Key="TextBrush" Color="#FFF0F0F0" />
@@ -65,6 +66,15 @@
               </MenuItem>
             </ContextMenu>
           </ListView.Resources>
+
+          <ListView.ItemContainerStyle>
+            <Style TargetType="ListViewItem">
+              <Setter Property="Template" Value="{StaticResource ListViewItemCustomTemplate}" />
+              <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+              <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}"/>
+            </Style>
+          </ListView.ItemContainerStyle>
+
           <ListView.View>
             <GridView ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
 
@@ -119,6 +129,7 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
+
               <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
                               Width="{Binding SteamLibraryListViewColumnsModel.GameFileCountColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
@@ -131,6 +142,7 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
+
               <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
                               Width="{Binding SteamLibraryListViewColumnsModel.WorkshopAcfFileColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
@@ -143,6 +155,7 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
+
               <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
                               Width="{Binding SteamLibraryListViewColumnsModel.WorkshopLocationColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
@@ -155,6 +168,7 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
+
               <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
                               Width="{Binding SteamLibraryListViewColumnsModel.GameSizeOnDiskColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
@@ -167,6 +181,7 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
+
               <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
                               Width="{Binding SteamLibraryListViewColumnsModel.WorkshopFileCountColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
@@ -181,16 +196,8 @@
               </GridViewColumn>
             </GridView>
           </ListView.View>
-          <ListView.ItemContainerStyle>
-            <Style TargetType="ListViewItem">
-              <Setter Property="Template" Value="{StaticResource ListViewItemCustomTemplate}" />
-              <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-              <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}"/>
-            </Style>
-          </ListView.ItemContainerStyle>
         </ListView>
       </Expander>
     </StackPanel>
   </Grid>
 </UserControl>
-
