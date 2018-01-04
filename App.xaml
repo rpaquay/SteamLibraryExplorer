@@ -32,16 +32,16 @@
 
         <ControlTemplate.Triggers>
           <Trigger Property="IsMouseOver" Value="True">
-            <Setter Property="Background" Value="{StaticResource ListItemHoverFill}" />
+            <!--<Setter Property="Background" Value="{StaticResource ListItemHoverFill}" />-->
             <Setter Property="BorderBrush" Value="#FFCCF0FF" />
-            <Setter TargetName="UpperHighlight" Property="Visibility" Value="Visible" />
+            <Setter TargetName="UpperHighlight" Property="Visibility" Value="Collapsed" />
           </Trigger>
 
           <Trigger Property="IsSelected" Value="True">
-            <Setter Property="Background" Value="{StaticResource ListItemSelectedFill}" />
+            <!--<Setter Property="Background" Value="{StaticResource ListItemSelectedFill}" />-->
             <Setter Property="BorderBrush" Value="#FF98DDFB" />
             <Setter TargetName="InnerBorder" Property="BorderBrush" Value="#80FFFFFF" />
-            <Setter TargetName="UpperHighlight" Property="Visibility" Value="Visible" />
+            <Setter TargetName="UpperHighlight" Property="Visibility" Value="Collapsed" />
             <Setter TargetName="UpperHighlight" Property="Fill" Value="#40FFFFFF" />
           </Trigger>
 
@@ -51,7 +51,7 @@
               <Condition Property="Selector.IsSelectionActive" Value="False" />
             </MultiTrigger.Conditions>
 
-            <Setter Property="Background" Value="{StaticResource ListItemSelectedInactiveFill}" />
+            <!--<Setter Property="Background" Value="{StaticResource ListItemSelectedInactiveFill}" />-->
             <Setter Property="BorderBrush" Value="#FFCFCFCF" />
           </MultiTrigger>
 
@@ -61,7 +61,7 @@
               <Condition Property="IsMouseOver" Value="True" />
             </MultiTrigger.Conditions>
 
-            <Setter Property="Background" Value="{StaticResource ListItemSelectedHoverFill}" />
+            <!--<Setter Property="Background" Value="{StaticResource ListItemSelectedHoverFill}" />-->
             <Setter Property="BorderBrush" Value="#FF98DDFB" />
           </MultiTrigger>
 
