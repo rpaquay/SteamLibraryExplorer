@@ -10,6 +10,13 @@
         Icon="../Resources/MainIcon.ico"
         WindowStartupLocation="CenterOwner"
         Title="{Binding PercentCompleteText}" Height="400" Width="600">
+  <Window.Resources>
+    <!-- Override text to be "light gray" instead of white -->
+    <SolidColorBrush x:Key="TextBrush" Color="#FFF0F0F0" />
+    <Style TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+  </Window.Resources>
   <Window.DataContext>
     <viewModel:CopyProgressViewModel/>
   </Window.DataContext>
@@ -17,11 +24,11 @@
     <StaticResource ResourceKey="WindowBackgroundBrush" />
   </Window.Background>
   <DockPanel LastChildFill="True">
-    
+
     <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,10">
       <Button Content="Cancel" Width="100" Name="CancelButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" />
     </StackPanel>
-    
+
     <StackPanel Orientation="Vertical" Margin="20,20,20,10">
       <TextBlock FontSize="12" Text="{Binding MessageText}"
                  VerticalAlignment="Center" Margin="6,12,6,6" TextWrapping="WrapWithOverflow"/>
@@ -63,10 +70,10 @@
       </StackPanel>
 
       <Grid Margin="6,2,6,6">
-        <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Height="20"
+        <ProgressBar HorizontalAlignment="Stretch" IsIndeterminate="False" Height="24"
                      Minimum="0" Maximum="1" Value="{Binding CurrentFileProgressFraction}" />
         <TextBlock Text="{Binding CurrentFileProgressText}" VerticalAlignment="Center"
-                   HorizontalAlignment="Center"/>
+                   HorizontalAlignment="Center" />
       </Grid>
 
     </StackPanel>
