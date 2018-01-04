@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents.DocumentStructures;
 using System.Windows.Media;
 using JetBrains.Annotations;
 using SteamLibraryExplorer.SteamModel;
@@ -155,12 +156,10 @@ namespace SteamLibraryExplorer {
       _gameLibraryCount = 0;
     }
 
-    private void RefreshGameLibraryGroups([NotNull]SteamLibrary library, [NotNull]List<SteamGameViewModel> gamesViewModel) {
-      foreach (var game in gamesViewModel) {
-        game.ListViewGroupHeader = GetGroupHeaderText(library);
-      }
+    private void RefreshGameLibraryGroups([NotNull]SteamLibrary library, [NotNull]SteamLibraryViewModel libraryViewModel) {
+      libraryViewModel.DisplayName = GetGroupHeaderText(library);
 
-      RefreshListView();
+      //RefreshListView();
     }
 
     private void RefreshListView() {
@@ -195,6 +194,8 @@ namespace SteamLibraryExplorer {
     }
 
     private void AddGameLibrary([NotNull]SteamLibrary library) {
+      bool firstLibrary = _viewModel.SteamLibraries.Count == 0;
+
       // Add "Move To" entry to existing games
       foreach (var gameViewModel in _viewModel.SteamLibraries.SelectMany(x => x.SteamGames)) {
         gameViewModel.MoveToLibraries.Add(library.Location.FullName);
@@ -205,24 +206,33 @@ namespace SteamLibraryExplorer {
         DisplayName = library.DisplayName,
         HideListViewColumnHeader = _viewModel.SteamLibraries.Count >= 1,
       };
+
       _viewModel.SteamLibraries.Add(libraryViewModel);
       libraryViewModel.GamesListViewColumnsHeaderClick += LibraryViewModelOnGamesListViewColumnsHeaderClick;
       libraryViewModel.FilterGameEntry += MainFormOnFilterGameEntry;
 
+      // Synchronize the column width with the first library
+      if (!firstLibrary) {
+        _viewModel.SteamLibraries.First().PropertyChanged += (sender, args) => {
+          if (args.PropertyName == nameof(SteamLibraryViewModel.GameDisplayNameColumnWidth)) {
+            libraryViewModel.GameDisplayNameColumnWidth = ((SteamLibraryViewModel) sender).GameDisplayNameColumnWidth;
+          }
+        };
+      }
+
       // Add games of new library
       _gameLibraryCount++;
-      var gamesViewModel = new List<SteamGameViewModel>();
 
       // Note: The order is important for concurrency correctness: we want to register to
       //       the "ValueChanged" event before we initialize the value of the ViewModel.
       library.FreeDiskSize.ValueChanged += (sender, arg) => {
         _throttledDispatcher.Enqeue(library.Location.FullName, () => {
-          RefreshGameLibraryGroups(library, gamesViewModel);
+          RefreshGameLibraryGroups(library, libraryViewModel);
         });
       };
       library.TotalDiskSize.ValueChanged += (sender, arg) => {
         _throttledDispatcher.Enqeue(library.Location.FullName, () => {
-          RefreshGameLibraryGroups(library, gamesViewModel);
+          RefreshGameLibraryGroups(library, libraryViewModel);
         });
       };
 
@@ -290,8 +300,6 @@ namespace SteamLibraryExplorer {
         gameViewModel.MoveGameToLibraryInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
 
         libraryViewModel.SteamGames.Add(gameViewModel);
-        //_viewModel.SteamGames.Add(gameViewModel);
-        gamesViewModel.Add(gameViewModel);
       }
     }
 

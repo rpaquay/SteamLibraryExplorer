@@ -8,6 +8,7 @@ namespace SteamLibraryExplorer.ViewModel {
   public class SteamLibraryViewModel : ObservableObject {
     private string _displayName;
     private bool _hideListViewColumnHeader;
+    private double _gameDisplayNameColumnWidth = 220;
 
     public event EventHandler<ListViewColumnClickEventArgs> GamesListViewColumnsHeaderClick;
     public event EventHandler<FilterEventArgs> FilterGameEntry;
@@ -16,6 +17,11 @@ namespace SteamLibraryExplorer.ViewModel {
     public string DisplayName {
       get { return _displayName; }
       set { UpdateProperty(ref _displayName, value, nameof(DisplayName)); }
+    }
+
+    public double GameDisplayNameColumnWidth {
+      get { return _gameDisplayNameColumnWidth; }
+      set { UpdateProperty(ref _gameDisplayNameColumnWidth, value, nameof(GameDisplayNameColumnWidth)); }
     }
 
     public bool HideListViewColumnHeader {

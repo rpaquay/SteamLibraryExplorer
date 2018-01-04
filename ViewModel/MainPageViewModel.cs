@@ -38,11 +38,7 @@ namespace SteamLibraryExplorer.ViewModel {
       set { UpdateProperty(ref _searchText, value, nameof(SearchText)); }
     }
 
-    public ObservableCollection<SteamGameViewModel> SteamGames { get; } =
-      new ObservableCollection<SteamGameViewModel>();
-
     public ObservableCollection<SteamLibraryViewModel> SteamLibraries { get; } =
       new ObservableCollection<SteamLibraryViewModel>();
-
   }
 }
