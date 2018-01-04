@@ -18,7 +18,7 @@
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
-    <CollectionViewSource Source="{Binding SteamGames}" Filter="SteamGamesCollectionViewSource_OnFilter" x:Key="SteamGamesCollectionViewSource">
+    <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}" Filter="SteamGamesCollectionViewSource_OnFilter">
       <!-- Group by property "ListViewGroupHeader" of SteamGameViewModel!-->
       <CollectionViewSource.GroupDescriptions>
         <PropertyGroupDescription PropertyName="ListViewGroupHeader" />
@@ -32,6 +32,7 @@
     <Style x:Key="MyGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
       <Setter Property="Background" Value="{StaticResource ButtonNormalBorder}"/>
       <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
   </Window.Resources>
   <Window.CommandBindings>
@@ -113,10 +114,7 @@
         <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}" ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
           <GridViewColumn Width="220">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                Game
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Game</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -126,10 +124,7 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                ACF File
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">ACF File</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -139,10 +134,7 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                Location
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Location</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -152,10 +144,7 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                Size
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Size</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -165,10 +154,7 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                # of files
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}"># of files</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -178,10 +164,7 @@
           </GridViewColumn>
           <GridViewColumn Width="280">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                Workshop ACF File
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Workshop ACF File</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -191,10 +174,7 @@
           </GridViewColumn>
           <GridViewColumn Width="240">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                Workshop Folder
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Workshop Folder</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -204,10 +184,7 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                Size
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Size</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
@@ -217,10 +194,7 @@
           </GridViewColumn>
           <GridViewColumn Width="80">
             <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click"
-                                    Style="{StaticResource MyGridViewColumnHeaderStyle}">
-                # of files
-              </GridViewColumnHeader>
+              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}"># of files</GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
