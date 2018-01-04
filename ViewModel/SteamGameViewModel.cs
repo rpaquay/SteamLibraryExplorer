@@ -5,8 +5,6 @@ using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.ViewModel {
   public class SteamGameViewModel : ObservableObject {
-    private string _listViewGroupHeader;
-    private int _listViewGroupHeaderSortIndex;
     private string _displayName;
     private string _relativePath;
     private bool _isRelativePathValid;
@@ -36,25 +34,6 @@ namespace SteamLibraryExplorer.ViewModel {
     /// </summary>
     public RelayExecuteCommand MoveGameToLibraryCommand =>
       _moveGameToLibraryCommand ?? (_moveGameToLibraryCommand = new RelayExecuteCommand(OnMoveGameToLibraryInvoked));
-
-    /// <summary>
-    /// The label of group header in the livet view
-    /// </summary>
-    public string ListViewGroupHeader {
-      get { return _listViewGroupHeader; }
-      set {
-        _listViewGroupHeader = value;
-        RaisePropertyChangedEvent(nameof(ListViewGroupHeader));
-      }
-    }
-
-    /// <summary>
-    /// The sort index of group headers (since display name is not a valid sorting key).
-    /// </summary>
-    public int ListViewGroupHeaderSortIndex {
-      get { return _listViewGroupHeaderSortIndex; }
-      set { UpdateProperty(ref _listViewGroupHeaderSortIndex, value, nameof(ListViewGroupHeaderSortIndex)); }
-    }
 
     /// <summary>
     /// The list of libraries the game can be moved to.

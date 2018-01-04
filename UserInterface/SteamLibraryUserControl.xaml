@@ -9,6 +9,7 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="viewModel:SteamLibraryViewModel">
   <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
     <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}"
@@ -21,8 +22,8 @@
     <Style x:Key="MyGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
       <Setter Property="HorizontalContentAlignment" Value="Left" />
       <Setter Property="Padding" Value="10, 4, 10, 4" />
-      <Setter Property="Background" Value="{StaticResource ButtonNormalBorder}"/>
-      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource ButtonNormalBorder}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Style.Triggers>
         <DataTrigger Binding="{Binding Path=HideListViewColumnHeader}" Value="True">
@@ -34,7 +35,6 @@
         </DataTrigger>
       </Style.Triggers>
     </Style>
-
   </UserControl.Resources>
   <Grid>
     <StackPanel HorizontalAlignment="Stretch">
@@ -67,94 +67,104 @@
             </ContextMenu>
           </ListView.ContextMenu>
           <ListView.View>
-            <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}" ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
-              <GridViewColumn Width="{Binding DataContext.GameDisplayNameColumnWidth, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=local:SteamLibraryUserControl}}">
+            <GridView ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding GameDisplayNameColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Game</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding DisplayName}" TextAlignment="Left" Foreground="{DynamicResource TextBrush}"/>
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding DisplayName}" TextAlignment="Left" Foreground="{DynamicResource TextBrush}"/>
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="240">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">ACF File</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click">ACF File</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding AcfFile}" TextAlignment="Left" Foreground="{Binding AcfFileColor}"/>
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding AcfFile}" TextAlignment="Left" Foreground="{Binding AcfFileColor}"/>
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="240">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Location</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click">Location</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding RelativePath}" TextAlignment="Left" Foreground="{Binding RelativePathColor}" />
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding RelativePath}" TextAlignment="Left" Foreground="{Binding RelativePathColor}" />
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="80">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Size</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding SizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding SizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="80">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}"># of files</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding FileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" Foreground="{Binding FileCountColor}" />
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding FileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" Foreground="{Binding FileCountColor}" />
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="280">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Workshop ACF File</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click">Workshop ACF File</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding WorkshopAcfFile}" TextAlignment="Left" Foreground="{Binding WorkshopAcfFileColor}"/>
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding WorkshopAcfFile}" TextAlignment="Left" Foreground="{Binding WorkshopAcfFileColor}"/>
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="240">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Workshop Folder</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click">Workshop Folder</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding WorkshopRelativePath}" TextAlignment="Left" Foreground="{Binding WorkshopRelativePathColor}" />
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding WorkshopRelativePath}" TextAlignment="Left" Foreground="{Binding WorkshopRelativePathColor}" />
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="80">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Size</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding WorkshopSizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" Foreground="{DynamicResource TextBrush}" />
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding WorkshopSizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" Foreground="{DynamicResource TextBrush}" />
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
               <GridViewColumn Width="80">
                 <GridViewColumn.Header>
-                  <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}"># of files</GridViewColumnHeader>
+                  <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
                 </GridViewColumn.Header>
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding WorkshopFileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" Foreground="{DynamicResource TextBrush}" />
+                    <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
+                               Text="{Binding WorkshopFileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" Foreground="{DynamicResource TextBrush}" />
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>

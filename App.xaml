@@ -9,7 +9,9 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Themes\ExpressionDark.xaml" />
       </ResourceDictionary.MergedDictionaries>
-      <!-- This is a full override of the ListViewItem control template -->
+      <!-- This is a full override of the ListViewItem control template. -->
+      <!-- The only change is to hide the "UpperHighlight" so that we have
+           a flat looking highlight when hovering over a list view item. -->
       <ControlTemplate x:Key="ListViewItemCustomTemplate" TargetType="ListViewItem">
         <Border CornerRadius="2" SnapsToDevicePixels="True"
           BorderThickness="{TemplateBinding BorderThickness}"

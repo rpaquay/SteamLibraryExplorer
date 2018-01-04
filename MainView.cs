@@ -229,8 +229,6 @@ namespace SteamLibraryExplorer {
 
       foreach (var game in library.Games.OrderBy(x => x.DisplayName)) {
         var gameViewModel = new SteamGameViewModel {
-          ListViewGroupHeader = GetGroupHeaderText(library),
-          ListViewGroupHeaderSortIndex = _gameLibraryCount,
           DisplayName = game.DisplayName,
           AcfFile = game.AcfFile == null ? "<Missing>" : game.AcfFile.Path.GetRelativePathTo(library.Location),
           AcfFileColor = game.AcfFile == null ? _gameLocationInvalidBrush : _textBrush,
