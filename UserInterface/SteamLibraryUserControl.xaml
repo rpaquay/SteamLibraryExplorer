@@ -52,20 +52,19 @@
                   ScrollViewer.VerticalScrollBarVisibility="Disabled"
                   PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
           <ListView.Resources>
-          </ListView.Resources>
-          <ListView.ContextMenu>
-            <ContextMenu d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
+            <ContextMenu x:Key="ItemContextMenu" d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
               <MenuItem x:Name="MoveToLibraryMenu" Header="_Move game to" ItemsSource="{Binding MoveToLibraries}">
                 <MenuItem.Resources>
                   <Style TargetType="MenuItem">
-                    <Setter Property="DataContext" Value="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                    <Setter Property="Command" Value="{Binding PlacementTarget.SelectedItem.MoveGameToLibraryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                    <!-- We need to reach the data context of the context menu, which is the SteamGameViewModel -->
+                    <Setter Property="Command" Value="{Binding DataContext.MoveGameToLibraryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                    <!-- The command parameter is the element of "ItemsSource", i.e. the library path -->
                     <Setter Property="CommandParameter" Value="{Binding}" />
                   </Style>
                 </MenuItem.Resources>
               </MenuItem>
             </ContextMenu>
-          </ListView.ContextMenu>
+          </ListView.Resources>
           <ListView.View>
             <GridView ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
 
@@ -186,6 +185,7 @@
             <Style TargetType="ListViewItem">
               <Setter Property="Template" Value="{StaticResource ListViewItemCustomTemplate}" />
               <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+              <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}"/>
             </Style>
           </ListView.ItemContainerStyle>
         </ListView>
