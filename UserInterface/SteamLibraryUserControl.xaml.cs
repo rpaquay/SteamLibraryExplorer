@@ -1,15 +1,15 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer.UserInterface {
   /// <summary>
   /// Interaction logic for SteamLibraryUserControl.xaml
   /// </summary>
-  public partial class SteamLibraryUserControl : UserControl {
+  public partial class SteamLibraryUserControl {
     public SteamLibraryUserControl() {
       InitializeComponent();
       Loaded += OnLoaded;
@@ -21,7 +21,7 @@ namespace SteamLibraryExplorer.UserInterface {
 
     public bool DisableMouseWheelScrolling { get; set; }
 
-    public SteamLibraryViewModel ViewModel => (SteamLibraryViewModel) DataContext;
+    public SteamLibraryViewModel ViewModel => (SteamLibraryViewModel)DataContext;
 
     private void ListViewColumnHeader_Click(object sender, RoutedEventArgs e) {
       ViewModel.OnGamesListViewColumnsHeaderClick(new ListViewColumnClickEventArgs(ListView, (GridViewColumnHeader)sender));
@@ -36,10 +36,22 @@ namespace SteamLibraryExplorer.UserInterface {
         if (sender is ListView && !e.Handled) {
           e.Handled = true;
           var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-          eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+          eventArg.RoutedEvent = MouseWheelEvent;
           eventArg.Source = sender;
-          var parent = ((Control) sender).Parent as UIElement;
-          parent?.RaiseEvent(eventArg);
+          ScrollViewer topMostViewer = null;
+          for (var parent = ((FrameworkElement)sender).Parent; parent != null; ) {
+            if (parent is ScrollViewer) {
+              topMostViewer = (ScrollViewer)parent;
+            }
+
+            if (parent is FrameworkElement) {
+              parent = VisualTreeHelper.GetParent(parent);
+            }
+            else {
+              parent = null;
+            }
+          }
+          topMostViewer?.RaiseEvent(eventArg);
         }
       }
     }

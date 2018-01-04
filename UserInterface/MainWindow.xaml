@@ -77,17 +77,15 @@
       </StatusBarItem>
     </StatusBar>
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-      <StackPanel Orientation="Vertical">
-        <ItemsControl x:Name="LibrariesItemsControl" IsTabStop="False" ItemsSource="{Binding Path=SteamLibraries}" >
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <!-- Display our "SteamLibrary" user control (one per steam library) -->
-              <!-- Disable mouse wheel scrolling so that our (container) ScrollViewer can do its job --> 
-              <userInterface:SteamLibraryUserControl DisableMouseWheelScrolling="True"/>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
+      <ItemsControl x:Name="LibrariesItemsControl" IsTabStop="False" ItemsSource="{Binding Path=SteamLibraries}" >
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <!-- Display our "SteamLibrary" user control (one per steam library) -->
+            <!-- Disable mouse wheel scrolling so that our (container) ScrollViewer can do its job --> 
+            <userInterface:SteamLibraryUserControl DisableMouseWheelScrolling="True"/>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
     </ScrollViewer>
   </DockPanel>
 </Window>
