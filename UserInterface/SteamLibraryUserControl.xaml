@@ -28,6 +28,14 @@
       <Setter Property="Background" Value="{StaticResource ButtonNormalBorder}"/>
       <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
       <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding Path=HideListViewColumnHeader}" Value="False">
+          <Setter Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Path=HideListViewColumnHeader}" Value="True">
+          <Setter Property="Visibility" Value="Collapsed" />
+        </DataTrigger>
+      </Style.Triggers>
     </Style>
 
   </UserControl.Resources>

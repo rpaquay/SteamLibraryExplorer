@@ -201,6 +201,7 @@ namespace SteamLibraryExplorer {
       // Create libary view model
       var libraryViewModel = new SteamLibraryViewModel {
         DisplayName = library.DisplayName,
+        HideListViewColumnHeader = _viewModel.SteamLibraries.Count >= 1,
       };
       _viewModel.SteamLibraries.Add(libraryViewModel);
       var count = _mainForm.LibrariesItemsControl.Items.Count;
