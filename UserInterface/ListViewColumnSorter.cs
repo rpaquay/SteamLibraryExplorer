@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,11 +11,11 @@ namespace SteamLibraryExplorer.UserInterface {
     private GridViewColumnHeader _lastSortedColumn;
     private SortAdorner _listViewSortAdorner;
 
-    public void SortColumn(ListView listView, GridViewColumnHeader header) {
+    public void SortColumn(List<ListView> listView, GridViewColumnHeader header) {
       string propertyNameSortBy = header.Tag.ToString();
       if (_lastSortedColumn != null) {
         AdornerLayer.GetAdornerLayer(_lastSortedColumn).Remove(_listViewSortAdorner);
-        listView.Items.SortDescriptions.Clear();
+        listView.ForEach(x => x.Items.SortDescriptions.Clear());
       }
 
       ListSortDirection newDir = ListSortDirection.Ascending;
@@ -24,8 +25,7 @@ namespace SteamLibraryExplorer.UserInterface {
       _lastSortedColumn = header;
       _listViewSortAdorner = new SortAdorner(_lastSortedColumn, newDir);
       AdornerLayer.GetAdornerLayer(_lastSortedColumn).Add(_listViewSortAdorner);
-      listView.Items.SortDescriptions.Add(new SortDescription(nameof(SteamGameViewModel.ListViewGroupHeaderSortIndex), ListSortDirection.Ascending));
-      listView.Items.SortDescriptions.Add(new SortDescription(propertyNameSortBy, newDir));
+      listView.ForEach(x => x.Items.SortDescriptions.Add(new SortDescription(propertyNameSortBy, newDir)));
     }
 
     public class SortAdorner : Adorner {

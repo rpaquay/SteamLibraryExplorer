@@ -206,7 +206,7 @@ namespace SteamLibraryExplorer {
         HideListViewColumnHeader = _viewModel.SteamLibraries.Count >= 1,
       };
       _viewModel.SteamLibraries.Add(libraryViewModel);
-      libraryViewModel.GamesListViewColumnsHeaderClick += (sender, e) => _listViewColumnSorter.SortColumn(e.ListView, e.ColumnHeader);
+      libraryViewModel.GamesListViewColumnsHeaderClick += LibraryViewModelOnGamesListViewColumnsHeaderClick;
       libraryViewModel.FilterGameEntry += MainFormOnFilterGameEntry;
 
       // Add games of new library
@@ -293,6 +293,10 @@ namespace SteamLibraryExplorer {
         //_viewModel.SteamGames.Add(gameViewModel);
         gamesViewModel.Add(gameViewModel);
       }
+    }
+
+    private void LibraryViewModelOnGamesListViewColumnsHeaderClick(object o, ListViewColumnClickEventArgs e) {
+      _listViewColumnSorter.SortColumn(_viewModel.SteamLibraries.Select(x => x.ListView).ToList(), e.ColumnHeader);
     }
 
     protected virtual void OnRefreshView() {
