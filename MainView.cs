@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents.DocumentStructures;
 using System.Windows.Media;
 using JetBrains.Annotations;
 using SteamLibraryExplorer.SteamModel;
@@ -194,8 +193,6 @@ namespace SteamLibraryExplorer {
     }
 
     private void AddGameLibrary([NotNull]SteamLibrary library) {
-      bool firstLibrary = _viewModel.SteamLibraries.Count == 0;
-
       // Add "Move To" entry to existing games
       foreach (var gameViewModel in _viewModel.SteamLibraries.SelectMany(x => x.SteamGames)) {
         gameViewModel.MoveToLibraries.Add(library.Location.FullName);
@@ -212,13 +209,7 @@ namespace SteamLibraryExplorer {
       libraryViewModel.FilterGameEntry += MainFormOnFilterGameEntry;
 
       // Synchronize the column width with the first library
-      if (!firstLibrary) {
-        _viewModel.SteamLibraries.First().PropertyChanged += (sender, args) => {
-          if (args.PropertyName == nameof(SteamLibraryViewModel.GameDisplayNameColumnWidth)) {
-            libraryViewModel.GameDisplayNameColumnWidth = ((SteamLibraryViewModel) sender).GameDisplayNameColumnWidth;
-          }
-        };
-      }
+      libraryViewModel.PropertyChanged += SteamLibraryViewModelOnPropertyChanged;
 
       // Add games of new library
       _gameLibraryCount++;
@@ -300,6 +291,16 @@ namespace SteamLibraryExplorer {
         gameViewModel.MoveGameToLibraryInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
 
         libraryViewModel.SteamGames.Add(gameViewModel);
+      }
+    }
+
+    private void SteamLibraryViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs args) {
+      if (args.PropertyName == nameof(SteamLibraryViewModel.GameDisplayNameColumnWidth)) {
+        foreach (var otherLibrary in _viewModel.SteamLibraries) {
+          if (!ReferenceEquals(sender, otherLibrary)) {
+            otherLibrary.GameDisplayNameColumnWidth = ((SteamLibraryViewModel)sender).GameDisplayNameColumnWidth;
+          }
+        }
       }
     }
 
