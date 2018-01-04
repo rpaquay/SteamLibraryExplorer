@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using SteamLibraryExplorer.ViewModel;
 
 namespace SteamLibraryExplorer.UserInterface {
   /// <summary>
@@ -13,25 +14,16 @@ namespace SteamLibraryExplorer.UserInterface {
       InitializeComponent();
     }
 
-    public event EventHandler<GridViewColumnHeader> GamesListViewColumnsHeaderClick;
-    public event EventHandler<FilterEventArgs> FilterGameEntry;
-
     public bool DisableMouseWheelScrolling { get; set; }
 
+    public SteamLibraryViewModel ViewModel => (SteamLibraryViewModel) DataContext;
+
     private void ListViewColumnHeader_Click(object sender, RoutedEventArgs e) {
-      OnGamesListViewColumnsHeaderClick((GridViewColumnHeader)sender);
+      ViewModel.OnGamesListViewColumnsHeaderClick(new ListViewColumnClickEventArgs(ListView, (GridViewColumnHeader)sender));
     }
 
     private void SteamGamesCollectionViewSource_OnFilter(object sender, FilterEventArgs e) {
-      OnFilterGameEntry(e);
-    }
-
-    protected virtual void OnGamesListViewColumnsHeaderClick(GridViewColumnHeader e) {
-      GamesListViewColumnsHeaderClick?.Invoke(this, e);
-    }
-
-    protected virtual void OnFilterGameEntry(FilterEventArgs e) {
-      FilterGameEntry?.Invoke(this, e);
+      ViewModel.OnFilterGameEntry(e);
     }
 
     private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
@@ -42,7 +34,7 @@ namespace SteamLibraryExplorer.UserInterface {
           eventArg.RoutedEvent = UIElement.MouseWheelEvent;
           eventArg.Source = sender;
           var parent = ((Control) sender).Parent as UIElement;
-          parent.RaiseEvent(eventArg);
+          parent?.RaiseEvent(eventArg);
         }
       }
     }

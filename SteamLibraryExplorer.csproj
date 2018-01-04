@@ -111,6 +111,7 @@
     <Compile Include="MainView.cs" />
     <Compile Include="ViewModel\CopyProgressViewModel.cs" />
     <Compile Include="ViewModel\FileCountValueConverter.cs" />
+    <Compile Include="ViewModel\ListViewColumnClickEventArgs.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="Utils\ObservableObject.cs" />
     <Compile Include="Utils\RelayExecuteCommand.cs" />

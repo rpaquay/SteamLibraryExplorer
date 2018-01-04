@@ -6,19 +6,13 @@
              xmlns:local="clr-namespace:SteamLibraryExplorer.UserInterface"
              xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-  <!--<UserControl.DataContext>
-    <viewModel:SteamLibraryViewModel/>
-  </UserControl.DataContext>-->
+             d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="viewModel:SteamLibraryViewModel">
   <UserControl.Resources>
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
-    <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}" Filter="SteamGamesCollectionViewSource_OnFilter">
-      <!-- Group by property "ListViewGroupHeader" of SteamGameViewModel!-->
-      <!--<CollectionViewSource.GroupDescriptions>
-        <PropertyGroupDescription PropertyName="ListViewGroupHeader" />
-      </CollectionViewSource.GroupDescriptions>-->
-    </CollectionViewSource>
+    <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}"
+                           Filter="SteamGamesCollectionViewSource_OnFilter" />
     <SolidColorBrush x:Key="GameLocationErrorBrush" Color="Red" />
     <SolidColorBrush x:Key="WorkshopMissingBrush" Color="CadetBlue" />
     <!-- Override text to be "light gray" instead of white -->
@@ -73,7 +67,7 @@
               </GridViewColumn.Header>
               <GridViewColumn.CellTemplate>
                 <DataTemplate>
-                  <TextBlock Text="{Binding DisplayName}" TextAlignment="Left"/>
+                  <TextBlock Text="{Binding DisplayName}" TextAlignment="Left" Foreground="{DynamicResource TextBrush}"/>
                 </DataTemplate>
               </GridViewColumn.CellTemplate>
             </GridViewColumn>
@@ -83,7 +77,7 @@
               </GridViewColumn.Header>
               <GridViewColumn.CellTemplate>
                 <DataTemplate>
-                  <TextBlock Text="{Binding AcfFile}" TextAlignment="Left"  Foreground="{Binding AcfFileColor}"/>
+                  <TextBlock Text="{Binding AcfFile}" TextAlignment="Left" Foreground="{Binding AcfFileColor}"/>
                 </DataTemplate>
               </GridViewColumn.CellTemplate>
             </GridViewColumn>
@@ -192,3 +186,4 @@
     </StackPanel>
   </Grid>
 </UserControl>
+

@@ -47,9 +47,6 @@ namespace SteamLibraryExplorer {
       _mainForm.CloseCommand.Executed += (sender, args) => OnCloseView();
       _mainForm.RefreshCommand.Executed += (sender, args) => OnRefreshView();
 
-      //TODO
-      //_mainForm.GamesListViewColumnsHeaderClick += (sender, header) => _listViewColumnSorter.SortColumn(_mainForm.ListView, header);
-      //_mainForm.FilterGameEntry += MainFormOnFilterGameEntry;
       _mainForm.SearchTextChanged += MainFormOnSearchTextChanged;
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
@@ -71,7 +68,6 @@ namespace SteamLibraryExplorer {
     /// <see cref="MainPageViewModel.SearchText"/>
     /// </summary>
     private void MainFormOnFilterGameEntry(object o, FilterEventArgs e) {
-      //TODO
       var gameViewModel = e.Item as SteamGameViewModel;
       if (gameViewModel != null) {
         var searchText = (_viewModel.SearchText ?? "").Trim();
@@ -149,7 +145,7 @@ namespace SteamLibraryExplorer {
     }
 
     private void ClearGameLibraries() {
-      _viewModel.SteamGames.Clear();
+      _viewModel.SteamLibraries.Clear();
       _gameLibraryCount = 0;
     }
 
@@ -194,7 +190,7 @@ namespace SteamLibraryExplorer {
 
     private void AddGameLibrary([NotNull]SteamLibrary library) {
       // Add "Move To" entry to existing games
-      foreach (var gameViewModel in _viewModel.SteamGames) {
+      foreach (var gameViewModel in _viewModel.SteamLibraries.SelectMany(x => x.SteamGames)) {
         gameViewModel.MoveToLibraries.Add(library.Location.FullName);
       }
 
@@ -204,11 +200,8 @@ namespace SteamLibraryExplorer {
         HideListViewColumnHeader = _viewModel.SteamLibraries.Count >= 1,
       };
       _viewModel.SteamLibraries.Add(libraryViewModel);
-      var count = _mainForm.LibrariesItemsControl.Items.Count;
-      if (count > 0) {
-        var l = _mainForm.LibrariesItemsControl.Items[0];
-        var q = l.ToString();
-      }
+      libraryViewModel.GamesListViewColumnsHeaderClick += (sender, e) => _listViewColumnSorter.SortColumn(e.ListView, e.ColumnHeader);
+      libraryViewModel.FilterGameEntry += MainFormOnFilterGameEntry;
 
       // Add games of new library
       _gameLibraryCount++;
