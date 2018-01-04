@@ -26,6 +26,11 @@ namespace SteamLibraryExplorer.ViewModel {
     public ObservableCollection<SteamGameViewModel> SteamGames { get; } =
       new ObservableCollection<SteamGameViewModel>();
 
+    /// <summary>
+    /// TODO: Find a way to remove this!
+    /// </summary>
+    public ListView ListView { get; set; }
+
     public virtual void OnGamesListViewColumnsHeaderClick(ListViewColumnClickEventArgs e) {
       GamesListViewColumnsHeaderClick?.Invoke(this, e);
     }

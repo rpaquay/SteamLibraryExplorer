@@ -23,6 +23,7 @@ namespace SteamLibraryExplorer.UserInterface {
     }
 
     private void SteamGamesCollectionViewSource_OnFilter(object sender, FilterEventArgs e) {
+      ViewModel.ListView = ListView;
       ViewModel.OnFilterGameEntry(e);
     }
 

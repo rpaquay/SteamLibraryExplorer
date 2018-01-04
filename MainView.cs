@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -52,14 +53,19 @@ namespace SteamLibraryExplorer {
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
 
       _throttledDispatcher.Start(TimeSpan.FromMilliseconds(500));
-      _searchThrottledDispatcher.Start(TimeSpan.FromMilliseconds(750));
+      _searchThrottledDispatcher.Start(TimeSpan.FromMilliseconds(500));
     }
 
     private void MainFormOnSearchTextChanged(object o, TextChangedEventArgs textChangedEventArgs) {
       _searchThrottledDispatcher.Enqeue(nameof(MainFormOnSearchTextChanged), () => {
-        // Refresh list view (filter) when seatch text changes
-        //TODO
-        //CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource).Refresh();
+        // Refresh list view (filter) when search text changes
+        foreach (var library in _viewModel.SteamLibraries) {
+          if (library.ListView != null) {
+            var collectionView = CollectionViewSource.GetDefaultView(library.ListView.ItemsSource);
+            Debug.Assert(collectionView != null);
+            collectionView.Refresh();
+          }
+        }
       });
     }
 
