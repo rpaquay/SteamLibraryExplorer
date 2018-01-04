@@ -209,19 +209,31 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     [NotNull]
     private static IEnumerable<FullPath> LoadGameDirectories([NotNull] FullPath steamLocation) {
-      return FileSystem.EnumerateDirectories(steamLocation.Combine("steamapps").Combine("common"));
+      var gameFilesDirectory = steamLocation.Combine("steamapps").Combine("common");
+      if (FileSystem.DirectoryExists(gameFilesDirectory)) {
+        return FileSystem.EnumerateDirectories(gameFilesDirectory);
+      }
+      return Enumerable.Empty<FullPath>();
     }
 
     [NotNull]
     private static IEnumerable<AcfFile> LoadAcfFiles([NotNull] FullPath steamLocation) {
-      return FileSystem.EnumerateFiles(steamLocation.Combine("steamapps"), "*.acf")
+      var acfFilesDirectory = steamLocation.Combine("steamapps");
+      if (FileSystem.DirectoryExists(acfFilesDirectory)) {
+      return FileSystem.EnumerateFiles(acfFilesDirectory, "*.acf")
         .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
+      }
+      return Enumerable.Empty<AcfFile>();
     }
 
     [NotNull]
     private static IEnumerable<AcfFile> LoadWorkshopFiles([NotNull] FullPath steamLocation) {
-      return FileSystem.EnumerateFiles(steamLocation.Combine("steamapps").Combine("workshop"), "*.acf")
-        .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
+      var acfFilesDirectory = steamLocation.Combine("steamapps").Combine("workshop");
+      if (FileSystem.DirectoryExists(acfFilesDirectory)) {
+        return FileSystem.EnumerateFiles(acfFilesDirectory, "*.acf")
+          .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
+      }
+      return Enumerable.Empty<AcfFile>();
     }
 
     [NotNull]
