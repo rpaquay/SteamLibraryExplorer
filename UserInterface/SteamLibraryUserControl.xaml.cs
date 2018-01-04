@@ -12,6 +12,11 @@ namespace SteamLibraryExplorer.UserInterface {
   public partial class SteamLibraryUserControl : UserControl {
     public SteamLibraryUserControl() {
       InitializeComponent();
+      Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs routedEventArgs) {
+      ViewModel.ListView = ListView;
     }
 
     public bool DisableMouseWheelScrolling { get; set; }
@@ -23,7 +28,6 @@ namespace SteamLibraryExplorer.UserInterface {
     }
 
     private void SteamGamesCollectionViewSource_OnFilter(object sender, FilterEventArgs e) {
-      ViewModel.ListView = ListView;
       ViewModel.OnFilterGameEntry(e);
     }
 

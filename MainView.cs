@@ -200,7 +200,7 @@ namespace SteamLibraryExplorer {
       // Create a new libary view model and add it to main collection
       var libraryViewModel = new SteamLibraryViewModel {
         DisplayName = library.DisplayName,
-        HideListViewColumnHeader = _viewModel.SteamLibraries.Count >= 1,
+        ShowListViewColumnHeader = _viewModel.SteamLibraries.Count == 0,
       };
       // Add games of new library
       _viewModel.SteamLibraries.Add(libraryViewModel);

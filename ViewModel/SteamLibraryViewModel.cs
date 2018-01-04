@@ -7,7 +7,7 @@ using SteamLibraryExplorer.Utils;
 namespace SteamLibraryExplorer.ViewModel {
   public class SteamLibraryViewModel : ObservableObject {
     private string _displayName;
-    private bool _hideListViewColumnHeader;
+    private bool _showListViewColumnHeader;
 
     public event EventHandler<ListViewColumnClickEventArgs> GamesListViewColumnsHeaderClick;
     public event EventHandler<FilterEventArgs> FilterGameEntry;
@@ -17,9 +17,9 @@ namespace SteamLibraryExplorer.ViewModel {
       set { UpdateProperty(ref _displayName, value, nameof(DisplayName)); }
     }
 
-    public bool HideListViewColumnHeader {
-      get { return _hideListViewColumnHeader; }
-      set { UpdateProperty(ref _hideListViewColumnHeader, value, nameof(HideListViewColumnHeader)); }
+    public bool ShowListViewColumnHeader {
+      get { return _showListViewColumnHeader; }
+      set { UpdateProperty(ref _showListViewColumnHeader, value, nameof(ShowListViewColumnHeader)); }
     }
 
     public SteamLibraryListViewColumnsModel SteamLibraryListViewColumnsModel { get; }
