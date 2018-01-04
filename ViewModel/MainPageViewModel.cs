@@ -40,5 +40,9 @@ namespace SteamLibraryExplorer.ViewModel {
 
     public ObservableCollection<SteamGameViewModel> SteamGames { get; } =
       new ObservableCollection<SteamGameViewModel>();
+
+    public ObservableCollection<SteamLibraryViewModel> SteamLibraries { get; } =
+      new ObservableCollection<SteamLibraryViewModel>();
+
   }
 }

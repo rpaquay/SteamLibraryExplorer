@@ -47,8 +47,9 @@ namespace SteamLibraryExplorer {
       _mainForm.CloseCommand.Executed += (sender, args) => OnCloseView();
       _mainForm.RefreshCommand.Executed += (sender, args) => OnRefreshView();
 
-      _mainForm.GamesListViewColumnsHeaderClick += (sender, header) => _listViewColumnSorter.SortColumn(_mainForm.ListView, header);
-      _mainForm.FilterGameEntry += MainFormOnFilterGameEntry;
+      //TODO
+      //_mainForm.GamesListViewColumnsHeaderClick += (sender, header) => _listViewColumnSorter.SortColumn(_mainForm.ListView, header);
+      //_mainForm.FilterGameEntry += MainFormOnFilterGameEntry;
       _mainForm.SearchTextChanged += MainFormOnSearchTextChanged;
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
       _model.SteamConfiguration.SteamLibraries.CollectionChanged += SteamLibraries_CollectionChanged;
@@ -60,7 +61,8 @@ namespace SteamLibraryExplorer {
     private void MainFormOnSearchTextChanged(object o, TextChangedEventArgs textChangedEventArgs) {
       _searchThrottledDispatcher.Enqeue(nameof(MainFormOnSearchTextChanged), () => {
         // Refresh list view (filter) when seatch text changes
-        CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource).Refresh();
+        //TODO
+        //CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource).Refresh();
       });
     }
 
@@ -69,6 +71,7 @@ namespace SteamLibraryExplorer {
     /// <see cref="MainPageViewModel.SearchText"/>
     /// </summary>
     private void MainFormOnFilterGameEntry(object o, FilterEventArgs e) {
+      //TODO
       var gameViewModel = e.Item as SteamGameViewModel;
       if (gameViewModel != null) {
         var searchText = (_viewModel.SearchText ?? "").Trim();
@@ -161,8 +164,9 @@ namespace SteamLibraryExplorer {
     private void RefreshListView() {
       // The group collection does not listen to propery change events, so we need
       // to explicitly refresh it.
-      var view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
-      view.Refresh();
+      //TODO
+      //var view = CollectionViewSource.GetDefaultView(_mainForm.ListView.ItemsSource);
+      //view.Refresh();
     }
 
     private static string GetGroupHeaderText([NotNull]SteamLibrary library) {
@@ -192,6 +196,17 @@ namespace SteamLibraryExplorer {
       // Add "Move To" entry to existing games
       foreach (var gameViewModel in _viewModel.SteamGames) {
         gameViewModel.MoveToLibraries.Add(library.Location.FullName);
+      }
+
+      // Create libary view model
+      var libraryViewModel = new SteamLibraryViewModel {
+        DisplayName = library.DisplayName,
+      };
+      _viewModel.SteamLibraries.Add(libraryViewModel);
+      var count = _mainForm.LibrariesItemsControl.Items.Count;
+      if (count > 0) {
+        var l = _mainForm.LibrariesItemsControl.Items[0];
+        var q = l.ToString();
       }
 
       // Add games of new library
@@ -274,7 +289,8 @@ namespace SteamLibraryExplorer {
 
         gameViewModel.MoveGameToLibraryInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
 
-        _viewModel.SteamGames.Add(gameViewModel);
+        libraryViewModel.SteamGames.Add(gameViewModel);
+        //_viewModel.SteamGames.Add(gameViewModel);
         gamesViewModel.Add(gameViewModel);
       }
     }

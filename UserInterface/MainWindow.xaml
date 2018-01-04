@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
+        xmlns:userInterface="clr-namespace:SteamLibraryExplorer.UserInterface"
         ResizeMode="CanResizeWithGrip"
         Icon="../Resources/MainIcon.ico"
         Title="{Binding WindowTitle}" Height="700" Width="1000">
@@ -16,24 +17,10 @@
   </Window.Background>
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
-    <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
-    <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}" Filter="SteamGamesCollectionViewSource_OnFilter">
-      <!-- Group by property "ListViewGroupHeader" of SteamGameViewModel!-->
-      <CollectionViewSource.GroupDescriptions>
-        <PropertyGroupDescription PropertyName="ListViewGroupHeader" />
-      </CollectionViewSource.GroupDescriptions>
-    </CollectionViewSource>
     <SolidColorBrush x:Key="GameLocationErrorBrush" Color="Red" />
     <SolidColorBrush x:Key="WorkshopMissingBrush" Color="CadetBlue" />
     <!-- Override text to be "light gray" instead of white -->
     <SolidColorBrush x:Key="TextBrush" Color="#FFF0F0F0" />
-    <!-- Set background color of list view column headers -->
-    <Style x:Key="MyGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
-      <Setter Property="Background" Value="{StaticResource ButtonNormalBorder}"/>
-      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-    </Style>
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding x:Name="CloseCommand" Command="ApplicationCommands.Close"/>
@@ -43,7 +30,7 @@
     <KeyBinding Command="ApplicationCommands.Close"  Modifiers="Alt" Key="x"></KeyBinding>
     <KeyBinding Command="NavigationCommands.Refresh" Key="F5"></KeyBinding>
   </Window.InputBindings>
-  <DockPanel>
+  <DockPanel Background="{DynamicResource ControlBackgroundBrush}">
     <Menu x:Name="MainMenu" DockPanel.Dock="Top">
       <MenuItem Header="_File" Padding="4">
         <MenuItem Header="_Refresh" Command="NavigationCommands.Refresh"/>
@@ -89,150 +76,18 @@
         </Grid>
       </StatusBarItem>
     </StatusBar>
-    <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}"
-              VirtualizingPanel.IsVirtualizingWhenGrouping="True">
-      <ListView.Resources>
-        <Style TargetType="{x:Type GridViewColumnHeader}">
-          <Setter Property="HorizontalContentAlignment" Value="Left" />
-          <Setter Property="Padding" Value="10, 4, 10, 4" />
-        </Style>
-      </ListView.Resources>
-      <ListView.ContextMenu>
-        <ContextMenu d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
-          <MenuItem x:Name="MoveToLibraryMenu" Header="_Move game to" ItemsSource="{Binding MoveToLibraries}">
-            <MenuItem.Resources>
-              <Style TargetType="MenuItem">
-                <Setter Property="DataContext" Value="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                <Setter Property="Command" Value="{Binding PlacementTarget.SelectedItem.MoveGameToLibraryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                <Setter Property="CommandParameter" Value="{Binding}" />
-              </Style>
-            </MenuItem.Resources>
-          </MenuItem>
-        </ContextMenu>
-      </ListView.ContextMenu>
-      <ListView.View>
-        <GridView d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}" ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
-          <GridViewColumn Width="220">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Game</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding DisplayName}" TextAlignment="Left"/>
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="240">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">ACF File</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding AcfFile}" TextAlignment="Left"  Foreground="{Binding AcfFileColor}"/>
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="240">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Location</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding RelativePath}" TextAlignment="Left" Foreground="{Binding RelativePathColor}" />
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="80">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Size</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding SizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="80">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}"># of files</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding FileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" Foreground="{Binding FileCountColor}" />
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="280">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Workshop ACF File</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding WorkshopAcfFile}" TextAlignment="Left" Foreground="{Binding WorkshopAcfFileColor}"/>
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="240">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Workshop Folder</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding WorkshopRelativePath}" TextAlignment="Left" Foreground="{Binding WorkshopRelativePathColor}" />
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="80">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}">Size</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding WorkshopSizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}" TextAlignment="Right" />
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-          <GridViewColumn Width="80">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click" Style="{StaticResource MyGridViewColumnHeaderStyle}"># of files</GridViewColumnHeader>
-            </GridViewColumn.Header>
-            <GridViewColumn.CellTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding WorkshopFileCount, Converter={StaticResource FileCountValueConverter}}" TextAlignment="Right" />
-              </DataTemplate>
-            </GridViewColumn.CellTemplate>
-          </GridViewColumn>
-        </GridView>
-      </ListView.View>
-      <ListView.ItemContainerStyle>
-        <Style TargetType="ListViewItem">
-          <Setter Property="Template" Value="{StaticResource ListViewItemCustomTemplate}" />
-          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        </Style>
-      </ListView.ItemContainerStyle>
-      <ListView.GroupStyle>
-        <GroupStyle>
-          <GroupStyle.ContainerStyle>
-            <Style TargetType="{x:Type GroupItem}">
-              <Setter Property="Template">
-                <Setter.Value>
-                  <ControlTemplate>
-                    <Expander IsExpanded="True" d:DataContext="{d:DesignInstance CollectionViewGroup}" DataContext="{Binding Items}">
-                      <Expander.Header>
-                        <DockPanel Margin="0,6,0,6" d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
-                          <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />
-                          <TextBlock Margin="2,0,2,0" Text="{Binding ListViewGroupHeader}" DockPanel.Dock="Left" FontSize="14" />
-                        </DockPanel>
-                      </Expander.Header>
-                      <ItemsPresenter />
-                    </Expander>
-                  </ControlTemplate>
-                </Setter.Value>
-              </Setter>
-            </Style>
-          </GroupStyle.ContainerStyle>
-        </GroupStyle>
-      </ListView.GroupStyle>
-    </ListView>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+      <StackPanel Orientation="Vertical">
+        <ItemsControl x:Name="LibrariesItemsControl" IsTabStop="False" ItemsSource="{Binding Path=SteamLibraries}" >
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <!-- Display our "SteamLibrary" user control (one per steam library) -->
+              <!-- Disable mouse wheel scrolling so that our (container) ScrollViewer can do its job --> 
+              <userInterface:SteamLibraryUserControl DisableMouseWheelScrolling="True" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
   </DockPanel>
 </Window>

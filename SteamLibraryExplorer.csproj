@@ -90,6 +90,9 @@
     </Compile>
     <Compile Include="UserInterface\ListViewColumnSorter.cs" />
     <Compile Include="SteamModel\AcfFile.cs" />
+    <Compile Include="UserInterface\SteamLibraryUserControl.xaml.cs">
+      <DependentUpon>SteamLibraryUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utils\FullPathExtensions.cs" />
     <Compile Include="Utils\FileSystem.cs" />
     <Compile Include="Utils\FileSystemImpl.cs" />
@@ -116,6 +119,7 @@
     <Compile Include="UserInterface\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\SteamLibraryViewModel.cs" />
     <Page Include="Themes\ExpressionDark.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -133,6 +137,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controller.cs" />
+    <Page Include="UserInterface\SteamLibraryUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SteamModel\Model.cs" />
