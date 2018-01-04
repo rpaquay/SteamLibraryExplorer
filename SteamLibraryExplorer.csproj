@@ -120,6 +120,7 @@
     <Compile Include="UserInterface\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\SteamLibraryListViewColumnsModel.cs" />
     <Compile Include="ViewModel\SteamLibraryViewModel.cs" />
     <Page Include="Themes\ExpressionDark.xaml">
       <Generator>MSBuild:Compile</Generator>

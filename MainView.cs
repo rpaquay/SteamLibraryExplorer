@@ -26,7 +26,6 @@ namespace SteamLibraryExplorer {
     private readonly ThrottledDispatcher _throttledDispatcher = new ThrottledDispatcher();
     private readonly ThrottledDispatcher _searchThrottledDispatcher = new ThrottledDispatcher();
     private readonly ListViewColumnSorter _listViewColumnSorter = new ListViewColumnSorter();
-    private int _gameLibraryCount;
     private int _progressCount;
 
     public MainView(MainWindow mainForm, Model model) {
@@ -152,7 +151,6 @@ namespace SteamLibraryExplorer {
 
     private void ClearGameLibraries() {
       _viewModel.SteamLibraries.Clear();
-      _gameLibraryCount = 0;
     }
 
     private void RefreshGameLibraryGroups([NotNull]SteamLibrary library, [NotNull]SteamLibraryViewModel libraryViewModel) {
@@ -198,21 +196,24 @@ namespace SteamLibraryExplorer {
         gameViewModel.MoveToLibraries.Add(library.Location.FullName);
       }
 
-      // Create libary view model
+      // Create a new libary view model and add it to main collection
       var libraryViewModel = new SteamLibraryViewModel {
         DisplayName = library.DisplayName,
         HideListViewColumnHeader = _viewModel.SteamLibraries.Count >= 1,
       };
-
+      // Add games of new library
       _viewModel.SteamLibraries.Add(libraryViewModel);
-      libraryViewModel.GamesListViewColumnsHeaderClick += LibraryViewModelOnGamesListViewColumnsHeaderClick;
+
+      // Synchronize the column sorting
+      libraryViewModel.GamesListViewColumnsHeaderClick +=
+        LibraryViewModelOnGamesListViewColumnsHeaderClick;
+
+      // Synchronize search filtering
       libraryViewModel.FilterGameEntry += MainFormOnFilterGameEntry;
 
-      // Synchronize the column width with the first library
-      libraryViewModel.PropertyChanged += SteamLibraryViewModelOnPropertyChanged;
-
-      // Add games of new library
-      _gameLibraryCount++;
+      // Synchronize the column widths
+      libraryViewModel.SteamLibraryListViewColumnsModel.PropertyChanged +=
+        SteamLibraryListViewColumnsModelOnPropertyChanged;
 
       // Note: The order is important for concurrency correctness: we want to register to
       //       the "ValueChanged" event before we initialize the value of the ViewModel.
@@ -292,11 +293,12 @@ namespace SteamLibraryExplorer {
       }
     }
 
-    private void SteamLibraryViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs args) {
-      if (args.PropertyName == nameof(SteamLibraryViewModel.GameDisplayNameColumnWidth)) {
+    private void SteamLibraryListViewColumnsModelOnPropertyChanged(object sender, PropertyChangedEventArgs args) {
+      if (args.PropertyName == nameof(SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth)) {
         foreach (var otherLibrary in _viewModel.SteamLibraries) {
-          if (!ReferenceEquals(sender, otherLibrary)) {
-            otherLibrary.GameDisplayNameColumnWidth = ((SteamLibraryViewModel)sender).GameDisplayNameColumnWidth;
+          if (!ReferenceEquals(sender, otherLibrary.SteamLibraryListViewColumnsModel)) {
+            otherLibrary.SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth =
+              ((SteamLibraryListViewColumnsModel)sender).GameDisplayNameColumnWidth;
           }
         }
       }

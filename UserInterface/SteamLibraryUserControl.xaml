@@ -9,7 +9,6 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="viewModel:SteamLibraryViewModel">
   <UserControl.Resources>
-    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
     <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}"
@@ -69,7 +68,7 @@
           <ListView.View>
             <GridView ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
               <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
-                              Width="{Binding GameDisplayNameColumnWidth, Mode=TwoWay}">
+                              Width="{Binding SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
                 </GridViewColumn.Header>
