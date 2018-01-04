@@ -5,12 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SteamLibraryExplorer.UserInterface"
              xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
+             xmlns:wpfUtils="clr-namespace:SteamLibraryExplorer.WpfUtils"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="300" d:DesignWidth="1000"
              d:DataContext="viewModel:SteamLibraryViewModel">
   <UserControl.Resources>
-    <viewModel:FileCountValueConverter x:Key="FileCountValueConverter"/>
-    <viewModel:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
+    <wpfUtils:FileCountValueConverter x:Key="FileCountValueConverter"/>
+    <wpfUtils:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>
     <CollectionViewSource  x:Key="SteamGamesCollectionViewSource" Source="{Binding SteamGames}"
                            Filter="SteamGamesCollectionViewSource_OnFilter" />
     <SolidColorBrush x:Key="GameLocationErrorBrush" Color="Red" />
@@ -67,6 +68,7 @@
           </ListView.ContextMenu>
           <ListView.View>
             <GridView ColumnHeaderContainerStyle="{StaticResource MyGridViewColumnHeaderStyle}">
+
               <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
                               Width="{Binding SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
@@ -79,7 +81,9 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="240">
+
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.GameAcfFileColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="AcfFile" Click="ListViewColumnHeader_Click">ACF File</GridViewColumnHeader>
                 </GridViewColumn.Header>
@@ -90,7 +94,9 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="240">
+
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.GameLocationColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="RelativePath" Click="ListViewColumnHeader_Click">Location</GridViewColumnHeader>
                 </GridViewColumn.Header>
@@ -101,7 +107,9 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="80">
+
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.GameSizeOnDiskColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="SizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
                 </GridViewColumn.Header>
@@ -112,7 +120,8 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="80">
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.GameFileCountColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="FileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
                 </GridViewColumn.Header>
@@ -123,7 +132,8 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="280">
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.WorkshopAcfFileColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="WorkshopAcfFile" Click="ListViewColumnHeader_Click">Workshop ACF File</GridViewColumnHeader>
                 </GridViewColumn.Header>
@@ -134,7 +144,8 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="240">
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.WorkshopLocationColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="WorkshopRelativePath" Click="ListViewColumnHeader_Click">Workshop Folder</GridViewColumnHeader>
                 </GridViewColumn.Header>
@@ -145,7 +156,8 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="80">
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.GameSizeOnDiskColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
                 </GridViewColumn.Header>
@@ -156,7 +168,8 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="80">
+              <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
+                              Width="{Binding SteamLibraryListViewColumnsModel.WorkshopFileCountColumnWidth, Mode=TwoWay}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Tag="WorkshopFileCount" Click="ListViewColumnHeader_Click"># of files</GridViewColumnHeader>
                 </GridViewColumn.Header>

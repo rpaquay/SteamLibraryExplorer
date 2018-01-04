@@ -12,6 +12,7 @@ using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
 using SteamLibraryExplorer.ViewModel;
+using SteamLibraryExplorer.WpfUtils;
 
 namespace SteamLibraryExplorer {
   public class MainView {
@@ -294,11 +295,59 @@ namespace SteamLibraryExplorer {
     }
 
     private void SteamLibraryListViewColumnsModelOnPropertyChanged(object sender, PropertyChangedEventArgs args) {
-      if (args.PropertyName == nameof(SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth)) {
+      // Synchronized column width between all listviews
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth),
+        model => model.GameDisplayNameColumnWidth,
+        (model, widthValue) => model.GameDisplayNameColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.GameAcfFileColumnWidth),
+        model => model.GameAcfFileColumnWidth,
+        (model, widthValue) => model.GameAcfFileColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.GameLocationColumnWidth),
+        model => model.GameLocationColumnWidth,
+        (model, widthValue) => model.GameLocationColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.GameSizeOnDiskColumnWidth),
+        model => model.GameSizeOnDiskColumnWidth,
+        (model, widthValue) => model.GameSizeOnDiskColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.GameFileCountColumnWidth),
+        model => model.GameFileCountColumnWidth,
+        (model, widthValue) => model.GameFileCountColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.WorkshopAcfFileColumnWidth),
+        model => model.WorkshopAcfFileColumnWidth,
+        (model, widthValue) => model.WorkshopAcfFileColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.WorkshopLocationColumnWidth),
+        model => model.WorkshopLocationColumnWidth,
+        (model, widthValue) => model.WorkshopLocationColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.WorkshopSizeOnDiskColumnWidth),
+        model => model.WorkshopSizeOnDiskColumnWidth,
+        (model, widthValue) => model.WorkshopSizeOnDiskColumnWidth = widthValue);
+
+      SynchronizeWidthProperty(sender, args,
+        nameof(SteamLibraryListViewColumnsModel.WorkshopFileCountColumnWidth),
+        model => model.WorkshopFileCountColumnWidth,
+        (model, widthValue) => model.WorkshopFileCountColumnWidth = widthValue);
+
+    }
+
+    private void SynchronizeWidthProperty(object sender, PropertyChangedEventArgs args, [NotNull] string name, Func<SteamLibraryListViewColumnsModel, double> getter, Action<SteamLibraryListViewColumnsModel, double> setter) {
+      if (args.PropertyName == name) {
         foreach (var otherLibrary in _viewModel.SteamLibraries) {
           if (!ReferenceEquals(sender, otherLibrary.SteamLibraryListViewColumnsModel)) {
-            otherLibrary.SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth =
-              ((SteamLibraryListViewColumnsModel)sender).GameDisplayNameColumnWidth;
+            setter(otherLibrary.SteamLibraryListViewColumnsModel, getter((SteamLibraryListViewColumnsModel)sender));
           }
         }
       }
