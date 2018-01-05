@@ -81,8 +81,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <!-- Display our "SteamLibrary" user control (one per steam library) -->
-            <!-- Disable mouse wheel scrolling so that our (container) ScrollViewer can do its job --> 
-            <userInterface:SteamLibraryUserControl DisableMouseWheelScrolling="True"/>
+            <userInterface:SteamLibraryUserControl/>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>

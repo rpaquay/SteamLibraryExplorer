@@ -88,6 +88,9 @@
     <Compile Include="UserInterface\CopyProgressWindow.xaml.cs">
       <DependentUpon>CopyProgressWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserInterface\SteamLibraryListViewUserControl.xaml.cs">
+      <DependentUpon>SteamLibraryListViewUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WpfUtils\ListViewColumnSorter.cs" />
     <Compile Include="SteamModel\AcfFile.cs" />
     <Compile Include="UserInterface\SteamLibraryUserControl.xaml.cs">
@@ -139,6 +142,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controller.cs" />
+    <Page Include="UserInterface\SteamLibraryListViewUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserInterface\SteamLibraryUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
