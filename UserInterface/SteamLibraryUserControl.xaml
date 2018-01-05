@@ -17,7 +17,7 @@
         DisableMouseWheelScrolling="True"
         HideListViewContent="True"
         Visibility="{Binding ShowListViewColumnHeader, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-      <Expander IsExpanded="True" Margin="0,4,0,2">
+      <Expander IsExpanded="True" Margin="0,4,0,2" Padding="6,0,0,0">
         <Expander.Header>
           <DockPanel Height="30" >
             <Separator VerticalAlignment="Center" Width="20" DockPanel.Dock="Left" />

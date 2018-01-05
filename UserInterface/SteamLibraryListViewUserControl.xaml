@@ -38,11 +38,10 @@
     </Style>
   </UserControl.Resources>
   <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}"
-                  VirtualizingPanel.IsVirtualizingWhenGrouping="True"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                  ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                  PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
-            Margin="20,0,0,0"
+            VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+            PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
             BorderThickness="0">
     <ListView.Resources>
       <ContextMenu x:Key="ItemContextMenu" d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}">
@@ -81,12 +80,12 @@
         <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
                               Width="{Binding SteamLibraryListViewColumnsModel.GameDisplayNameColumnWidth, Mode=TwoWay}">
           <GridViewColumn.Header>
-            <GridViewColumnHeader Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
+            <GridViewColumnHeader Padding="24,0,0,0" Tag="DisplayName" Click="ListViewColumnHeader_Click">Game</GridViewColumnHeader>
           </GridViewColumn.Header>
           <GridViewColumn.CellTemplate>
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
-                               Text="{Binding DisplayName}" TextAlignment="Left" Foreground="{DynamicResource TextBrush}"/>
+                         Padding="14,0,0,0" Text="{Binding DisplayName}" TextAlignment="Left" Foreground="{DynamicResource TextBrush}"/>
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>

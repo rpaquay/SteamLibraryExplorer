@@ -81,7 +81,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <!-- Display our "SteamLibrary" user control (one per steam library) -->
-            <userInterface:SteamLibraryUserControl/>
+            <userInterface:SteamLibraryUserControl Margin="-4,0,0,0"/>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
