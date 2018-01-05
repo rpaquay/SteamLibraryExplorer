@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using mtsuite.CoreFileSystem.ObjectPool;
 
 namespace SteamLibraryExplorer.Utils {
   public class FileSystemImpl : FileSystem {
     private readonly IFileSystem _coreFileSystem = new mtsuite.CoreFileSystem.FileSystem();
+
     protected override string ReadAllTextImpl(FullPath path) {
       using (var fileSteam = _coreFileSystem.OpenFile(path, FileAccess.Read)) {
         using (var streamReader = new StreamReader(fileSteam, Encoding.UTF8, true, 4096, false))
@@ -46,27 +48,22 @@ namespace SteamLibraryExplorer.Utils {
       _coreFileSystem.DeleteEntry(_coreFileSystem.GetEntry(path));
     }
 
-    protected override IEnumerable<FullPath> EnumerateFilesImpl(FullPath path) {
-      // TODO: entries + pool release
-      return _coreFileSystem.GetDirectoryEntries(path).Item
-        .Where(x => x.IsFile)
-        .Select(x => x.Path)
-        .ToList();
+    protected override IEnumerable<FileSystemEntry> EnumerateFilesImpl(FullPath path) {
+      using (var entries = _coreFileSystem.GetDirectoryEntries(path)) {
+        return entries.Item.Where(x => x.IsFile).ToList();
+      }
     }
 
-    protected override IEnumerable<FullPath> EnumerateDirectoriesImpl(FullPath path) {
-      // TODO: entries + pool release
-      return _coreFileSystem.GetDirectoryEntries(path).Item
-        .Where(x => x.IsDirectory)
-        .Select(x => x.Path)
-        .ToList();
+    protected override IEnumerable<FileSystemEntry> EnumerateDirectoriesImpl(FullPath path) {
+      using (var entries = _coreFileSystem.GetDirectoryEntries(path)) {
+        return entries.Item.Where(x => x.IsDirectory).ToList();
+      }
     }
 
-    protected override IEnumerable<FullPath> EnumerateEntriesImpl(FullPath path) {
-      // TODO: entries + pool release
-      return _coreFileSystem.GetDirectoryEntries(path).Item
-        .Select(x => x.Path)
-        .ToList();
+    protected override IEnumerable<FileSystemEntry> EnumerateEntriesImpl(FullPath path) {
+      using (var entries = _coreFileSystem.GetDirectoryEntries(path)) {
+        return entries.Item.ToList();
+      }
     }
   }
 }

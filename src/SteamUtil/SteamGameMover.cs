@@ -191,14 +191,14 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Copy files
       foreach (var sourceFile in FileSystem.EnumerateFiles(sourceDirectory)) {
-        CopySingleFile(sourceFile, destinationDirectory.Combine(sourceFile.Name), progress, info,
+        CopySingleFile(sourceFile.Path, destinationDirectory.Combine(sourceFile.Name), progress, info,
           cancellationToken);
       }
 
       // Copy sub-directories
       foreach (var sourceChild in FileSystem.EnumerateDirectories(sourceDirectory)) {
         var destinationChild = destinationDirectory.Combine(sourceChild.Name);
-        CopyDirectoryRecurse(sourceChild, destinationChild, progress, info, cancellationToken);
+        CopyDirectoryRecurse(sourceChild.Path, destinationChild, progress, info, cancellationToken);
       }
       info.MovedDirectoryCount++;
     }
@@ -240,12 +240,12 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Delete files
       foreach (var sourceFile in FileSystem.EnumerateFiles(directory)) {
-        DeleteSingleFile(phase, sourceFile, progress, info);
+        DeleteSingleFile(phase, sourceFile.Path, progress, info);
       }
 
       // Delete sub-directories
       foreach (var sourceChild in FileSystem.EnumerateDirectories(directory)) {
-        DeleteDirectoryRecurse(phase, sourceChild, progress, info);
+        DeleteDirectoryRecurse(phase, sourceChild.Path, progress, info);
       }
 
       // Delete directory
@@ -280,10 +280,10 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       foreach (var file in FileSystem.EnumerateFiles(sourceDirectory)) {
         info.TotalFileCount++;
-        info.TotalBytes += FileSystem.GetFileSize(file);
+        info.TotalBytes += file.FileSize;
       }
       foreach (var dir in FileSystem.EnumerateDirectories(sourceDirectory)) {
-        DiscoverSourceDirectoryFiles(dir, progress, info, cancellationToken);
+        DiscoverSourceDirectoryFiles(dir.Path, progress, info, cancellationToken);
       }
 
       info.TotalDirectoryCount++;

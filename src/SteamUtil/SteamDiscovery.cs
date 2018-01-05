@@ -202,10 +202,10 @@ namespace SteamLibraryExplorer.SteamUtil {
         return;
       }
       var files = FileSystem.EnumerateFiles(directoryPath).ToList();
-      var fileBytes = files.Aggregate(0L, (s, x) => s + FileSystem.GetFileSize(x));
+      var fileBytes = files.Aggregate(0L, (s, x) => s + x.FileSize);
       updateValues(files.Count, fileBytes);
       foreach (var childDirectory in FileSystem.EnumerateDirectories(directoryPath)) {
-        DiscoverGameSizeOnDiskRecursiveImpl(game, childDirectory, cancellationToken, updateValues);
+        DiscoverGameSizeOnDiskRecursiveImpl(game, childDirectory.Path, cancellationToken, updateValues);
       }
     }
 
@@ -213,7 +213,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     private static IEnumerable<FullPath> LoadGameDirectories([NotNull] FullPath steamLocation) {
       var gameFilesDirectory = steamLocation.Combine("steamapps").Combine("common");
       if (FileSystem.DirectoryExists(gameFilesDirectory)) {
-        return FileSystem.EnumerateDirectories(gameFilesDirectory);
+        return FileSystem.EnumerateDirectories(gameFilesDirectory).Select(x => x.Path);
       }
       return Enumerable.Empty<FullPath>();
     }
@@ -224,7 +224,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (FileSystem.DirectoryExists(acfFilesDirectory)) {
       return FileSystem.EnumerateFiles(acfFilesDirectory)
         .Where(x => x.Name.EndsWith(".acf"))
-        .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
+        .Select(x => new AcfFile(x.Path, FileSystem.ReadAllText(x.Path)));
       }
       return Enumerable.Empty<AcfFile>();
     }
@@ -235,7 +235,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (FileSystem.DirectoryExists(acfFilesDirectory)) {
         return FileSystem.EnumerateFiles(acfFilesDirectory)
           .Where(x => x.Name.EndsWith(".acf"))
-          .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
+          .Select(x => new AcfFile(x.Path, FileSystem.ReadAllText(x.Path)));
       }
       return Enumerable.Empty<AcfFile>();
     }
