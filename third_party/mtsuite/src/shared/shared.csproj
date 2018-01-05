@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{15D510A6-6AD1-4C0A-AF00-F77E3E6F4A8B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>mtsuite.shared</RootNamespace>
+    <AssemblyName>mtsuite.shared</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Collections\PriorityQueue.cs" />
+    <Compile Include="CommandLine\ArgumentDefinitionBuilder.cs" />
+    <Compile Include="CommandLine\ArgumentsHelper.cs" />
+    <Compile Include="CommandLine\ArgumentsParser.cs" />
+    <Compile Include="CommandLine\ArgumentUsagePrinter.cs" />
+    <Compile Include="CommandLine\ArgumentUsageSummaryBuilder.cs" />
+    <Compile Include="CommandLine\CommandLineReturnValueException.cs" />
+    <Compile Include="CommandLine\IArgumentDefinitionVisitor.cs" />
+    <Compile Include="Utils\FormatHelpers.cs" />
+    <Compile Include="IParallelFileSystem.cs" />
+    <Compile Include="IProgressMonitor.cs" />
+    <Compile Include="VersionNumber.cs" />
+    <Compile Include="Tasks\DefaultTaskCollection`1.cs" />
+    <Compile Include="Tasks\DefaultTaskCollection.cs" />
+    <Compile Include="Tasks\Experimental\CollectionContinuationTask.cs" />
+    <Compile Include="Tasks\Experimental\CollectionThenTask.cs" />
+    <Compile Include="Tasks\Experimental\CustomActionTask.cs" />
+    <Compile Include="Tasks\Experimental\CustomTask.cs" />
+    <Compile Include="Tasks\Experimental\CustomTaskCollection.cs" />
+    <Compile Include="Tasks\Experimental\CustomTaskFactory.cs" />
+    <Compile Include="Tasks\DefaultTask`1.cs" />
+    <Compile Include="Tasks\DefaultTask.cs" />
+    <Compile Include="Tasks\DefaultTaskFactory.cs" />
+    <Compile Include="Tasks\Experimental\CustomThenTask.cs" />
+    <Compile Include="Tasks\Experimental\Logger.cs" />
+    <Compile Include="Tasks\Experimental\TaskQueue.cs" />
+    <Compile Include="Tasks\Experimental\TaskThread.cs" />
+    <Compile Include="Tasks\ITask.cs" />
+    <Compile Include="Tasks\ITaskCollection.cs" />
+    <Compile Include="Tasks\ITaskFactory.cs" />
+    <Compile Include="CommandLine\ArgumentDefinitions.cs" />
+    <Compile Include="CommandLine\ParsedArgument.cs" />
+    <Compile Include="ParallelFileSystem.cs" />
+    <Compile Include="ProgressMonitor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Collections\SmallSet.cs" />
+    <Compile Include="Statistics.cs" />
+    <Compile Include="CommandLine\ProgramHelpers.cs" />
+    <Compile Include="Utils\TaskHelpers.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\core-filesystem\**\*.cs" Exclude="..\core-filesystem\**\AssemblyInfo.cs;..\core-filesystem\obj\**">
+      <Link>core-filesystem\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
