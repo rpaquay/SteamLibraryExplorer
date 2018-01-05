@@ -35,7 +35,9 @@ namespace SteamLibraryExplorer.Utils {
       return Instance.ReadAllTextImpl(path);
     }
 
-    protected abstract string ReadAllTextImpl(FullPath path);
+    public static FileSystemEntry GetEntry([NotNull]FullPath path) {
+      return Instance.GetEntryImpl(path);
+    }
 
     [NotNull]
     public static IEnumerable<FileSystemEntry> EnumerateFiles([NotNull]FullPath path) {
@@ -52,7 +54,9 @@ namespace SteamLibraryExplorer.Utils {
       return Instance.EnumerateEntriesImpl(path);
     }
 
+    protected abstract FileSystemEntry GetEntryImpl(FullPath path);
     protected abstract long GetFileSizeImpl(FullPath path);
+    protected abstract string ReadAllTextImpl([NotNull]FullPath path);
     protected abstract bool DirectoryExistsImpl(FullPath path);
     protected abstract bool FileExistsImpl(FullPath path);
     protected abstract void CreateDirectoryImpl(FullPath path);

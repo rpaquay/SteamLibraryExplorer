@@ -191,8 +191,7 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Copy files
       foreach (var sourceFile in FileSystem.EnumerateFiles(sourceDirectory)) {
-        CopySingleFile(sourceFile.Path, destinationDirectory.Combine(sourceFile.Name), progress, info,
-          cancellationToken);
+        CopySingleFile(sourceFile, destinationDirectory.Combine(sourceFile.Name), progress, info, cancellationToken);
       }
 
       // Copy sub-directories
@@ -203,17 +202,21 @@ namespace SteamLibraryExplorer.SteamUtil {
       info.MovedDirectoryCount++;
     }
 
-    private void CopySingleFile([NotNull]FullPath sourceFile, [NotNull]FullPath destinationFile, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info, CancellationToken cancellationToken) {
-      OnCopyingFile(new FileCopyEventArgs(sourceFile, destinationFile));
+    private void CopySingleFile([NotNull] FullPath sourceFile, [NotNull] FullPath destinationFile, [NotNull] Action<MoveDirectoryInfo> progress, [NotNull] MoveDirectoryInfo info, CancellationToken cancellationToken) {
+      CopySingleFile(FileSystem.GetEntry(sourceFile), destinationFile, progress, info, cancellationToken);
+    }
 
-      info.CurrentFile = sourceFile;
+    private void CopySingleFile(FileSystemEntry sourceFile, [NotNull]FullPath destinationFile, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info, CancellationToken cancellationToken) {
+      OnCopyingFile(new FileCopyEventArgs(sourceFile.Path, destinationFile));
+
+      info.CurrentFile = sourceFile.Path;
       ReportProgess(MovePhase.CopyingFiles, progress, info);
 
       var lastBytes = 0L;
       FileUtils.CopyFile(
-        sourceFile.FullName,
+        sourceFile.Path.FullName,
         destinationFile.FullName,
-        FileSystem.GetFileSize(sourceFile) >= 100 * 1024 * 1024,
+        sourceFile.FileSize >= 100 * 1024 * 1024,
         copyProgress => {
           info.TotalBytesOfCurrentFile = copyProgress.TotalFileSize;
           info.MovedBytesOfCurrentFile = copyProgress.TotalBytesTransferred;

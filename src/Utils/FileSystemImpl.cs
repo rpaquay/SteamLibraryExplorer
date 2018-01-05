@@ -16,6 +16,10 @@ namespace SteamLibraryExplorer.Utils {
       }
     }
 
+    protected override FileSystemEntry GetEntryImpl(FullPath path) {
+      return _coreFileSystem.GetEntry(path);
+    }
+
     protected override long GetFileSizeImpl(FullPath path) {
       return _coreFileSystem.GetEntry(path).FileSize;
     }
