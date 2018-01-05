@@ -1,6 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
 using SteamLibraryExplorer.Utils;
+using System.Collections.ObjectModel;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class SteamConfiguration {

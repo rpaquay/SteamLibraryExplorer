@@ -1,10 +1,10 @@
+using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
+using SteamLibraryExplorer.SteamModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
-using SteamLibraryExplorer.SteamModel;
-using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public interface ISteamDiscovery {

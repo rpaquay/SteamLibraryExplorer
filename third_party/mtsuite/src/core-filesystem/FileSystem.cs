@@ -65,20 +65,20 @@ namespace mtsuite.CoreFileSystem {
       }
     }
 
-    public void CopyFile(FileSystemEntry sourceEntry, FileSystemEntry destinationEntry, CopyFileCallback callback) {
-      CopyFileWorker(sourceEntry, destinationEntry.Path, destinationEntry, callback);
+    public void CopyFile(FileSystemEntry sourceEntry, FileSystemEntry destinationEntry, CopyFileOptions options, CopyFileCallback callback) {
+      CopyFileWorker(sourceEntry, destinationEntry.Path, destinationEntry, options, callback);
     }
 
-    public void CopyFile(FileSystemEntry sourceEntry, FullPath destinationPath, CopyFileCallback callback) {
+    public void CopyFile(FileSystemEntry sourceEntry, FullPath destinationPath, CopyFileOptions options, CopyFileCallback callback) {
       FileSystemEntry destinationEntry;
       if (TryGetEntry(destinationPath, out destinationEntry)) {
-        CopyFileWorker(sourceEntry, destinationPath, destinationEntry, callback);
+        CopyFileWorker(sourceEntry, destinationPath, destinationEntry, options, callback);
       } else {
-        CopyFileWorker(sourceEntry, destinationPath, null, callback);
+        CopyFileWorker(sourceEntry, destinationPath, null, options, callback);
       }
     }
 
-    private void CopyFileWorker(FileSystemEntry sourceEntry, FullPath destinationPath, FileSystemEntry? destinationEntry, CopyFileCallback callback) {
+    private void CopyFileWorker(FileSystemEntry sourceEntry, FullPath destinationPath, FileSystemEntry? destinationEntry, CopyFileOptions options, CopyFileCallback callback) {
       // If the source is a reparse point, delete the destination and
       // copy the reparse point.
       if (sourceEntry.IsReparsePoint) {
@@ -103,7 +103,7 @@ namespace mtsuite.CoreFileSystem {
             // Nothing to do here, as CopyFile will report an exception below.
           }
         }
-        _win32.CopyFile(sourceEntry.Path, destinationPath, callback);
+        _win32.CopyFile(sourceEntry.Path, destinationPath, options, callback);
       }
     }
 
@@ -143,7 +143,7 @@ namespace mtsuite.CoreFileSystem {
 
     public void CreateJunctionPoint(FullPath path, string target) {
       // Convert target into an absolute path
-      var targetPath = PathHelpers.IsPathAbsolute(target) ? target : path.Parent.Combine(target).Path;
+      var targetPath = PathHelpers.IsPathAbsolute(target) ? target : path.Parent.Combine(target).FullName;
       targetPath = PathHelpers.NormalizePath(targetPath);
 
       _win32.CreateJunctionPoint(path, new FullPath(targetPath));

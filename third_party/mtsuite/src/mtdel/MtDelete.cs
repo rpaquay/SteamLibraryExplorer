@@ -113,7 +113,7 @@ I  Not content indexed Files  L  Reparse Points
 
       if (!options.QuietMode) {
         while (true) {
-          Console.Write("{0}, Are you sure (Y/N)? ", PathHelpers.StripLongPathPrefix(sourcePath.Path));
+          Console.Write("{0}, Are you sure (Y/N)? ", PathHelpers.StripLongPathPrefix(sourcePath.FullName));
           var result = Console.ReadLine();
           if (result == null)
             throw new CommandLineReturnValueException(10);
@@ -127,7 +127,7 @@ I  Not content indexed Files  L  Reparse Points
       }
 
       Console.WriteLine("Deleting files and subdirectories from \"{0}\"",
-        PathHelpers.StripLongPathPrefix(sourcePath.Path));
+        PathHelpers.StripLongPathPrefix(sourcePath.FullName));
 
       var includeFilter = CreateFilter(options);
       _progressMonitor.Start();

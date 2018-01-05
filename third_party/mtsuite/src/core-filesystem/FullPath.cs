@@ -13,25 +13,43 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using mtsuite.CoreFileSystem.Utils;
 using mtsuite.CoreFileSystem.Win32;
 
 namespace mtsuite.CoreFileSystem {
-  public class FullPath : IStringSource {
+  /// <summary>
+  /// Represents a fully qualified path.
+  /// </summary>
+  public class FullPath : IEquatable<FullPath>, IComparable<FullPath>, IStringSource {
     private readonly FullPath _parent;
     private readonly string _name;
 
+    /// <summary>
+    /// Construct a <see cref="FullPath"/> instance from a valid fully qualifed path
+    /// represented as the <see cref="string"/> <paramref name="path"/>.
+    /// Throws an exception if the <paramref name="path"/> is not valie.
+    /// </summary>
     public FullPath(string path) {
       if (!PathHelpers.IsPathAbsolute(path))
-        throw new ArgumentException("Path should be absolute", path);
+        ThrowArgumentException("Path should be absolute", "path");
+      if (PathHelpers.HasAltDirectorySeparators(path))
+        ThrowArgumentException("Path should only contain valid directory separators", "path");
       _name = path;
     }
 
+    /// <summary>
+    /// Construct a <see cref="FullPath"/> instance from a valid parent <see cref="FullPath"/>
+    /// and a relative name.
+    /// Throws an exception if the <paramref name="name"/> is not valie.
+    /// </summary>
     public FullPath(FullPath parent, string name) {
       if (parent == null)
         ThrowArgumentNullException("parent");
       if (string.IsNullOrEmpty(name))
         ThrowArgumentNullException("name");
+      if (PathHelpers.HasAltDirectorySeparators(name) || PathHelpers.HasDirectorySeparators(name))
+        ThrowArgumentException("Name should not contain directory separators", "name");
       _parent = parent;
       _name = name;
     }
@@ -40,7 +58,11 @@ namespace mtsuite.CoreFileSystem {
       throw new ArgumentNullException(paramName);
     }
 
-    public string Path {
+    private static void ThrowArgumentException(string message, string paramName) {
+      throw new ArgumentException(message, paramName);
+    }
+
+    public string FullName {
       get {
         var sb = new StringBuffer(256);
         BuildPath(sb);
@@ -85,7 +107,7 @@ namespace mtsuite.CoreFileSystem {
     }
 
     public override string ToString() {
-      return Path;
+      return FullName;
     }
 
     public int Length {
@@ -106,9 +128,38 @@ namespace mtsuite.CoreFileSystem {
         path = path._parent;
         result += path._name.Length;
         if (!path.HasTrailingSeparator)
-          result ++;
+          result++;
       }
       return result;
+    }
+
+    public bool Equals(FullPath other) {
+      if (ReferenceEquals(null, other)) return false;
+      if (ReferenceEquals(this, other)) return true;
+      return Equals(_parent, other._parent) &&
+             string.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object obj) {
+      if (ReferenceEquals(null, obj)) return false;
+      if (ReferenceEquals(this, obj)) return true;
+      if (obj.GetType() != GetType()) return false;
+      return Equals((FullPath)obj);
+    }
+
+    public override int GetHashCode() {
+      unchecked {
+        return ((_parent != null ? _parent.GetHashCode() : 0) * 397) ^
+               (_name != null ? _name.GetHashCode() : 0);
+      }
+    }
+
+    public int CompareTo(FullPath other) {
+      if (ReferenceEquals(this, other)) return 0;
+      if (ReferenceEquals(null, other)) return 1;
+      var parentComparison = Comparer<FullPath>.Default.Compare(_parent, other._parent);
+      if (parentComparison != 0) return parentComparison;
+      return string.Compare(_name, other._name, StringComparison.OrdinalIgnoreCase);
     }
   }
 }

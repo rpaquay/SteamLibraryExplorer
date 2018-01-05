@@ -1,5 +1,5 @@
 ﻿using JetBrains.Annotations;
-using SteamLibraryExplorer.Utils;
+using mtsuite.CoreFileSystem;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class PathEventArgs {

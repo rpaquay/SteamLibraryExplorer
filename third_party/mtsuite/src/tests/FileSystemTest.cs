@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System.Text;
+using mtsuite.CoreFileSystem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using tests.FileSystemHelpers;
 
@@ -179,7 +180,7 @@ namespace tests {
       var info = _fileSystemSetup.FileSystem.GetReparsePointInfo(junctionPoint.Path);
       Assert.IsTrue(info.IsJunctionPoint);
       Assert.IsFalse(info.IsTargetRelative);
-      Assert.AreEqual(fooTarget.Path.Path, info.Target);
+      Assert.AreEqual(fooTarget.Path.FullName, info.Target);
 
       Assert.IsTrue(_fileSystemSetup.FileSystem.GetEntry(junctionPoint.Path.Combine("testfile.txt")).IsFile);
     }
@@ -196,7 +197,7 @@ namespace tests {
       var info = _fileSystemSetup.FileSystem.GetReparsePointInfo(junctionPoint.Path);
       Assert.IsTrue(info.IsJunctionPoint);
       Assert.IsFalse(info.IsTargetRelative);
-      Assert.AreEqual(fooTarget.Path.Path, info.Target);
+      Assert.AreEqual(fooTarget.Path.FullName, info.Target);
     }
 
     [TestMethod]
@@ -224,13 +225,13 @@ namespace tests {
       // Act
       var jct2Path = fooTarget.Path.Combine("jct-copy");
       var entry = _fileSystemSetup.FileSystem.GetEntry(junctionPoint.Path);
-      _fileSystemSetup.FileSystem.CopyFile(entry, jct2Path, (a, b) => { });
+      _fileSystemSetup.FileSystem.CopyFile(entry, jct2Path, CopyFileOptions.Default, (a, b) => { });
 
       // Assert
       var info = _fileSystemSetup.FileSystem.GetReparsePointInfo(jct2Path);
       Assert.IsTrue(info.IsJunctionPoint);
       Assert.IsFalse(info.IsTargetRelative);
-      Assert.AreEqual(fooTarget.Path.Path, info.Target);
+      Assert.AreEqual(fooTarget.Path.FullName, info.Target);
     }
 
   }

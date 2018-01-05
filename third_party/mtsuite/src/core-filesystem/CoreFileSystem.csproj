@@ -37,6 +37,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyFilOptions.cs" />
     <Compile Include="ObjectPool\PoolFactory.cs" />
     <Compile Include="ObjectPool\ListPool.cs" />
     <Compile Include="ObjectPool\PoolExtensions.cs" />

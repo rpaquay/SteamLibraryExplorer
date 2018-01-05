@@ -8,11 +8,13 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.UserInterface;
 using SteamLibraryExplorer.Utils;
 using SteamLibraryExplorer.ViewModel;
 using SteamLibraryExplorer.WpfUtils;
+using FileSystem = SteamLibraryExplorer.Utils.FileSystem;
 
 namespace SteamLibraryExplorer {
   public class MainView {
@@ -103,14 +105,14 @@ namespace SteamLibraryExplorer {
       return string.Format("{0:n2} GB", (double)value / 1024 / 1024 / 1024);
     }
 
-    public void ShowSteamLocation([CanBeNull]FullPath directoryInfo) {
+    public void ShowSteamLocation([CanBeNull]FullPath steamPath) {
       //_mainForm.steamLocationTextBox.Text = directoryInfo.FullName;
-      if (directoryInfo == null) {
+      if (steamPath == null) {
         _viewModel.StatusText = "Steam location: <Not found>";
         return;
       }
 
-      _viewModel.StatusText = $"Steam location: {directoryInfo.FullName}";
+      _viewModel.StatusText = $"Steam location: {steamPath.FullName}";
     }
 
     public void ShowError([NotNull]string text) {

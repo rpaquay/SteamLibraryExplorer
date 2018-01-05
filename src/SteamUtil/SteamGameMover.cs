@@ -1,10 +1,12 @@
-﻿using System;
+﻿using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
+using SteamLibraryExplorer.SteamModel;
+using SteamLibraryExplorer.Utils;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
-using SteamLibraryExplorer.SteamModel;
-using SteamLibraryExplorer.Utils;
+using FileSystem = SteamLibraryExplorer.Utils.FileSystem;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamGameMover : ISteamGameMover {

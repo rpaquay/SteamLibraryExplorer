@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
 using SteamLibraryExplorer.Utils;
+using System.Diagnostics;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class SteamGame {

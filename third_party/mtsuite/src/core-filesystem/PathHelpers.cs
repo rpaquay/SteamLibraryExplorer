@@ -20,7 +20,8 @@ using System.Text;
 
 namespace mtsuite.CoreFileSystem {
   public static class PathHelpers {
-    private static readonly string DirectorySeparatorString = Path.DirectorySeparatorChar.ToString();
+    public static readonly string DirectorySeparatorString = Path.DirectorySeparatorChar.ToString();
+    public  static readonly string AltDirectorySeparatorString = Path.AltDirectorySeparatorChar.ToString();
     private static readonly string LongDiskPathPrefix = @"\\?\";
     private static readonly string LongUncPathPrefix = @"\\?\UNC\";
     private static readonly string UncPathPrefix  = @"\\";
@@ -37,6 +38,14 @@ namespace mtsuite.CoreFileSystem {
     /// </summary>
     public static bool IsPathRelative(string path) {
       return !IsPathAbsolute(path);
+    }
+
+    public static bool HasDirectorySeparators(string path) {
+      return path.IndexOf(Path.DirectorySeparatorChar) < 0;
+    }
+
+    public static bool HasAltDirectorySeparators(string path) {
+      return path.IndexOf(Path.AltDirectorySeparatorChar) < 0;
     }
 
     /// <summary>

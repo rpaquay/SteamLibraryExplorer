@@ -39,7 +39,7 @@ namespace tests.FileSystemHelpers {
         var path = _root.Value.Path;
         if (_root.Value.Exists()) {
           Console.WriteLine();
-          Console.WriteLine("CLEANUP: Deleting root folder of test file system: \"{0}\"", path.Path);
+          Console.WriteLine("CLEANUP: Deleting root folder of test file system: \"{0}\"", path.FullName);
           DeleteDirectoryEntriesRecurse(path);
           _fileSystem.DeleteEntry(_fileSystem.GetEntry(path));
         }
@@ -85,7 +85,7 @@ namespace tests.FileSystemHelpers {
 
     private DirectorySetup CreateRootDirectory() {
       var result = new DirectorySetup(this, CreateTemporaryFolder());
-      Console.WriteLine("SETUP: Created temporary root folder for test file system: \"{0}\"", result.Path.Path);
+      Console.WriteLine("SETUP: Created temporary root folder for test file system: \"{0}\"", result.Path.FullName);
       Console.WriteLine();
       return result;
     }

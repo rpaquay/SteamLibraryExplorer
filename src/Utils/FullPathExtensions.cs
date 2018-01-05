@@ -1,8 +1,25 @@
-﻿using System.Text;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
+using System.Text;
 
 namespace SteamLibraryExplorer.Utils {
   public static class FullPathExtensions {
+    [NotNull]
+    public static FullPath Combine(this FullPath path, [NotNull]string name1, [NotNull]string name2) {
+      return path.Combine(name1).Combine(name2);
+    }
+
+    [NotNull]
+    public static FullPath Combine(this FullPath path, [NotNull]string name1, [NotNull]string name2, [NotNull]string name3) {
+      return path.Combine(name1).Combine(name2).Combine(name3);
+    }
+
+    [NotNull]
+    public static FullPath Combine(this FullPath path, [NotNull]string name1, [NotNull]string name2, [NotNull]string name3, [NotNull]string name4) {
+      return path.Combine(name1).Combine(name2).Combine(name3).Combine(name4);
+    }
+
+
     [NotNull]
     public static string GetRelativePathTo([NotNull]this FullPath entry, [NotNull]FullPath baseDir) {
       var sb = new StringBuilder();
@@ -17,5 +34,4 @@ namespace SteamLibraryExplorer.Utils {
       }
       return entry.FullName;
     }
-  }
-}
+  }}

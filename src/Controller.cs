@@ -1,11 +1,13 @@
-﻿using System;
+﻿using mtsuite.CoreFileSystem;
+using SteamLibraryExplorer.SteamModel;
+using SteamLibraryExplorer.SteamUtil;
+using SteamLibraryExplorer.Utils;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using SteamLibraryExplorer.SteamModel;
-using SteamLibraryExplorer.SteamUtil;
-using SteamLibraryExplorer.Utils;
+using FileSystem = SteamLibraryExplorer.Utils.FileSystem;
 
 namespace SteamLibraryExplorer {
   public class Controller {

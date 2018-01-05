@@ -1,6 +1,7 @@
-using System.Collections.Generic;
 using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
 using SteamLibraryExplorer.Utils;
+using System.Collections.Generic;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class SteamLibrary {

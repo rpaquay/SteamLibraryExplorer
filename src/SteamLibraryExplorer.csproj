@@ -26,6 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,6 +37,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -70,6 +72,11 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\third_party\mtsuite\src\core-filesystem\**\*.cs" Exclude="..\third_party\mtsuite\src\core-filesystem\**\AssemblyInfo.cs;..\third_party\mtsuite\src\core-filesystem\obj\**">
+      <Link>core-filesystem\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -100,7 +107,6 @@
     <Compile Include="Utils\FileSystem.cs" />
     <Compile Include="Utils\FileSystemImpl.cs" />
     <Compile Include="Utils\FileUtils.cs" />
-    <Compile Include="Utils\FullPath.cs" />
     <Compile Include="Utils\ILoggerFacade.cs" />
     <Compile Include="Utils\LoggerManagerFacade.cs" />
     <Compile Include="Utils\NLogUtils\NLogFacade.cs" />

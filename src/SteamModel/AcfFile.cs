@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
 using SteamLibraryExplorer.SteamUtil;
-using SteamLibraryExplorer.Utils;
 
 namespace SteamLibraryExplorer.SteamModel {
   public class AcfFile {

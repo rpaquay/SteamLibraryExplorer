@@ -1,4 +1,9 @@
-﻿using System;
+﻿using JetBrains.Annotations;
+using Microsoft.Win32;
+using mtsuite.CoreFileSystem;
+using SteamLibraryExplorer.SteamModel;
+using SteamLibraryExplorer.Utils;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -8,10 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
-using Microsoft.Win32;
-using SteamLibraryExplorer.SteamModel;
-using SteamLibraryExplorer.Utils;
+using FileSystem = SteamLibraryExplorer.Utils.FileSystem;
 
 namespace SteamLibraryExplorer.SteamUtil {
   public class SteamDiscovery : ISteamDiscovery {
@@ -220,7 +222,8 @@ namespace SteamLibraryExplorer.SteamUtil {
     private static IEnumerable<AcfFile> LoadAcfFiles([NotNull] FullPath steamLocation) {
       var acfFilesDirectory = steamLocation.Combine("steamapps");
       if (FileSystem.DirectoryExists(acfFilesDirectory)) {
-      return FileSystem.EnumerateFiles(acfFilesDirectory, "*.acf")
+      return FileSystem.EnumerateFiles(acfFilesDirectory)
+        .Where(x => x.Name.EndsWith(".acf"))
         .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
       }
       return Enumerable.Empty<AcfFile>();
@@ -230,7 +233,8 @@ namespace SteamLibraryExplorer.SteamUtil {
     private static IEnumerable<AcfFile> LoadWorkshopFiles([NotNull] FullPath steamLocation) {
       var acfFilesDirectory = steamLocation.Combine("steamapps").Combine("workshop");
       if (FileSystem.DirectoryExists(acfFilesDirectory)) {
-        return FileSystem.EnumerateFiles(acfFilesDirectory, "*.acf")
+        return FileSystem.EnumerateFiles(acfFilesDirectory)
+          .Where(x => x.Name.EndsWith(".acf"))
           .Select(x => new AcfFile(x, FileSystem.ReadAllText(x)));
       }
       return Enumerable.Empty<AcfFile>();

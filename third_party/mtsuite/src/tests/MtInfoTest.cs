@@ -124,7 +124,7 @@ namespace tests {
       subdir.CreateFile("subdir-file.txt", 20);
       var j1 = root.CreateJunctionPoint("j1", "subdir");
       var j2 = root.CreateJunctionPoint("j2", ".\\subdir");
-      var j3 = root.CreateJunctionPoint("j3", root.Path.Combine("subdir").Path);
+      var j3 = root.CreateJunctionPoint("j3", root.Path.Combine("subdir").FullName);
 
       var mtinfo = new MtInfo(_fileSystemSetup.FileSystem);
 
@@ -138,12 +138,12 @@ namespace tests {
       var j1Info = _fileSystemSetup.FileSystem.GetReparsePointInfo(j1.Path);
       Assert.AreEqual(true, j1Info.IsJunctionPoint);
       Assert.AreEqual(false, j1Info.IsTargetRelative);
-      Assert.AreEqual(subdir.Path.Path, j1Info.Target);
+      Assert.AreEqual(subdir.Path.FullName, j1Info.Target);
 
       var j2Info = _fileSystemSetup.FileSystem.GetReparsePointInfo(j2.Path);
       Assert.AreEqual(true, j2Info.IsJunctionPoint);
       Assert.AreEqual(false, j2Info.IsTargetRelative);
-      Assert.AreEqual(subdir.Path.Path, j2Info.Target);
+      Assert.AreEqual(subdir.Path.FullName, j2Info.Target);
     }
   }
 }

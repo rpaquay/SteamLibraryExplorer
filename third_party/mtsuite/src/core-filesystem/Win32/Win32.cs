@@ -188,7 +188,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
       public Exception Error { get; set; }
     }
 
-    public void CopyFile(IStringSource sourcePath, IStringSource destinationPath, CopyFileCallback callback) {
+    public void CopyFile(IStringSource sourcePath, IStringSource destinationPath, CopyFileOptions options, CopyFileCallback callback) {
       using (var source = _stringBufferPool.AllocateFrom())
       using (var destination = _stringBufferPool.AllocateFrom()) {
         sourcePath.CopyTo(source.Item);
@@ -198,9 +198,12 @@ namespace mtsuite.CoreFileSystem.Win32 {
         var callbackDataHandle = GCHandle.Alloc(callbackData);
         try {
           var bCancel = 0;
+          var flags = NativeMethods.CopyFileFlags.COPY_FILE_COPY_SYMLINK;
+          if ((options & CopyFileOptions.Unbuffered) != 0)
+            flags |= NativeMethods.CopyFileFlags.COPY_FILE_NO_BUFFERING;
           if (NativeMethods.CopyFileEx(source.Item.Data, destination.Item.Data,
                                        CopyProgressRoutinePtr, GCHandle.ToIntPtr(callbackDataHandle),
-                                       ref bCancel, NativeMethods.CopyFileFlags.COPY_FILE_COPY_SYMLINK)) {
+                                       ref bCancel, flags)) {
             return;
           }
         } finally {

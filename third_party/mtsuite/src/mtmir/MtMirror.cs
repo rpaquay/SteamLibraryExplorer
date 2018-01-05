@@ -114,7 +114,7 @@ namespace mtmir {
       }
 
       Console.WriteLine("Mirroring files and directories from \"{0}\" to \"{1}\"",
-        PathHelpers.StripLongPathPrefix(sourcePath.Path), PathHelpers.StripLongPathPrefix(destinationPath.Path));
+        PathHelpers.StripLongPathPrefix(sourcePath.FullName), PathHelpers.StripLongPathPrefix(destinationPath.FullName));
       _progressMonitor.Start();
 
       bool destinationIsNew;

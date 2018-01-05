@@ -283,7 +283,7 @@ namespace tests {
       Assert.AreEqual("a", _destfs.Root.GetDirectory("a").Path.Name);
       Assert.AreEqual("f.txt", _destfs.Root.GetDirectory("a").GetFile("f.txt").Path.Name);
       // Note: Target points to "_sourcefs" because junction point targets are absolute paths.
-      Assert.AreEqual(_sourcefs.Root.GetDirectory("a").GetDirectory("subdir").Path.Path, _destfs.Root.GetDirectory("a").GetJunctionPoint("jct").Target);
+      Assert.AreEqual(_sourcefs.Root.GetDirectory("a").GetDirectory("subdir").Path.FullName, _destfs.Root.GetDirectory("a").GetJunctionPoint("jct").Target);
       Assert.AreEqual(0, stats.DirectoryDeletedCount);
       Assert.AreEqual(0, stats.FileDeletedCount);
       Assert.AreEqual(2, stats.DirectoryCreatedCount);
@@ -314,7 +314,7 @@ namespace tests {
       Assert.AreEqual("a", _destfs.Root.GetDirectory("a").Path.Name);
       Assert.AreEqual("f.txt", _destfs.Root.GetDirectory("a").GetFile("f.txt").Path.Name);
       // Note: Target points to "_sourcefs" because junction point targets are absolute paths.
-      Assert.AreEqual(_sourcefs.Root.GetDirectory("a").GetDirectory("subdir").Path.Path, _destfs.Root.GetDirectory("a").GetJunctionPoint("jct").Target);
+      Assert.AreEqual(_sourcefs.Root.GetDirectory("a").GetDirectory("subdir").Path.FullName, _destfs.Root.GetDirectory("a").GetJunctionPoint("jct").Target);
       Assert.AreEqual(0, stats.DirectoryDeletedCount);
       Assert.AreEqual(0, stats.FileDeletedCount);
       Assert.AreEqual(0, stats.DirectoryCreatedCount);
@@ -376,7 +376,7 @@ namespace tests {
       Assert.AreEqual("a", _destfs.Root.GetDirectory("a").Path.Name);
       Assert.AreEqual("f.txt", _destfs.Root.GetDirectory("a").GetFile("f.txt").Path.Name);
       Assert.AreEqual("jct", _destfs.Root.GetDirectory("a").GetJunctionPoint("jct").Path.Name);
-      Assert.AreEqual(_sourcefs.Root.GetDirectory("a").GetDirectory("subdir").Path.Path, _destfs.Root.GetDirectory("a").GetJunctionPoint("jct").Target);
+      Assert.AreEqual(_sourcefs.Root.GetDirectory("a").GetDirectory("subdir").Path.FullName, _destfs.Root.GetDirectory("a").GetJunctionPoint("jct").Target);
       Assert.AreEqual(0, stats.DirectoryDeletedCount);
       Assert.AreEqual(1, stats.FileDeletedCount);
       Assert.AreEqual(0, stats.SymlinkDeletedCount);

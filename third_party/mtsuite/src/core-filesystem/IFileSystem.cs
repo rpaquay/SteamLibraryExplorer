@@ -62,7 +62,7 @@ namespace mtsuite.CoreFileSystem {
     /// Note: Throws an exception when the destination can't be overwritten
     /// successfully.
     /// </summary>
-    void CopyFile(FileSystemEntry sourceEntry, FullPath destinationPath, CopyFileCallback callback);
+    void CopyFile(FileSystemEntry sourceEntry, FullPath destinationPath, CopyFileOptions options, CopyFileCallback callback);
 
     /// <summary>
     /// Copy a file (or reparse point or symbolic link) given its corresponding
@@ -80,7 +80,7 @@ namespace mtsuite.CoreFileSystem {
     /// Note: Throws an exception when the destination can't be overwritten
     /// successfully.
     /// </summary>
-    void CopyFile(FileSystemEntry sourceEntry, FileSystemEntry destinationEntry, CopyFileCallback callback);
+    void CopyFile(FileSystemEntry sourceEntry, FileSystemEntry destinationEntry, CopyFileOptions options, CopyFileCallback callback);
 
     /// <summary>
     /// Open an existing file given its <paramref name="path"/>. Throws an

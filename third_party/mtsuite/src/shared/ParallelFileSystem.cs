@@ -330,9 +330,9 @@ namespace mtsuite.shared {
             lastTransferred = copiedBytes;
           };
           if (destinationExists) {
-            _fileSystem.CopyFile(sourceEntry, destinationEntry, callback);
+            _fileSystem.CopyFile(sourceEntry, destinationEntry, CopyFileOptions.Default, callback);
           } else {
-            _fileSystem.CopyFile(sourceEntry, destinationPath, callback);
+            _fileSystem.CopyFile(sourceEntry, destinationPath, CopyFileOptions.Default, callback);
           }
         } catch (Exception e) {
           OnError(e);

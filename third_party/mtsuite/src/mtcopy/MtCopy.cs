@@ -113,8 +113,8 @@ namespace mtcopy {
       }
 
       Console.WriteLine("Copying files and subdirectories from \"{0}\" to \"{1}\"",
-        PathHelpers.StripLongPathPrefix(sourcePath.Path),
-        PathHelpers.StripLongPathPrefix(destinationPath.Path));
+        PathHelpers.StripLongPathPrefix(sourcePath.FullName),
+        PathHelpers.StripLongPathPrefix(destinationPath.FullName));
       _progressMonitor.Start();
       //_progressMonitor.OnEntriesDiscovered(new List<FileSystemEntry>(new[] { sourceDirectory }));
 
