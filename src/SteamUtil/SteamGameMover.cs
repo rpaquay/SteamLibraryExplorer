@@ -213,22 +213,24 @@ namespace SteamLibraryExplorer.SteamUtil {
       ReportProgess(MovePhase.CopyingFiles, progress, info);
 
       var lastBytes = 0L;
-      FileUtils.CopyFile(
-        sourceFile.Path.FullName,
-        destinationFile.FullName,
-        sourceFile.FileSize >= 100 * 1024 * 1024,
-        copyProgress => {
-          info.TotalBytesOfCurrentFile = copyProgress.TotalFileSize;
-          info.MovedBytesOfCurrentFile = copyProgress.TotalBytesTransferred;
+      var options = CopyFileOptions.Default;
+      if (sourceFile.FileSize >= 100 * 1024 * 1024) {
+        options |= CopyFileOptions.Unbuffered;
+      }
 
-          // Note: The progress callback report transferred bytes vs total
-          // We need to transfer that into a delta to add to the total
-          var deltaBytes = copyProgress.TotalBytesTransferred - lastBytes;
-          lastBytes = copyProgress.TotalBytesTransferred;
-          info.MovedBytes += deltaBytes;
-          ReportProgess(MovePhase.CopyingFiles, progress, info);
-        },
-        cancellationToken);
+      FileSystem.CopyFile(sourceFile, destinationFile, options, (totalBytesTransferred, totalBytes) => {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        info.TotalBytesOfCurrentFile = totalBytes;
+        info.MovedBytesOfCurrentFile = totalBytesTransferred;
+
+        // Note: The progress callback report transferred bytes vs total
+        // We need to transfer that into a delta to add to the total
+        var deltaBytes = totalBytesTransferred - lastBytes;
+        lastBytes = totalBytesTransferred;
+        info.MovedBytes += deltaBytes;
+        ReportProgess(MovePhase.CopyingFiles, progress, info);
+      });
 
       info.MovedFileCount++;
     }

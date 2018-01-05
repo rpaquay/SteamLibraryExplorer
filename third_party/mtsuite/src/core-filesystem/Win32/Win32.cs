@@ -212,6 +212,9 @@ namespace mtsuite.CoreFileSystem.Win32 {
 
         var lastWin32Error = Marshal.GetLastWin32Error();
         if (lastWin32Error == (int)Win32Errors.ERROR_REQUEST_ABORTED && callbackData.Error != null) {
+          if (callbackData.Error is OperationCanceledException) {
+            throw callbackData.Error;
+          }
           throw new InvalidOperationException(string.Format("Error copying file from \"{0}\" to \"{1}\"",
             StripPath(sourcePath), StripPath(destinationPath)), callbackData.Error);
         }

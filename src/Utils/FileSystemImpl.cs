@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using mtsuite.CoreFileSystem.ObjectPool;
 
 namespace SteamLibraryExplorer.Utils {
   public class FileSystemImpl : FileSystem {
@@ -45,11 +44,25 @@ namespace SteamLibraryExplorer.Utils {
     }
 
     protected override void DeleteDirectoryImpl(FullPath path) {
-      _coreFileSystem.DeleteEntry(_coreFileSystem.GetEntry(path));
+      FileSystemEntry entry;
+      if (!_coreFileSystem.TryGetEntry(path, out entry)) {
+        return;
+      }
+
+      _coreFileSystem.DeleteEntry(entry);
     }
 
     protected override void DeleteFileImpl(FullPath path) {
-      _coreFileSystem.DeleteEntry(_coreFileSystem.GetEntry(path));
+      FileSystemEntry entry;
+      if (!_coreFileSystem.TryGetEntry(path, out entry)) {
+        return;
+      }
+
+      _coreFileSystem.DeleteEntry(entry);
+    }
+
+    protected override void CopyFileImpl(FileSystemEntry sourceEntry, FullPath destinationPath, CopyFileOptions options, CopyFileCallback callback) {
+      _coreFileSystem.CopyFile(sourceEntry, destinationPath, options, callback);
     }
 
     protected override IEnumerable<FileSystemEntry> EnumerateFilesImpl(FullPath path) {
@@ -65,9 +78,7 @@ namespace SteamLibraryExplorer.Utils {
     }
 
     protected override IEnumerable<FileSystemEntry> EnumerateEntriesImpl(FullPath path) {
-      using (var entries = _coreFileSystem.GetDirectoryEntries(path)) {
-        return entries.Item.ToList();
-      }
+      return _coreFileSystem.GetDirectoryEntries(path).Item;
     }
   }
 }
