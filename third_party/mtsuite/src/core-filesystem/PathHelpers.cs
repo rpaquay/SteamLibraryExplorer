@@ -41,11 +41,11 @@ namespace mtsuite.CoreFileSystem {
     }
 
     public static bool HasDirectorySeparators(string path) {
-      return path.IndexOf(Path.DirectorySeparatorChar) < 0;
+      return path.IndexOf(Path.DirectorySeparatorChar) >= 0;
     }
 
     public static bool HasAltDirectorySeparators(string path) {
-      return path.IndexOf(Path.AltDirectorySeparatorChar) < 0;
+      return path.IndexOf(Path.AltDirectorySeparatorChar) >= 0;
     }
 
     /// <summary>
