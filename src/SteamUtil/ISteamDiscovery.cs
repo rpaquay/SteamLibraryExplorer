@@ -10,7 +10,7 @@ namespace SteamLibraryExplorer.SteamUtil {
   public interface ISteamDiscovery {
     [NotNull]
     [ItemCanBeNull]
-    Task<FullPath> LocateSteamFolderAsync();
+    Task<FullPath?> LocateSteamFolderAsync();
 
     [NotNull]
     [ItemNotNull]

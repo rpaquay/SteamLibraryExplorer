@@ -30,7 +30,7 @@ namespace tests {
     public void FullPathWithTrailingSeparatorShouldWork() {
       var pathString = @"c:\test\test2\";
       var path = new FullPath(pathString);
-      Assert.AreEqual(pathString, path.FullName);
+      Assert.AreEqual(@"c:\test\test2", path.FullName);
     }
 
     [TestMethod]
@@ -38,6 +38,13 @@ namespace tests {
       var pathString = @"c:\test\test2";
       var path = new FullPath(pathString).Combine("a");
       Assert.AreEqual(pathString + @"\a", path.FullName);
+    }
+
+    [TestMethod]
+    public void FullPathCombineRelativeShouldWork() {
+      var pathString = @"c:\test\test2";
+      var path = new FullPath(pathString).Combine(@"a\b");
+      Assert.AreEqual(pathString + @"\a\b", path.FullName);
     }
 
     [TestMethod]
@@ -66,10 +73,10 @@ namespace tests {
       var pathString = @"c:\test\test2";
       var path = new FullPath(pathString);
       Assert.IsNotNull(path.Parent);
-      Assert.AreEqual(@"c:\test\", path.Parent.FullName);
-      Assert.IsNotNull(path.Parent.Parent);
-      Assert.AreEqual(@"c:\", path.Parent.Parent.FullName);
-      Assert.IsNull(path.Parent.Parent.Parent);
+      Assert.AreEqual(@"c:\test", path.Parent?.FullName);
+      Assert.IsNotNull(path.Parent?.Parent);
+      Assert.AreEqual(@"c:\", path.Parent?.Parent?.FullName);
+      Assert.IsNull(path.Parent?.Parent?.Parent);
     }
 
     [TestMethod]
@@ -77,10 +84,10 @@ namespace tests {
       var pathString = @"c:\test\test2\";
       var path = new FullPath(pathString);
       Assert.IsNotNull(path.Parent);
-      Assert.AreEqual(@"c:\test\", path.Parent.FullName);
-      Assert.IsNotNull(path.Parent.Parent);
-      Assert.AreEqual(@"c:\", path.Parent.Parent.FullName);
-      Assert.IsNull(path.Parent.Parent.Parent);
+      Assert.AreEqual(@"c:\test", path.Parent?.FullName);
+      Assert.IsNotNull(path.Parent?.Parent);
+      Assert.AreEqual(@"c:\", path.Parent?.Parent?.FullName);
+      Assert.IsNull(path.Parent?.Parent?.Parent);
     }
 
     [TestMethod]
@@ -98,7 +105,7 @@ namespace tests {
       var path = new FullPath(pathString).Combine("a").Combine("tt");
       var sb = new StringBuffer();
       path.CopyTo(sb);
-      Assert.AreEqual(pathString + @"\a" + @"\tt", sb.Text);
+      Assert.AreEqual(@"c:\test\test2\a\tt", sb.Text);
     }
 
     [TestMethod]
@@ -106,6 +113,24 @@ namespace tests {
       var pathString = @"c:\test\test2";
       var path = new FullPath(pathString).Combine("a").Combine("tt");
       Assert.AreEqual(pathString + @"\a" + @"\tt", path.ToString());
+    }
+
+    [TestMethod]
+    public void FullPathEqualShouldWork() {
+      var p1 = new FullPath(@"c:\foo\bar");
+      var p2 = new FullPath(@"c:\foo").Combine(@"bar");
+      Assert.AreEqual(p1, p2);
+      Assert.AreEqual(p1.GetHashCode(), p2.GetHashCode());
+    }
+    [TestMethod]
+    public void LongPathShouldWork() {
+      var p1 = new FullPath(@"\\?\c:\foo\bar");
+      Assert.AreEqual(@"\\?\c:\foo\bar", p1.FullName);
+      Assert.AreEqual(PathHelpers.RootPrefixKind.LongDiskPath, p1.PathKind);
+      Assert.AreEqual("bar", p1.Name);
+      Assert.AreEqual("foo", p1.Parent?.Name);
+      Assert.AreEqual(@"\\?\c:\", p1.Parent?.Parent?.Name);
+      Assert.AreEqual(null, p1.Parent?.Parent?.Parent);
     }
   }
 }

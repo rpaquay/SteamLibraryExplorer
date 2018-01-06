@@ -105,14 +105,14 @@ namespace SteamLibraryExplorer {
       return string.Format("{0:n2} GB", (double)value / 1024 / 1024 / 1024);
     }
 
-    public void ShowSteamLocation([CanBeNull]FullPath steamPath) {
+    public void ShowSteamLocation([CanBeNull]FullPath? steamPath) {
       //_mainForm.steamLocationTextBox.Text = directoryInfo.FullName;
       if (steamPath == null) {
         _viewModel.StatusText = "Steam location: <Not found>";
         return;
       }
 
-      _viewModel.StatusText = $"Steam location: {steamPath.FullName}";
+      _viewModel.StatusText = $"Steam location: {steamPath?.FullName}";
     }
 
     public void ShowError([NotNull]string text) {
@@ -241,8 +241,8 @@ namespace SteamLibraryExplorer {
           RelativePathColor = !FileSystem.DirectoryExists(game.Location) ? _gameLocationInvalidBrush : _textBrush,
           WorkshopAcfFile = game.WorkshopFile == null ? "n/a" : game.WorkshopFile.Path.GetRelativePathTo(library.Location),
           WorkshopAcfFileColor = game.WorkshopFile == null ? _workshopMissingBrush : _textBrush,
-          WorkshopRelativePath = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation) ? "n/a" : game.WorkshopLocation.GetRelativePathTo(library.Location),
-          WorkshopRelativePathColor = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation) ? _workshopMissingBrush : _textBrush,
+          WorkshopRelativePath = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation.Value) ? "n/a" : game.WorkshopLocation?.GetRelativePathTo(library.Location),
+          WorkshopRelativePathColor = game.WorkshopLocation == null || !FileSystem.DirectoryExists(game.WorkshopLocation.Value) ? _workshopMissingBrush : _textBrush,
         };
 
         // Add existing libraries to list of "MoveToLibraries" destination

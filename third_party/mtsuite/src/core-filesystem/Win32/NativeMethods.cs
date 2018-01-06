@@ -14,6 +14,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -167,7 +168,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
 
       public override string ToString() {
-        return ToDateTimeUtc().ToString();
+        return ToDateTimeUtc().ToString(CultureInfo.InvariantCulture);
       }
     }
 

@@ -31,7 +31,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [NotNull]
-    public Task<FullPath> LocateSteamFolderAsync() {
+    public Task<FullPath?> LocateSteamFolderAsync() {
       return RunAsync(LocateSteamFolder);
     }
 
@@ -143,7 +143,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     private void DiscoverGameSizeOnDisk([NotNull] SteamGame game, bool useCache, CancellationToken cancellationToken) {
-      DiscoverGameSizeOnDiskRecursive(game, game.Location, useCache, cancellationToken, (fileCount, sizeOnDisk) => {
+      DiscoverGameSizeOnDiskRecursive(game.Location, useCache, cancellationToken, (fileCount, sizeOnDisk) => {
         game.FileCount.Value += fileCount;
         game.SizeOnDisk.Value += sizeOnDisk;
       }, info => {
@@ -151,7 +151,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         info.SizeOnDisk = game.SizeOnDisk.Value;
       });
 
-      DiscoverGameSizeOnDiskRecursive(game, game.WorkshopLocation, useCache, cancellationToken, (fileCount, sizeOnDisk) => {
+      DiscoverGameSizeOnDiskRecursive(game.WorkshopLocation, useCache, cancellationToken, (fileCount, sizeOnDisk) => {
         game.FileCount.Value += fileCount;
         game.SizeOnDisk.Value += sizeOnDisk;
         game.WorkshopFileCount.Value += fileCount;
@@ -162,13 +162,13 @@ namespace SteamLibraryExplorer.SteamUtil {
       });
     }
 
-    private void DiscoverGameSizeOnDiskRecursive([NotNull] SteamGame game, [CanBeNull] FullPath directoryPath,
+    private void DiscoverGameSizeOnDiskRecursive([CanBeNull] FullPath? directoryPath,
       bool useCache, CancellationToken cancellationToken,
       Action<long, long> updateValues, Action<PathInfo> saveValues) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
-      if (directoryPath == null || !FileSystem.DirectoryExists(directoryPath)) {
+      if (directoryPath == null || !FileSystem.DirectoryExists(directoryPath.Value)) {
         return;
       }
 
@@ -176,14 +176,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (useCache) {
         lock (_pathInfosLock) {
           PathInfo pathInfo;
-          if (_pathInfos.TryGetValue(directoryPath, out pathInfo)) {
+          if (_pathInfos.TryGetValue(directoryPath.Value, out pathInfo)) {
             updateValues(pathInfo.FileCount, pathInfo.SizeOnDisk);
             return;
           }
         }
       }
 
-      DiscoverGameSizeOnDiskRecursiveImpl(game, directoryPath, cancellationToken, updateValues);
+      DiscoverGameSizeOnDiskRecursiveImpl(directoryPath.Value, cancellationToken, updateValues);
 
       // Store in cache (only if operation was completed!)
       if (useCache) {
@@ -191,13 +191,13 @@ namespace SteamLibraryExplorer.SteamUtil {
           lock (_pathInfosLock) {
             var pathInfo = new PathInfo();
             saveValues(pathInfo);
-            _pathInfos[directoryPath] = pathInfo;
+            _pathInfos[directoryPath.Value] = pathInfo;
           }
         }
       }
     }
 
-    private static void DiscoverGameSizeOnDiskRecursiveImpl([NotNull] SteamGame game, [NotNull] FullPath directoryPath, CancellationToken cancellationToken, Action<long, long> updateValues) {
+    private static void DiscoverGameSizeOnDiskRecursiveImpl([NotNull] FullPath directoryPath, CancellationToken cancellationToken, Action<long, long> updateValues) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
@@ -205,7 +205,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       var fileBytes = files.Aggregate(0L, (s, x) => s + x.FileSize);
       updateValues(files.Count, fileBytes);
       foreach (var childDirectory in FileSystem.EnumerateDirectories(directoryPath)) {
-        DiscoverGameSizeOnDiskRecursiveImpl(game, childDirectory.Path, cancellationToken, updateValues);
+        DiscoverGameSizeOnDiskRecursiveImpl(childDirectory.Path, cancellationToken, updateValues);
       }
     }
 
@@ -222,9 +222,9 @@ namespace SteamLibraryExplorer.SteamUtil {
     private static IEnumerable<AcfFile> LoadAcfFiles([NotNull] FullPath steamLocation) {
       var acfFilesDirectory = steamLocation.Combine("steamapps");
       if (FileSystem.DirectoryExists(acfFilesDirectory)) {
-      return FileSystem.EnumerateFiles(acfFilesDirectory)
-        .Where(x => x.Name.EndsWith(".acf"))
-        .Select(x => new AcfFile(x.Path, FileSystem.ReadAllText(x.Path)));
+        return FileSystem.EnumerateFiles(acfFilesDirectory)
+          .Where(x => x.Name.EndsWith(".acf"))
+          .Select(x => new AcfFile(x.Path, FileSystem.ReadAllText(x.Path)));
       }
       return Enumerable.Empty<AcfFile>();
     }
@@ -251,7 +251,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [CanBeNull]
-    private FullPath LocateSteamFolder() {
+    private FullPath? LocateSteamFolder() {
       var result = LocateSteamUsingProcess();
       if (result == null) {
         result = LocateSteamUsingRegistry();
@@ -260,13 +260,13 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [CanBeNull]
-    private FullPath LocateSteamUsingProcess() {
+    private FullPath? LocateSteamUsingProcess() {
       var steamProcesses = Process.GetProcessesByName("Steam");
       return steamProcesses.Select(GetSteamProcessFolder).FirstOrDefault(x => x != null);
     }
 
     [CanBeNull]
-    private FullPath LocateSteamUsingRegistry() {
+    private FullPath? LocateSteamUsingRegistry() {
       try {
         var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
         if (key == null) {
@@ -275,7 +275,9 @@ namespace SteamLibraryExplorer.SteamUtil {
         using (key) {
           var path = (string)key.GetValue("SteamPath");
           var installDir = new FullPath(path.Replace("/", "\\"));
-          return FileSystem.DirectoryExists(installDir) ? installDir : null;
+          if (FileSystem.DirectoryExists(installDir))
+            return installDir;
+          return null;
         }
       } catch (Exception) {
         return null;
@@ -283,18 +285,18 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     [CanBeNull]
-    private FullPath GetSteamProcessFolder(Process process) {
+    private FullPath? GetSteamProcessFolder(Process process) {
       var processPath = new FullPath(process.MainModule.FileName);
       if (!FileSystem.FileExists(processPath)) {
         return null;
       }
 
       var dir = processPath.Parent;
-      if (dir == null || !FileSystem.DirectoryExists(dir)) {
+      if (dir == null || !FileSystem.DirectoryExists(dir.Value)) {
         return null;
       }
 
-      if (!FileSystem.DirectoryExists(dir.Combine("steamapps"))) {
+      if (!FileSystem.DirectoryExists(dir.Value.Combine("steamapps"))) {
         return null;
       }
 
@@ -309,17 +311,16 @@ namespace SteamLibraryExplorer.SteamUtil {
         if (process.MainWindowHandle != IntPtr.Zero) {
           Logger.Info("Closing Steam using the main window handle");
           SendEndSessionMessageToWindow(process.MainWindowHandle);
-        }
-        else {
+        } else {
           foreach (var handle in EnumerateProcessWindowHandles(process)) {
             Logger.Info("Closing Steam using one of the process window handles");
             SendEndSessionMessageToWindow(handle);
-            if (process.WaitForExit((int) TimeSpan.FromSeconds(0.1).TotalMilliseconds)) {
+            if (process.WaitForExit((int)TimeSpan.FromSeconds(0.1).TotalMilliseconds)) {
               break;
             }
           }
 
-          if (!process.WaitForExit((int) TimeSpan.FromSeconds(10).TotalMilliseconds)) {
+          if (!process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds)) {
             Logger.Warn("Steam not restarted because it took more than 10 seconds to close");
             return false;
           }
@@ -398,11 +399,11 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
 
       var dir = processPath.Parent;
-      if (dir == null || !FileSystem.DirectoryExists(dir)) {
+      if (dir == null || !FileSystem.DirectoryExists(dir.Value)) {
         return false;
       }
 
-      if (!FileSystem.DirectoryExists(dir.Combine("steamapps"))) {
+      if (!FileSystem.DirectoryExists(dir.Value.Combine("steamapps"))) {
         return false;
       }
 

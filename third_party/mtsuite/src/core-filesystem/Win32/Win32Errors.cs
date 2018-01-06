@@ -11,10 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+using System.Diagnostics.CodeAnalysis;
+
 namespace mtsuite.CoreFileSystem.Win32 {
   /// <summary>
   /// http://msdn.microsoft.com/en-us/library/windows/desktop/ms681382(v=vs.85).aspx
   /// </summary>
+  [SuppressMessage("ReSharper", "InconsistentNaming")]
   public enum Win32Errors {
     ERROR_SUCCESS = 0,
     ERROR_INVALID_FUNCTION = 1,

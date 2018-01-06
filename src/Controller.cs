@@ -87,7 +87,7 @@ namespace SteamLibraryExplorer {
 
         // Store location for re-use
         if (steamLocation != null) {
-          Logger.Info("Found Steam installation directory: {0}", steamLocation.FullName);
+          Logger.Info("Found Steam installation directory: {0}", steamLocation?.FullName);
           _model.SteamConfiguration.Location.Value = steamLocation;
         }
 
@@ -98,13 +98,13 @@ namespace SteamLibraryExplorer {
           return;
         }
 
-        var mainLibrary = await _steamDiscovery.LoadMainLibraryAsync(steamLocation, cancellationToken);
+        var mainLibrary = await _steamDiscovery.LoadMainLibraryAsync(steamLocation.Value, cancellationToken);
         if (cancellationToken.IsCancellationRequested) {
           return;
         }
         _model.SteamConfiguration.SteamLibraries.Add(mainLibrary);
 
-        var libraries = await _steamDiscovery.LoadAdditionalLibrariesAsync(steamLocation, cancellationToken);
+        var libraries = await _steamDiscovery.LoadAdditionalLibrariesAsync(steamLocation.Value, cancellationToken);
         if (cancellationToken.IsCancellationRequested) {
           return;
         }

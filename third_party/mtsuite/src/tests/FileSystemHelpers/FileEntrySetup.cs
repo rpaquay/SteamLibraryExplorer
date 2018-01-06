@@ -30,8 +30,6 @@ namespace tests.FileSystemHelpers {
     protected FileEntrySetup(FileSystemSetup fileSystemSetup, FullPath path) {
       if (fileSystemSetup == null)
         throw new ArgumentNullException("fileSystemSetup");
-      if (path == null)
-        throw new ArgumentNullException("path");
       _fileSystemSetup = fileSystemSetup;
       _parent = null;
       _path = path;

@@ -87,13 +87,13 @@ namespace tests {
 
       // Act
       var junctionPointPath = fooTarget.Parent.Path.Combine("foo.junction");
-      int rc = RunCommand(new[] { "cmd.exe", "/c", "mklink", "/j", junctionPointPath.Text, fooTarget.Path.Text });
+      int rc = RunCommand(new[] { "cmd.exe", "/c", "mklink", "/j", junctionPointPath.FullName, fooTarget.Path.FullName });
       var info = _fileSystemSetup.FileSystem.GetReparsePointInfo(junctionPointPath);
 
       // Assert
       Assert.AreEqual(0, rc);
       Assert.IsTrue(info.IsJunctionPoint);
-      Assert.AreEqual(fooTarget.Path.Text, info.Target);
+      Assert.AreEqual(fooTarget.Path.FullName, info.Target);
     }
 
     [TestMethod]
@@ -107,13 +107,13 @@ namespace tests {
 
       // Act
       var junctionPointPath = fooTarget.Parent.Path.Combine("foo.junction");
-      int rc = RunCommand(new[] { "cmd.exe", "/c", "mklink", "/d", junctionPointPath.Text, fooTarget.Path.Text });
+      int rc = RunCommand(new[] { "cmd.exe", "/c", "mklink", "/d", junctionPointPath.FullName, fooTarget.Path.FullName });
       var info = _fileSystemSetup.FileSystem.GetReparsePointInfo(junctionPointPath);
 
       // Assert
       Assert.AreEqual(0, rc);
       Assert.IsTrue(info.IsSymbolicLink);
-      Assert.AreEqual(fooTarget.Path.Text, info.Target);
+      Assert.AreEqual(fooTarget.Path.FullName, info.Target);
     }
 
     [TestMethod]
@@ -127,13 +127,13 @@ namespace tests {
 
       // Act
       var junctionPointPath = fooTarget.Parent.Path.Combine("foo.junction");
-      int rc = RunCommand(new[] { "cmd.exe", "/c", "mklink", junctionPointPath.Text, fooTarget.Path.Text });
+      int rc = RunCommand(new[] { "cmd.exe", "/c", "mklink", junctionPointPath.FullName, fooTarget.Path.FullName });
       var info = _fileSystemSetup.FileSystem.GetReparsePointInfo(junctionPointPath);
 
       // Assert
       Assert.AreEqual(0, rc);
       Assert.IsTrue(info.IsSymbolicLink);
-      Assert.AreEqual(fooTarget.Path.Text, info.Target);
+      Assert.AreEqual(fooTarget.Path.FullName, info.Target);
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ namespace tests {
       var fooTarget = _fileSystemSetup.Root.CreateDirectory("foo");
 
       // Act
-      var junctionPoint = _fileSystemSetup.Root.CreateJunctionPoint("jct", fooTarget.Path.Text);
+      var junctionPoint = _fileSystemSetup.Root.CreateJunctionPoint("jct", fooTarget.Path.FullName);
 
       // Assert
       Assert.IsTrue(_fileSystemSetup.FileSystem.GetEntry(junctionPoint.Path).IsReparsePoint);
@@ -174,7 +174,7 @@ namespace tests {
       fooTarget.CreateFile("testfile.txt", 200);
 
       // Act
-      var junctionPoint = _fileSystemSetup.Root.CreateJunctionPoint("jct", fooTarget.Path.Text);
+      var junctionPoint = _fileSystemSetup.Root.CreateJunctionPoint("jct", fooTarget.Path.FullName);
 
       // Assert
       var info = _fileSystemSetup.FileSystem.GetReparsePointInfo(junctionPoint.Path);
@@ -233,6 +233,5 @@ namespace tests {
       Assert.IsFalse(info.IsTargetRelative);
       Assert.AreEqual(fooTarget.Path.FullName, info.Target);
     }
-
   }
 }

@@ -37,7 +37,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CopyFilOptions.cs" />
+    <Compile Include="CopyFileOptions.cs" />
     <Compile Include="ObjectPool\PoolFactory.cs" />
     <Compile Include="ObjectPool\ListPool.cs" />
     <Compile Include="ObjectPool\PoolExtensions.cs" />
@@ -49,6 +49,7 @@
     <Compile Include="IFileComparer.cs" />
     <Compile Include="IFileSystem.cs" />
     <Compile Include="ObjectPool\IPool.cs" />
+    <Compile Include="FullPathStringSourceFormatter.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
     <Compile Include="VersionNumber.cs" />
     <Compile Include="Utils\ByteBuffer.cs" />

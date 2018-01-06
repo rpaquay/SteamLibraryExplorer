@@ -27,9 +27,9 @@ namespace SteamLibraryExplorer.SteamUtil {
     public long TotalBytes { get; set; }
 
     [CanBeNull]
-    public FullPath CurrentDirectory { get; set; }
+    public FullPath? CurrentDirectory { get; set; }
     [CanBeNull]
-    public FullPath CurrentFile { get; set; }
+    public FullPath? CurrentFile { get; set; }
     public long MovedBytesOfCurrentFile { get; set; }
     public long TotalBytesOfCurrentFile { get; set; }
 

@@ -74,10 +74,10 @@ namespace tests {
       Assert.AreEqual(@"\\server\", PathHelpers.GetParent(@"\\server\share\"));
       Assert.AreEqual(@"\\?\UNC\server\", PathHelpers.GetParent(@"\\?\UNC\server\share\"));
 
-      Assert.AreEqual(@"", PathHelpers.GetParent(@"c:\"));
-      Assert.AreEqual(@"", PathHelpers.GetParent(@"\\?\c:\"));
-      Assert.AreEqual(@"", PathHelpers.GetParent(@"\\server\"));
-      Assert.AreEqual(@"", PathHelpers.GetParent(@"\\?\UNC\server\"));
+      Assert.AreEqual(null, PathHelpers.GetParent(@"c:\"));
+      Assert.AreEqual(null, PathHelpers.GetParent(@"\\?\c:\"));
+      Assert.AreEqual(null, PathHelpers.GetParent(@"\\server\"));
+      Assert.AreEqual(null, PathHelpers.GetParent(@"\\?\UNC\server\"));
     }
 
     [TestMethod]
@@ -92,10 +92,10 @@ namespace tests {
       Assert.AreEqual(@"share", PathHelpers.GetName(@"\\server\share\"));
       Assert.AreEqual(@"share", PathHelpers.GetName(@"\\?\UNC\server\share\"));
 
-      Assert.AreEqual(@"", PathHelpers.GetName(@"c:\"));
-      Assert.AreEqual(@"", PathHelpers.GetName(@"\\?\c:\"));
-      Assert.AreEqual(@"", PathHelpers.GetName(@"\\server\"));
-      Assert.AreEqual(@"", PathHelpers.GetName(@"\\?\UNC\server\"));
+      Assert.AreEqual(null, PathHelpers.GetName(@"c:\"));
+      Assert.AreEqual(null, PathHelpers.GetName(@"\\?\c:\"));
+      Assert.AreEqual(null, PathHelpers.GetName(@"\\server\"));
+      Assert.AreEqual(null, PathHelpers.GetName(@"\\?\UNC\server\"));
     }
 
     [TestMethod]

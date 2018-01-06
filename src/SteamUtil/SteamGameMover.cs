@@ -60,11 +60,11 @@ namespace SteamLibraryExplorer.SteamUtil {
       //  }
       //}
 
-      FullPath destinationAcfFile = null;
+      FullPath? destinationAcfFile = null;
       if (game.AcfFile != null) {
         destinationAcfFile = destinationLibraryLocation.Combine("steamapps", game.AcfFile.Path.Name);
-        if (FileSystem.FileExists(destinationAcfFile)) {
-          throw new ArgumentException($"Game ACF file \"{destinationAcfFile.FullName}\" already exist");
+        if (FileSystem.FileExists(destinationAcfFile.Value)) {
+          throw new ArgumentException($"Game ACF file \"{destinationAcfFile?.FullName}\" already exist");
         }
       }
 
@@ -76,19 +76,19 @@ namespace SteamLibraryExplorer.SteamUtil {
         }
       }
 
-      FullPath destinationWorkshopFile = null;
+      FullPath? destinationWorkshopFile = null;
       if (game.WorkshopFile != null) {
         destinationWorkshopFile = destinationLibraryLocation.Combine("steamapps", "workshop", game.WorkshopFile.Path.Name);
-        if (FileSystem.FileExists(destinationWorkshopFile)) {
-          throw new ArgumentException($"Workshop ACF file \"{destinationWorkshopFile.FullName}\" already exist");
+        if (FileSystem.FileExists(destinationWorkshopFile.Value)) {
+          throw new ArgumentException($"Workshop ACF file \"{destinationWorkshopFile?.FullName}\" already exist");
         }
       }
 
-      FullPath destinatioWorkshopLocation = null;
+      FullPath? destinatioWorkshopLocation = null;
       if (game.WorkshopFile != null && game.WorkshopFile.AppId != null) {
         destinatioWorkshopLocation = destinationLibraryLocation.Combine("steamapps", "workshop", "content", game.WorkshopFile.AppId);
-        if (FileSystem.DirectoryExists(destinatioWorkshopLocation)) {
-          if (FileSystem.EnumerateEntries(destinatioWorkshopLocation).Any()) {
+        if (FileSystem.DirectoryExists(destinatioWorkshopLocation.Value)) {
+          if (FileSystem.EnumerateEntries(destinatioWorkshopLocation.Value).Any()) {
             throw new ArgumentException(
               $"Destination directory \"{destinatioWorkshopLocation}\" already exists and is not empty");
           }
@@ -137,10 +137,10 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       // Copy ACF file(s)
       if (game.AcfFile != null && destinationInfo.AcfFile != null) {
-        CopySingleFile(game.AcfFile.Path, destinationInfo.AcfFile, progress, moveInfo, cancellationToken);
+        CopySingleFile(game.AcfFile.Path, destinationInfo.AcfFile.Value, progress, moveInfo, cancellationToken);
       }
       if (game.WorkshopFile != null && destinationInfo.WorkshopFile != null) {
-        CopySingleFile(game.WorkshopFile.Path, destinationInfo.WorkshopFile, progress, moveInfo, cancellationToken);
+        CopySingleFile(game.WorkshopFile.Path, destinationInfo.WorkshopFile.Value, progress, moveInfo, cancellationToken);
       }
       cancellationToken.ThrowIfCancellationRequested();
 
@@ -174,29 +174,29 @@ namespace SteamLibraryExplorer.SteamUtil {
       progress(clone);
     }
 
-    private void CopyDirectoryRecurse([CanBeNull]FullPath sourceDirectory, [CanBeNull]FullPath destinationDirectory, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info, CancellationToken cancellationToken) {
-      if (sourceDirectory == null || destinationDirectory == null || !FileSystem.DirectoryExists(sourceDirectory)) {
+    private void CopyDirectoryRecurse([CanBeNull]FullPath? sourceDirectory, [CanBeNull]FullPath? destinationDirectory, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info, CancellationToken cancellationToken) {
+      if (sourceDirectory == null || destinationDirectory == null || !FileSystem.DirectoryExists(sourceDirectory.Value)) {
         return;
       }
       cancellationToken.ThrowIfCancellationRequested();
 
-      info.CurrentDirectory = sourceDirectory;
+      info.CurrentDirectory = sourceDirectory.Value;
       ReportProgess(MovePhase.CopyingFiles, progress, info);
 
       // Create destination directory
-      if (!FileSystem.DirectoryExists(destinationDirectory)) {
-        OnCreatingDirectory(new PathEventArgs(destinationDirectory));
-        FileSystem.CreateDirectory(destinationDirectory);
+      if (!FileSystem.DirectoryExists(destinationDirectory.Value)) {
+        OnCreatingDirectory(new PathEventArgs(destinationDirectory.Value));
+        FileSystem.CreateDirectory(destinationDirectory.Value);
       }
 
       // Copy files
-      foreach (var sourceFile in FileSystem.EnumerateFiles(sourceDirectory)) {
-        CopySingleFile(sourceFile, destinationDirectory.Combine(sourceFile.Name), progress, info, cancellationToken);
+      foreach (var sourceFile in FileSystem.EnumerateFiles(sourceDirectory.Value)) {
+        CopySingleFile(sourceFile, destinationDirectory.Value.Combine(sourceFile.Name), progress, info, cancellationToken);
       }
 
       // Copy sub-directories
-      foreach (var sourceChild in FileSystem.EnumerateDirectories(sourceDirectory)) {
-        var destinationChild = destinationDirectory.Combine(sourceChild.Name);
+      foreach (var sourceChild in FileSystem.EnumerateDirectories(sourceDirectory.Value)) {
+        var destinationChild = destinationDirectory.Value.Combine(sourceChild.Name);
         CopyDirectoryRecurse(sourceChild.Path, destinationChild, progress, info, cancellationToken);
       }
       info.MovedDirectoryCount++;
@@ -235,59 +235,59 @@ namespace SteamLibraryExplorer.SteamUtil {
       info.MovedFileCount++;
     }
 
-    private void DeleteDirectoryRecurse(MovePhase phase, [CanBeNull]FullPath directory, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info) {
-      if (directory == null || !FileSystem.DirectoryExists(directory)) {
+    private void DeleteDirectoryRecurse(MovePhase phase, [CanBeNull]FullPath? directory, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info) {
+      if (directory == null || !FileSystem.DirectoryExists(directory.Value)) {
         return;
       }
 
-      info.CurrentDirectory = directory;
+      info.CurrentDirectory = directory.Value;
       ReportProgess(phase, progress, info);
 
       // Delete files
-      foreach (var sourceFile in FileSystem.EnumerateFiles(directory)) {
+      foreach (var sourceFile in FileSystem.EnumerateFiles(directory.Value)) {
         DeleteSingleFile(phase, sourceFile.Path, progress, info);
       }
 
       // Delete sub-directories
-      foreach (var sourceChild in FileSystem.EnumerateDirectories(directory)) {
+      foreach (var sourceChild in FileSystem.EnumerateDirectories(directory.Value)) {
         DeleteDirectoryRecurse(phase, sourceChild.Path, progress, info);
       }
 
       // Delete directory
-      OnDeletingDirectory(new PathEventArgs(directory));
-      FileSystem.DeleteDirectory(directory);
+      OnDeletingDirectory(new PathEventArgs(directory.Value));
+      FileSystem.DeleteDirectory(directory.Value);
 
       info.DeletedDirectoryCount++;
     }
 
-    private void DeleteSingleFile(MovePhase phase, [CanBeNull]FullPath file, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info) {
+    private void DeleteSingleFile(MovePhase phase, [CanBeNull]FullPath? file, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info) {
       if (file == null) {
         return;
       }
 
-      OnDeletingFile(new PathEventArgs(file));
-      info.CurrentFile = file;
+      OnDeletingFile(new PathEventArgs(file.Value));
+      info.CurrentFile = file.Value;
       ReportProgess(phase, progress, info);
 
-      FileSystem.DeleteFile(file);
+      FileSystem.DeleteFile(file.Value);
 
       info.DeletedFileCount++;
     }
 
-    private void DiscoverSourceDirectoryFiles([CanBeNull]FullPath sourceDirectory, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info, CancellationToken cancellationToken) {
+    private void DiscoverSourceDirectoryFiles([CanBeNull]FullPath? sourceDirectory, [NotNull]Action<MoveDirectoryInfo> progress, [NotNull]MoveDirectoryInfo info, CancellationToken cancellationToken) {
       cancellationToken.ThrowIfCancellationRequested();
-      if (sourceDirectory == null || !FileSystem.DirectoryExists(sourceDirectory)) {
+      if (sourceDirectory == null || !FileSystem.DirectoryExists(sourceDirectory.Value)) {
         return;
       }
 
-      info.CurrentDirectory = sourceDirectory;
+      info.CurrentDirectory = sourceDirectory.Value;
       ReportProgess(MovePhase.DiscoveringSourceFiles, progress, info);
 
-      foreach (var file in FileSystem.EnumerateFiles(sourceDirectory)) {
+      foreach (var file in FileSystem.EnumerateFiles(sourceDirectory.Value)) {
         info.TotalFileCount++;
         info.TotalBytes += file.FileSize;
       }
-      foreach (var dir in FileSystem.EnumerateDirectories(sourceDirectory)) {
+      foreach (var dir in FileSystem.EnumerateDirectories(sourceDirectory.Value)) {
         DiscoverSourceDirectoryFiles(dir.Path, progress, info, cancellationToken);
       }
 
@@ -298,8 +298,8 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (configuration.Location.Value == null) {
         throw new ArgumentException("Steam location is not known, cannot delete appcache file");
       }
-      var file = configuration.Location.Value.Combine("appcache").Combine("appinfo.vdf");
-      FileSystem.DeleteFile(file);
+      var file = configuration.Location.Value?.Combine("appcache").Combine("appinfo.vdf");
+      FileSystem.DeleteFile(file.Value);
     }
 
     [NotNull]
@@ -321,7 +321,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     private class DestinationInfo {
-      public DestinationInfo([CanBeNull]FullPath acfFile, [NotNull]FullPath gameDirectory, [CanBeNull]FullPath workshopFile, [CanBeNull]FullPath workshopDirectory) {
+      public DestinationInfo([CanBeNull]FullPath? acfFile, [NotNull]FullPath gameDirectory, [CanBeNull]FullPath? workshopFile, [CanBeNull]FullPath? workshopDirectory) {
         AcfFile = acfFile;
         GameDirectory = gameDirectory;
         WorkshopFile = workshopFile;
@@ -331,11 +331,11 @@ namespace SteamLibraryExplorer.SteamUtil {
       [NotNull]
       public FullPath GameDirectory { get; }
       [CanBeNull]
-      public FullPath AcfFile { get; }
+      public FullPath? AcfFile { get; }
       [CanBeNull]
-      public FullPath WorkshopFile { get; }
+      public FullPath? WorkshopFile { get; }
       [CanBeNull]
-      public FullPath WorkshopDirectory { get; }
+      public FullPath? WorkshopDirectory { get; }
     }
 
     protected virtual void OnCreatingDirectory([NotNull]PathEventArgs e) {

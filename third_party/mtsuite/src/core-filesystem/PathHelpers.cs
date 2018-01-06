@@ -21,9 +21,9 @@ using System.Text;
 namespace mtsuite.CoreFileSystem {
   public static class PathHelpers {
     public static readonly string DirectorySeparatorString = Path.DirectorySeparatorChar.ToString();
-    public  static readonly string AltDirectorySeparatorString = Path.AltDirectorySeparatorChar.ToString();
-    private static readonly string LongDiskPathPrefix = @"\\?\";
-    private static readonly string LongUncPathPrefix = @"\\?\UNC\";
+    public static readonly string AltDirectorySeparatorString = Path.AltDirectorySeparatorChar.ToString();
+    public static readonly string LongDiskPathPrefix = @"\\?\";
+    public static readonly string LongUncPathPrefix = @"\\?\UNC\";
     private static readonly string UncPathPrefix  = @"\\";
 
     /// <summary>
@@ -50,8 +50,8 @@ namespace mtsuite.CoreFileSystem {
 
     /// <summary>
     /// Return the <paramref name="path"/> with its last last component removed,
-    /// or the empty string if the path is a "root" path (.e.g "c:\). Throws an
-    /// exception if <paramref name="path"/> is not an absolute path.
+    /// or the <code>null</code> string if the path is a "root" path (e.g. "c:\").
+    /// Throws an exception if <paramref name="path"/> is not an absolute path.
     /// </summary>
     public static string GetParent(string path) {
       if (!IsPathAbsolute(path))
@@ -66,18 +66,19 @@ namespace mtsuite.CoreFileSystem {
       }
       var lastIndex = path.LastIndexOf(Path.DirectorySeparatorChar, startIndex, count);
       if (lastIndex < 0)
-        return "";
+        return null;
 
       // Keep the terminating '\' to avoid returned invalid root path (e.g. 'c:')
       var result = path.Substring(0, lastIndex + 1);
       if (result == LongDiskPathPrefix || result == UncPathPrefix || result == LongUncPathPrefix)
-        return "";
+        return null;
       return result;
     }
 
     /// <summary>
-    /// Return the last component of the <paramref name="path"/>. Throws an
-    /// exception if <paramref name="path"/> is not an absolute path.
+    /// Return the last component of the <paramref name="path"/> or <code>null</code>
+    /// if the path is a root path (e.g. "c:\").
+    /// Throws an exception if <paramref name="path"/> is not an absolute path.
     /// </summary>
     public static string GetName(string path) {
       if (!IsPathAbsolute(path))
@@ -91,12 +92,12 @@ namespace mtsuite.CoreFileSystem {
       }
       var lastIndex = path.LastIndexOf(Path.DirectorySeparatorChar, startIndex, count);
       if (lastIndex < 0)
-        return "";
+        return null;
 
       // Check the remaining prefix is not a root path prefix (e.g. "\\").
       var prefix = path.Substring(0, lastIndex + 1);
       if (prefix == LongDiskPathPrefix || prefix == UncPathPrefix || prefix == LongUncPathPrefix)
-        return "";
+        return null;
 
       return path.Substring(lastIndex + 1, count - lastIndex - 1);
     }
@@ -291,7 +292,7 @@ namespace mtsuite.CoreFileSystem {
     /// <summary>
     /// Return <code>true</code> if <paramref name="path"/> is an absolute path.
     /// </summary>
-    private static PathRootPrefixInfo GetPathRootPrefixInfo(string path) {
+    public static PathRootPrefixInfo GetPathRootPrefixInfo(string path) {
       if (string.IsNullOrEmpty(path))
         return default(PathRootPrefixInfo);
 
@@ -326,7 +327,7 @@ namespace mtsuite.CoreFileSystem {
       return 0;
     }
 
-    private struct PathRootPrefixInfo {
+    public struct PathRootPrefixInfo {
       private readonly int _length;
       private readonly RootPrefixKind _rootPrefixKind;
 
@@ -344,7 +345,7 @@ namespace mtsuite.CoreFileSystem {
       }
     }
 
-    private enum RootPrefixKind {
+    public enum RootPrefixKind {
       None,
       LongDiskPath,
       LongUncPath,

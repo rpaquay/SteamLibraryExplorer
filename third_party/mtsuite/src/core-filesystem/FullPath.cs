@@ -12,46 +12,197 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
 using mtsuite.CoreFileSystem.Utils;
 using mtsuite.CoreFileSystem.Win32;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace mtsuite.CoreFileSystem {
   /// <summary>
   /// Represents a fully qualified path.
   /// </summary>
-  public class FullPath : IEquatable<FullPath>, IComparable<FullPath>, IStringSource {
-    private readonly FullPath _parent;
-    private readonly string _name;
+  public struct FullPath : IEquatable<FullPath>, IComparable<FullPath>, IStringSource {
+    private class FullPathValue {
+      /// <summary>
+      /// The parent path, or <code>null</code> <see cref="_name"/> is a root path
+      /// </summary>
+      private readonly object _parentValue;
+
+      /// <summary>
+      /// The "name" part (i.e file name or directory name) of the path, which may be the root path name (e.g. "C:").
+      /// </summary>
+      private readonly string _name;
+
+      public FullPathValue(object parentValue, string name) {
+        Debug.Assert(parentValue != null);
+        Debug.Assert(name != null);
+        _parentValue = parentValue;
+        _name = name;
+      }
+
+      /// <summary>
+      /// The parent path, or <code>null</code> <see cref="_name"/> is a root path
+      /// </summary>
+      public object ParentValue {
+        get { return _parentValue; }
+      }
+
+      public string Name {
+        get { return _name; }
+      }
+
+      public static int GetHashCode(object value) {
+        var name = value as string;
+        if (name != null) {
+          return StringComparer.OrdinalIgnoreCase.GetHashCode(name);
+        }
+
+        unchecked {
+          var pathValue = (FullPathValue) value;
+          return (GetHashCode(pathValue._parentValue) * 397) ^ GetHashCode(pathValue._name);
+        }
+      }
+
+      public static bool HasTrailingSeparator(object value) {
+        var name = value as string;
+        if (name != null) {
+          return name[name.Length - 1] == Path.DirectorySeparatorChar;
+        }
+
+        var pathValue = (FullPathValue) value;
+        return HasTrailingSeparator(pathValue._name);
+      }
+
+      public static PathHelpers.RootPrefixKind GetRootPrefixKind(object value) {
+        var name = value as string;
+        if (name != null) {
+          return PathHelpers.GetPathRootPrefixInfo(name).RootPrefixKind;
+        }
+
+        var pathValue = (FullPathValue) value;
+        return GetRootPrefixKind(pathValue._parentValue);
+      }
+
+      public static void BuildPath(object value, StringBuffer sb) {
+        var name = value as string;
+        if (name != null) {
+          sb.Append(name);
+          return;
+        }
+
+        var pathValue = (FullPathValue) value;
+        BuildPath(pathValue._parentValue, sb);
+        if (!HasTrailingSeparator(pathValue._parentValue)) {
+          sb.Append(PathHelpers.DirectorySeparatorString);
+        }
+
+        sb.Append(pathValue._name);
+      }
+
+      public static int GetLength(object value) {
+        var name = value as string;
+        if (name != null) {
+          return name.Length;
+        }
+
+        var pathValue = (FullPathValue) value;
+        var result = GetLength(pathValue._parentValue);
+        if (!HasTrailingSeparator(pathValue._parentValue)) {
+          result++;
+        }
+
+        result += pathValue._name.Length;
+        return result;
+
+      }
+
+      public static bool EqualsOperator(object value, object other) {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(value, other)) return true;
+
+        var name1 = value as string;
+        var name2 = other as string;
+        if (name1 != null || name2 != null) {
+          return StringComparer.OrdinalIgnoreCase.Equals(name1, name2);
+        }
+
+        var pathValue1 = (FullPathValue) value;
+        var pathValue2 = (FullPathValue) other;
+        return EqualsOperator(pathValue1._parentValue, pathValue2._parentValue) &&
+               EqualsOperator(pathValue1._name, pathValue2._name);
+      }
+
+      public static int Compare(object value, object other) {
+        if (ReferenceEquals(value, other)) return 0;
+        if (ReferenceEquals(null, other)) return 1;
+
+        var name1 = value as string;
+        var name2 = other as string;
+        if (name1 != null || name2 != null) {
+          return StringComparer.OrdinalIgnoreCase.Compare(name1, name2);
+        }
+
+        var pathValue1 = (FullPathValue) value;
+        var pathValue2 = (FullPathValue) other;
+        var parentComparison = Compare(pathValue1._parentValue, pathValue2._parentValue);
+        if (parentComparison != 0) return parentComparison;
+        return Compare(pathValue1._name, pathValue2._name);
+      }
+    }
+
+    /// <summary>
+    /// String or <see cref="FullPathValue"/>
+    /// </summary>
+    private readonly object _value;
 
     /// <summary>
     /// Construct a <see cref="FullPath"/> instance from a valid fully qualifed path
     /// represented as the <see cref="string"/> <paramref name="path"/>.
-    /// Throws an exception if the <paramref name="path"/> is not valie.
+    /// Throws an exception if the <paramref name="path"/> is not valid.
     /// </summary>
     public FullPath(string path) {
       if (!PathHelpers.IsPathAbsolute(path))
         ThrowArgumentException("Path should be absolute", "path");
       if (PathHelpers.HasAltDirectorySeparators(path))
         ThrowArgumentException("Path should only contain valid directory separators", "path");
-      _name = path;
+      var parent = CreatePathValue(PathHelpers.GetParent(path));
+      _value = parent == null ? (object) path : new FullPathValue(parent, PathHelpers.GetName(path));
     }
 
     /// <summary>
     /// Construct a <see cref="FullPath"/> instance from a valid parent <see cref="FullPath"/>
     /// and a relative name.
-    /// Throws an exception if the <paramref name="name"/> is not valie.
+    /// Throws an exception if the <paramref name="name"/> is not valid.
     /// </summary>
     public FullPath(FullPath parent, string name) {
-      if (parent == null)
+      if (parent._value == null)
         ThrowArgumentNullException("parent");
       if (string.IsNullOrEmpty(name))
         ThrowArgumentNullException("name");
       if (PathHelpers.HasAltDirectorySeparators(name) || PathHelpers.HasDirectorySeparators(name))
         ThrowArgumentException("Name should not contain directory separators", "name");
-      _parent = parent;
-      _name = name;
+      _value = new FullPathValue(parent._value, name);
+    }
+
+    private FullPath(object value) {
+      Debug.Assert(value != null);
+      _value = value;
+    }
+
+    private static object CreatePathValue(string path) {
+      if (path == null) {
+        return null;
+      }
+
+      var parentPath = PathHelpers.GetParent(path);
+      if (parentPath == null) {
+        return path;
+      }
+
+      var name = PathHelpers.GetName(path);
+      return new FullPathValue(CreatePathValue(parentPath), name);
     }
 
     private static void ThrowArgumentNullException(string paramName) {
@@ -72,38 +223,72 @@ namespace mtsuite.CoreFileSystem {
 
     public string Name {
       get {
-        if (_parent == null) {
-          return PathHelpers.GetName(_name);
+        if (_value is FullPathValue) {
+          return ((FullPathValue) _value).Name;
         }
-        return _name;
+
+        return (string) _value;
       }
     }
 
-    public FullPath Parent {
+    public FullPath? Parent {
       get {
-        if (_parent != null)
-          return _parent;
+        if (_value is string) {
+          return null;
+        }
 
-        var parentPath = PathHelpers.GetParent(_name);
-        return string.IsNullOrEmpty(parentPath) ? null : new FullPath(parentPath);
+        return new FullPath(((FullPathValue) _value).ParentValue);
       }
     }
 
     public FullPath Combine(string name) {
-      return new FullPath(this, name);
+      if (string.IsNullOrEmpty(name)) {
+        ThrowArgumentNullException("name");
+      }
+
+      if (!PathHelpers.HasDirectorySeparators(name)) {
+        return new FullPath(this, name);
+      }
+
+      var current = this;
+      foreach (var segment in SplitRelativePath(name)) {
+        current = new FullPath(current, segment);
+      }
+
+      return current;
+    }
+
+    private static IEnumerable<string> SplitRelativePath(string name) {
+      var index = 0;
+      while (index < name.Length) {
+        int nextSep = name.IndexOf(Path.DirectorySeparatorChar, index);
+        if (nextSep < 0) {
+          yield return name.Substring(index);
+          index = name.Length;
+        }
+        else {
+          yield return name.Substring(index, nextSep - index);
+          index = nextSep + 1;
+        }
+      }
     }
 
     public bool HasTrailingSeparator {
-      get { return _name[_name.Length - 1] == System.IO.Path.DirectorySeparatorChar; }
+      get { return FullPathValue.HasTrailingSeparator(_value); }
+    }
+
+    public PathHelpers.RootPrefixKind PathKind {
+      get { return FullPathValue.GetRootPrefixKind(_value); }
+    }
+
+    public enum LongPathPrefixKind {
+      None,
+      LongDiskPath,
+      LongUncPath,
     }
 
     private void BuildPath(StringBuffer sb) {
-      if (_parent != null) {
-        _parent.BuildPath(sb);
-        if (!_parent.HasTrailingSeparator)
-          sb.Append(System.IO.Path.DirectorySeparatorChar);
-      }
-      sb.Append(_name);
+      FullPathValue.BuildPath(_value, sb);
     }
 
     public override string ToString() {
@@ -114,52 +299,30 @@ namespace mtsuite.CoreFileSystem {
       get { return GetLength(this); }
     }
 
-    public string Text {
-      get { return ToString(); }
-    }
-
     public void CopyTo(StringBuffer sb) {
       BuildPath(sb);
     }
 
     private static int GetLength(FullPath path) {
-      var result = path._name.Length;
-      while (path._parent != null) {
-        path = path._parent;
-        result += path._name.Length;
-        if (!path.HasTrailingSeparator)
-          result++;
-      }
-      return result;
+      return FullPathValue.GetLength(path._value);
     }
 
     public bool Equals(FullPath other) {
-      if (ReferenceEquals(null, other)) return false;
-      if (ReferenceEquals(this, other)) return true;
-      return Equals(_parent, other._parent) &&
-             string.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase);
+      return FullPathValue.EqualsOperator(_value, other._value);
     }
 
     public override bool Equals(object obj) {
       if (ReferenceEquals(null, obj)) return false;
-      if (ReferenceEquals(this, obj)) return true;
       if (obj.GetType() != GetType()) return false;
-      return Equals((FullPath)obj);
+      return Equals((FullPath) obj);
     }
 
     public override int GetHashCode() {
-      unchecked {
-        return ((_parent != null ? _parent.GetHashCode() : 0) * 397) ^
-               (_name != null ? _name.GetHashCode() : 0);
-      }
+      return FullPathValue.GetHashCode(_value);
     }
 
     public int CompareTo(FullPath other) {
-      if (ReferenceEquals(this, other)) return 0;
-      if (ReferenceEquals(null, other)) return 1;
-      var parentComparison = Comparer<FullPath>.Default.Compare(_parent, other._parent);
-      if (parentComparison != 0) return parentComparison;
-      return string.Compare(_name, other._name, StringComparison.OrdinalIgnoreCase);
+      return FullPathValue.Compare(_value, other._value);
     }
   }
 }

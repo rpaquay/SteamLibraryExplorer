@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 namespace mtsuite.CoreFileSystem.Win32 {
   public class LastWin32ErrorException : Win32Exception {
     public LastWin32ErrorException()
-      : base((int) Marshal.GetLastWin32Error()) {
+      : base(Marshal.GetLastWin32Error()) {
     }
     public LastWin32ErrorException(string message)
       : this(Marshal.GetLastWin32Error(), message) {

@@ -19,8 +19,15 @@ using mtsuite.CoreFileSystem.Win32;
 
 namespace mtsuite.CoreFileSystem {
   public class FileSystem : IFileSystem {
-    private readonly Win32.Win32 _win32 = new Win32.Win32();
     private readonly IPool<List<FileSystemEntry>> _entryListPool = new ListPool<FileSystemEntry>();
+    private readonly Win32.Win32 _win32;
+
+    public FileSystem() : this(new FullPathStringSourceFormatter()) {
+    }
+
+    public FileSystem(IStringSourceFormatter stringSourceFormatter) {
+      _win32 = new Win32.Win32(stringSourceFormatter);
+    }
 
     public FileSystemEntry GetEntry(FullPath path) {
       var data = _win32.GetFileAttributesEx(path);
@@ -143,7 +150,7 @@ namespace mtsuite.CoreFileSystem {
 
     public void CreateJunctionPoint(FullPath path, string target) {
       // Convert target into an absolute path
-      var targetPath = PathHelpers.IsPathAbsolute(target) ? target : path.Parent.Combine(target).FullName;
+      var targetPath = PathHelpers.IsPathAbsolute(target) ? target : path.Parent.Value.Combine(target).FullName;
       targetPath = PathHelpers.NormalizePath(targetPath);
 
       _win32.CreateJunctionPoint(path, new FullPath(targetPath));
@@ -162,16 +169,16 @@ namespace mtsuite.CoreFileSystem {
       };
     }
 
-    public void CreateDirectoryWorker(FullPath path) {
+    public void CreateDirectoryWorker(FullPath? path) {
       if (path == null)
         return;
 
       try {
-        _win32.CreateDirectory(path);
+        _win32.CreateDirectory(path.Value);
       } catch {
-        if (!TryCreateParent(path))
+        if (!TryCreateParent(path.Value))
           throw;
-        _win32.CreateDirectory(path);
+        _win32.CreateDirectory(path.Value);
       }
     }
 

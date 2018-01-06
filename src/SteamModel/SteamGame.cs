@@ -54,13 +54,13 @@ namespace SteamLibraryExplorer.SteamModel {
     /// The directory may not exist (if there are no workshop files).
     /// </summary>
     [CanBeNull]
-    public FullPath WorkshopLocation {
+    public FullPath? WorkshopLocation {
       get {
         if (WorkshopFile == null || WorkshopFile.AppId == null || WorkshopFile.Path.Parent == null) {
           return null;
         }
 
-        return WorkshopFile.Path.Parent.Combine("content").Combine(WorkshopFile.AppId);
+        return WorkshopFile.Path.Parent?.Combine("content").Combine(WorkshopFile.AppId);
       }
     }
   }

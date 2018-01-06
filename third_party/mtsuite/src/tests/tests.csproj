@@ -54,6 +54,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="FullPathTest.cs" />
+    <Compile Include="EnsureLongPathStringSourceFormatterTest.cs" />
     <Compile Include="TaskTest.cs" />
     <Compile Include="FileSystemHelpers\DirectoryLinkSetup.cs" />
     <Compile Include="FileSystemHelpers\DirectorySetup.cs" />
