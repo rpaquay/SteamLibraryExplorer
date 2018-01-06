@@ -143,28 +143,28 @@ namespace SteamLibraryExplorer.SteamUtil {
     }
 
     private void DiscoverGameSizeOnDisk([NotNull] SteamGame game, bool useCache, CancellationToken cancellationToken) {
-      DiscoverGameSizeOnDiskRecursive(game.Location, useCache, cancellationToken, (fileCount, sizeOnDisk) => {
+      DiscoverGameSizeOnDiskRecursive(game.Location, useCache, (fileCount, sizeOnDisk) => {
         game.FileCount.Value += fileCount;
         game.SizeOnDisk.Value += sizeOnDisk;
       }, info => {
         info.FileCount = game.FileCount.Value;
         info.SizeOnDisk = game.SizeOnDisk.Value;
-      });
+      }, cancellationToken);
 
-      DiscoverGameSizeOnDiskRecursive(game.WorkshopLocation, useCache, cancellationToken, (fileCount, sizeOnDisk) => {
+      DiscoverGameSizeOnDiskRecursive(game.WorkshopLocation, useCache, (fileCount, sizeOnDisk) => {
         game.FileCount.Value += fileCount;
         game.SizeOnDisk.Value += sizeOnDisk;
         game.WorkshopFileCount.Value += fileCount;
         game.WorkshopSizeOnDisk.Value += sizeOnDisk;
       }, info => {
         info.FileCount = game.WorkshopFileCount.Value;
+        info.FileCount = game.WorkshopFileCount.Value;
         info.SizeOnDisk = game.WorkshopSizeOnDisk.Value;
-      });
+      }, cancellationToken);
     }
 
-    private void DiscoverGameSizeOnDiskRecursive([CanBeNull] FullPath? directoryPath,
-      bool useCache, CancellationToken cancellationToken,
-      Action<long, long> updateValues, Action<PathInfo> saveValues) {
+    private void DiscoverGameSizeOnDiskRecursive([CanBeNull] FullPath? directoryPath, bool useCache,
+      [NotNull] Action<long, long> updateValues, [NotNull] Action<PathInfo> saveValues, CancellationToken cancellationToken) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
@@ -183,7 +183,7 @@ namespace SteamLibraryExplorer.SteamUtil {
         }
       }
 
-      DiscoverGameSizeOnDiskRecursiveImpl(directoryPath.Value, cancellationToken, updateValues);
+      DiscoverGameSizeOnDiskRecursiveImpl(directoryPath.Value, updateValues, cancellationToken);
 
       // Store in cache (only if operation was completed!)
       if (useCache) {
@@ -197,15 +197,20 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
     }
 
-    private static void DiscoverGameSizeOnDiskRecursiveImpl([NotNull] FullPath directoryPath, CancellationToken cancellationToken, Action<long, long> updateValues) {
+    private static void DiscoverGameSizeOnDiskRecursiveImpl([NotNull] FullPath directoryPath,
+      [NotNull] Action<long, long> updateValues, CancellationToken cancellationToken) {
       if (cancellationToken.IsCancellationRequested) {
         return;
       }
-      var files = FileSystem.EnumerateFiles(directoryPath).ToList();
+
+      var entries = FileSystem.EnumerateEntries(directoryPath).ToList();
+
+      var files = entries.Where(x => x.IsFile).ToList();
       var fileBytes = files.Aggregate(0L, (s, x) => s + x.FileSize);
       updateValues(files.Count, fileBytes);
-      foreach (var childDirectory in FileSystem.EnumerateDirectories(directoryPath)) {
-        DiscoverGameSizeOnDiskRecursiveImpl(childDirectory.Path, cancellationToken, updateValues);
+
+      foreach (var childDirectory in entries.Where(x => x.IsDirectory)) {
+        DiscoverGameSizeOnDiskRecursiveImpl(childDirectory.Path, updateValues, cancellationToken);
       }
     }
 
@@ -220,18 +225,16 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     [NotNull]
     private static IEnumerable<AcfFile> LoadAcfFiles([NotNull] FullPath steamLocation) {
-      var acfFilesDirectory = steamLocation.Combine("steamapps");
-      if (FileSystem.DirectoryExists(acfFilesDirectory)) {
-        return FileSystem.EnumerateFiles(acfFilesDirectory)
-          .Where(x => x.Name.EndsWith(".acf"))
-          .Select(x => new AcfFile(x.Path, FileSystem.ReadAllText(x.Path)));
-      }
-      return Enumerable.Empty<AcfFile>();
+      return LoadAcfFilesWorkder(steamLocation.Combine("steamapps"));
     }
 
     [NotNull]
     private static IEnumerable<AcfFile> LoadWorkshopFiles([NotNull] FullPath steamLocation) {
-      var acfFilesDirectory = steamLocation.Combine("steamapps").Combine("workshop");
+      return LoadAcfFilesWorkder(steamLocation.Combine("steamapps").Combine("workshop"));
+    }
+
+    [NotNull]
+    private static IEnumerable<AcfFile> LoadAcfFilesWorkder([NotNull] FullPath acfFilesDirectory) {
       if (FileSystem.DirectoryExists(acfFilesDirectory)) {
         return FileSystem.EnumerateFiles(acfFilesDirectory)
           .Where(x => x.Name.EndsWith(".acf"))

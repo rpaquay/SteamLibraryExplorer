@@ -190,14 +190,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
 
       // Copy files
-      foreach (var sourceFile in FileSystem.EnumerateFiles(sourceDirectory.Value)) {
-        CopySingleFile(sourceFile, destinationDirectory.Value.Combine(sourceFile.Name), progress, info, cancellationToken);
+      var entries = FileSystem.EnumerateEntries(sourceDirectory.Value).ToList();
+      foreach (var childFile in entries.Where(x => x.IsFile)) {
+        CopySingleFile(childFile, destinationDirectory.Value.Combine(childFile.Name), progress, info, cancellationToken);
       }
 
       // Copy sub-directories
-      foreach (var sourceChild in FileSystem.EnumerateDirectories(sourceDirectory.Value)) {
-        var destinationChild = destinationDirectory.Value.Combine(sourceChild.Name);
-        CopyDirectoryRecurse(sourceChild.Path, destinationChild, progress, info, cancellationToken);
+      foreach (var childDirectory in entries.Where(x => x.IsDirectory)) {
+        CopyDirectoryRecurse(childDirectory.Path, destinationDirectory.Value.Combine(childDirectory.Name), progress, info, cancellationToken);
       }
       info.MovedDirectoryCount++;
     }
@@ -214,9 +214,11 @@ namespace SteamLibraryExplorer.SteamUtil {
 
       var lastBytes = 0L;
       var options = CopyFileOptions.Default;
-      if (sourceFile.FileSize >= 100 * 1024 * 1024) {
-        options |= CopyFileOptions.Unbuffered;
-      }
+
+      // Note: Unbuffered slows down dramatically on SSD drives
+      //if (sourceFile.FileSize >= 100 * 1024 * 1024) {
+      //  options |= CopyFileOptions.Unbuffered;
+      //}
 
       FileSystem.CopyFile(sourceFile, destinationFile, options, (totalBytesTransferred, totalBytes) => {
         cancellationToken.ThrowIfCancellationRequested();
@@ -243,13 +245,14 @@ namespace SteamLibraryExplorer.SteamUtil {
       info.CurrentDirectory = directory.Value;
       ReportProgess(phase, progress, info);
 
+      var entries = FileSystem.EnumerateEntries(directory.Value).ToList();
       // Delete files
-      foreach (var sourceFile in FileSystem.EnumerateFiles(directory.Value)) {
+      foreach (var sourceFile in entries.Where(x => x.IsFile)) {
         DeleteSingleFile(phase, sourceFile.Path, progress, info);
       }
 
       // Delete sub-directories
-      foreach (var sourceChild in FileSystem.EnumerateDirectories(directory.Value)) {
+      foreach (var sourceChild in entries.Where(x => x.IsDirectory)) {
         DeleteDirectoryRecurse(phase, sourceChild.Path, progress, info);
       }
 
@@ -283,12 +286,15 @@ namespace SteamLibraryExplorer.SteamUtil {
       info.CurrentDirectory = sourceDirectory.Value;
       ReportProgess(MovePhase.DiscoveringSourceFiles, progress, info);
 
-      foreach (var file in FileSystem.EnumerateFiles(sourceDirectory.Value)) {
-        info.TotalFileCount++;
-        info.TotalBytes += file.FileSize;
-      }
-      foreach (var dir in FileSystem.EnumerateDirectories(sourceDirectory.Value)) {
-        DiscoverSourceDirectoryFiles(dir.Path, progress, info, cancellationToken);
+      foreach (var entry in FileSystem.EnumerateEntries(sourceDirectory.Value)) {
+        if (entry.IsFile) {
+          info.TotalFileCount++;
+          info.TotalBytes += entry.FileSize;
+        }
+
+        if (entry.IsDirectory) {
+          DiscoverSourceDirectoryFiles(entry.Path, progress, info, cancellationToken);
+        }
       }
 
       info.TotalDirectoryCount++;
