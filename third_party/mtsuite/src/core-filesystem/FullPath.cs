@@ -21,7 +21,16 @@ using System.IO;
 
 namespace mtsuite.CoreFileSystem {
   /// <summary>
-  /// Represents a fully qualified path.
+  /// Represents a fully qualified and normalized path. Various representation are supported:
+  /// local disk paths such as "C:\foo\bar", network paths such as "\\server\foo\bar", 
+  /// long paths such as "\\?\c:\foo\bar" and long network paths such as "\\UNC\?\server\foo\bar".
+  /// 
+  /// One of the goals of this implementation is to minimize memory allocations, of strings
+  /// in particular. The <see cref="FullPath"/> type is a value type that stores the path internally
+  /// as a list of segments. Common segments are shared accross instances when the <see cref="Combine"/>
+  /// method is used to build paths relative to a parent path. This also means the <see cref="Name"/>
+  /// property does not allocate a new string, althought the <see cref="FullName"/> property does
+  /// allocate a new string at each invocation. To alleviate this, <see cref="FullPath"/> implements
   /// </summary>
   public struct FullPath : IEquatable<FullPath>, IComparable<FullPath>, IStringSource {
     private class FullPathValue {

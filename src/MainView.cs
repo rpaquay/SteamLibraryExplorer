@@ -112,7 +112,7 @@ namespace SteamLibraryExplorer {
         return;
       }
 
-      _viewModel.StatusText = $"Steam location: {steamPath?.FullName}";
+      _viewModel.StatusText = $"Steam location: {steamPath.Value.FullName}";
     }
 
     public void ShowError([NotNull]string text) {

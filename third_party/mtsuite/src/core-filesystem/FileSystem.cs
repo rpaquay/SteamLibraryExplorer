@@ -20,13 +20,13 @@ using mtsuite.CoreFileSystem.Win32;
 namespace mtsuite.CoreFileSystem {
   public class FileSystem : IFileSystem {
     private readonly IPool<List<FileSystemEntry>> _entryListPool = new ListPool<FileSystemEntry>();
-    private readonly Win32.Win32 _win32;
+    private readonly Win32<FullPath> _win32;
 
-    public FileSystem() : this(new FullPathStringSourceFormatter()) {
+    public FileSystem() : this(new StringSourceFormatters.AlwaysLongPathFormatter()) {
     }
 
-    public FileSystem(IStringSourceFormatter stringSourceFormatter) {
-      _win32 = new Win32.Win32(stringSourceFormatter);
+    public FileSystem(IStringSourceFormatter<FullPath> stringSourceFormatter) {
+      _win32 = new Win32<FullPath>(stringSourceFormatter);
     }
 
     public FileSystemEntry GetEntry(FullPath path) {
@@ -150,10 +150,10 @@ namespace mtsuite.CoreFileSystem {
 
     public void CreateJunctionPoint(FullPath path, string target) {
       // Convert target into an absolute path
-      var targetPath = PathHelpers.IsPathAbsolute(target) ? target : path.Parent.Value.Combine(target).FullName;
+      var targetPath = PathHelpers.IsPathAbsolute(target) ? target : path.Parent?.Combine(target).FullName;
       targetPath = PathHelpers.NormalizePath(targetPath);
 
-      _win32.CreateJunctionPoint(path, new FullPath(targetPath));
+      _win32.CreateJunctionPoint(path, targetPath);
     }
 
     public ReparsePointInfo GetReparsePointInfo(FullPath path) {

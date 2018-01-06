@@ -64,7 +64,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (game.AcfFile != null) {
         destinationAcfFile = destinationLibraryLocation.Combine("steamapps", game.AcfFile.Path.Name);
         if (FileSystem.FileExists(destinationAcfFile.Value)) {
-          throw new ArgumentException($"Game ACF file \"{destinationAcfFile?.FullName}\" already exist");
+          throw new ArgumentException($"Game ACF file \"{destinationAcfFile.Value.FullName}\" already exist");
         }
       }
 
@@ -80,7 +80,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       if (game.WorkshopFile != null) {
         destinationWorkshopFile = destinationLibraryLocation.Combine("steamapps", "workshop", game.WorkshopFile.Path.Name);
         if (FileSystem.FileExists(destinationWorkshopFile.Value)) {
-          throw new ArgumentException($"Workshop ACF file \"{destinationWorkshopFile?.FullName}\" already exist");
+          throw new ArgumentException($"Workshop ACF file \"{destinationWorkshopFile.Value.FullName}\" already exist");
         }
       }
 

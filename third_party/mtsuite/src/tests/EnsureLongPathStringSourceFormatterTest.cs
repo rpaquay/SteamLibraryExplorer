@@ -17,18 +17,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace tests {
   [TestClass]
-  public class EnsureLongPathStringSourceFormatterTest {
+  public class AlwaysLongPathStringSourceFormatterTest {
     [TestMethod]
     public void DiskPathShouldWork() {
       var path = new FullPath(@"c:\foo");
-      var formatter = new EnsureLongPathStringSourceFormatter();
+      var formatter = new StringSourceFormatters.AlwaysLongPathFormatter();;
       Assert.AreEqual(@"\\?\c:\foo", formatter.GetText(path));
     }
 
     [TestMethod]
     public void UncPathShouldWork() {
       var path = new FullPath(@"\\server\foo");
-      var formatter = new EnsureLongPathStringSourceFormatter();
+      var formatter = new StringSourceFormatters.AlwaysLongPathFormatter();
       Assert.AreEqual(@"\\?\UNC\server\foo", formatter.GetText(path));
     }
   }

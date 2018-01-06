@@ -122,6 +122,7 @@ namespace tests {
       Assert.AreEqual(p1, p2);
       Assert.AreEqual(p1.GetHashCode(), p2.GetHashCode());
     }
+
     [TestMethod]
     public void LongPathShouldWork() {
       var p1 = new FullPath(@"\\?\c:\foo\bar");
@@ -131,6 +132,29 @@ namespace tests {
       Assert.AreEqual("foo", p1.Parent?.Name);
       Assert.AreEqual(@"\\?\c:\", p1.Parent?.Parent?.Name);
       Assert.AreEqual(null, p1.Parent?.Parent?.Parent);
+    }
+
+    [TestMethod]
+    public void UncPathShouldWork() {
+      var p1 = new FullPath(@"\\server\foo\bar");
+      Assert.AreEqual(@"\\server\foo\bar", p1.FullName);
+      Assert.AreEqual(PathHelpers.RootPrefixKind.UncPath, p1.PathKind);
+      Assert.AreEqual("bar", p1.Name);
+      Assert.AreEqual("foo", p1.Parent?.Name);
+      Assert.AreEqual(@"\\server\", p1.Parent?.Parent?.Name);
+      Assert.AreEqual(null, p1.Parent?.Parent?.Parent);
+    }
+
+    [TestMethod]
+    public void LongUncPathShouldWork() {
+      var p1 = new FullPath(@"\\?\unc\server\foo\bar");
+      Assert.AreEqual(@"\\?\unc\server\foo\bar", p1.FullName);
+      Assert.AreEqual(PathHelpers.RootPrefixKind.LongUncPath, p1.PathKind);
+      Assert.AreEqual("bar", p1.Name);
+      Assert.AreEqual("foo", p1.Parent?.Name);
+      Assert.AreEqual("server", p1.Parent?.Parent?.Name);
+      Assert.AreEqual(@"\\?\unc\", p1.Parent?.Parent?.Parent?.Name);
+      Assert.AreEqual(null, p1.Parent?.Parent?.Parent?.Parent);
     }
   }
 }

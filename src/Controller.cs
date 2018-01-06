@@ -87,7 +87,7 @@ namespace SteamLibraryExplorer {
 
         // Store location for re-use
         if (steamLocation != null) {
-          Logger.Info("Found Steam installation directory: {0}", steamLocation?.FullName);
+          Logger.Info("Found Steam installation directory: {0}", steamLocation.Value.FullName);
           _model.SteamConfiguration.Location.Value = steamLocation;
         }
 
