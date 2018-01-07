@@ -85,7 +85,8 @@
           <GridViewColumn.CellTemplate>
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
-                         Padding="14,0,0,0" Text="{Binding DisplayName}" TextAlignment="Left" Foreground="{DynamicResource TextBrush}"/>
+                         Padding="14,0,0,0" Text="{Binding DisplayName}" TextAlignment="Left" Foreground="{DynamicResource TextBrush}"
+                         TextTrimming="CharacterEllipsis"/>
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -98,7 +99,8 @@
           <GridViewColumn.CellTemplate>
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
-                               Text="{Binding AcfFile}" TextAlignment="Left" Foreground="{Binding AcfFileColor}"/>
+                               Text="{Binding AcfFile}" TextAlignment="Left" Foreground="{Binding AcfFileColor}"
+                         TextTrimming="CharacterEllipsis"/>
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -111,7 +113,8 @@
           <GridViewColumn.CellTemplate>
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
-                               Text="{Binding RelativePath}" TextAlignment="Left" Foreground="{Binding RelativePathColor}" />
+                               Text="{Binding RelativePath}" TextAlignment="Left" Foreground="{Binding RelativePathColor}"
+                         TextTrimming="CharacterEllipsis" />
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -125,7 +128,8 @@
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
                              Text="{Binding SizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}"
-                             TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}" />
+                             TextAlignment="Right" Foreground="{Binding SizeOnDiskColor}"
+                         TextTrimming="CharacterEllipsis" />
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -139,7 +143,8 @@
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
                              Text="{Binding FileCount, Converter={StaticResource FileCountValueConverter}}"
-                             TextAlignment="Right" Foreground="{Binding FileCountColor}" />
+                             TextAlignment="Right" Foreground="{Binding FileCountColor}"
+                         TextTrimming="CharacterEllipsis" />
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -153,7 +158,8 @@
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
                              Text="{Binding WorkshopAcfFile}" TextAlignment="Left"
-                             Foreground="{Binding WorkshopAcfFileColor}"/>
+                             Foreground="{Binding WorkshopAcfFileColor}"
+                         TextTrimming="CharacterEllipsis"/>
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -167,7 +173,8 @@
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
                              Text="{Binding WorkshopRelativePath}" TextAlignment="Left"
-                             Foreground="{Binding WorkshopRelativePathColor}" />
+                             Foreground="{Binding WorkshopRelativePathColor}"
+                         TextTrimming="CharacterEllipsis" />
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -181,7 +188,8 @@
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
                              Text="{Binding WorkshopSizeOnDisk, Converter={StaticResource SizeOnDiskValueConverter}}"
-                             TextAlignment="Right" Foreground="{DynamicResource TextBrush}" />
+                             TextAlignment="Right" Foreground="{DynamicResource TextBrush}"
+                         TextTrimming="CharacterEllipsis" />
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
@@ -195,7 +203,8 @@
             <DataTemplate>
               <TextBlock d:DataContext="{d:DesignInstance viewModel:SteamGameViewModel}"
                              Text="{Binding WorkshopFileCount, Converter={StaticResource FileCountValueConverter}}"
-                             TextAlignment="Right" Foreground="{DynamicResource TextBrush}" />
+                             TextAlignment="Right" Foreground="{DynamicResource TextBrush}"
+                         TextTrimming="CharacterEllipsis" />
             </DataTemplate>
           </GridViewColumn.CellTemplate>
         </GridViewColumn>
