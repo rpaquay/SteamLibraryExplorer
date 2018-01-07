@@ -45,13 +45,19 @@ namespace mtsuite.CoreFileSystem {
       return true;
     }
 
-    public FromPool<List<FileSystemEntry>> GetDirectoryEntries(FullPath path) {
-      using (var entries = _win32.GetDirectoryEntries(path)) {
+    public FromPool<List<FileSystemEntry>> GetDirectoryEntries(FullPath path, string pattern = null) {
+      using (var entries = _win32.GetDirectoryEntries(path, pattern)) {
         var result = _entryListPool.AllocateFrom();
         foreach (var x in entries.Item) {
           result.Item.Add(new FileSystemEntry(path.Combine(x.Name), x.Data));
         }
         return result;
+      }
+    }
+
+    public IEnumerable<FileSystemEntry> EnumerateDirectoryEntries(FullPath path, string pattern = null) {
+      foreach (var entry in _win32.EnumerateDirectoryEntries(path, pattern)) {
+        yield return new FileSystemEntry(path.Combine(entry.Name), entry.Data);
       }
     }
 

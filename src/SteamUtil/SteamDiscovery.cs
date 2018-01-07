@@ -4,6 +4,7 @@ using mtsuite.CoreFileSystem;
 using SteamLibraryExplorer.SteamModel;
 using SteamLibraryExplorer.Utils;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -236,8 +237,7 @@ namespace SteamLibraryExplorer.SteamUtil {
     [NotNull]
     private static IEnumerable<AcfFile> LoadAcfFilesWorkder([NotNull] FullPath acfFilesDirectory) {
       if (FileSystem.DirectoryExists(acfFilesDirectory)) {
-        return FileSystem.EnumerateFiles(acfFilesDirectory)
-          .Where(x => x.Name.EndsWith(".acf"))
+        return FileSystem.EnumerateFiles(acfFilesDirectory, "*.acf")
           .Select(x => new AcfFile(x.Path, FileSystem.ReadAllText(x.Path)));
       }
       return Enumerable.Empty<AcfFile>();
@@ -413,9 +413,13 @@ namespace SteamLibraryExplorer.SteamUtil {
       return true;
     }
 
+    private static readonly ConcurrentDictionary<string, Regex> RegexCache = new ConcurrentDictionary<string, Regex>();
+
     [CanBeNull]
     public static string GetProperty([NotNull] string contents, [NotNull] string propName) {
-      var regex = new Regex("^.*\"" + propName + "\".*\"(?<propValue>.+)\"$", RegexOptions.IgnoreCase);
+      var regex = RegexCache.GetOrAdd(propName, name => {
+        return new Regex("^.*\"" + name + "\".*\"(?<propValue>.+)\"$", RegexOptions.IgnoreCase);
+      });
       using (var reader = new StringReader(contents)) {
         for (var line = reader.ReadLine(); line != null; line = reader.ReadLine()) {
           var match = regex.Match(line);
