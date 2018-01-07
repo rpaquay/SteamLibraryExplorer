@@ -143,25 +143,63 @@ namespace SteamLibraryExplorer.SteamUtil {
       }
     }
 
-    private void DiscoverGameSizeOnDisk([NotNull] SteamGame game, bool useCache, CancellationToken cancellationToken) {
-      DiscoverGameSizeOnDiskRecursive(game.Location, useCache, (fileCount, sizeOnDisk) => {
-        game.FileCount.Value += fileCount;
-        game.SizeOnDisk.Value += sizeOnDisk;
-      }, info => {
-        info.FileCount = game.FileCount.Value;
-        info.SizeOnDisk = game.SizeOnDisk.Value;
-      }, cancellationToken);
+    public static class ProperyValueThrottledUpdater {
+      public static ProperyValueThrottledUpdater<T> Create<T>(PropertyValue<T> property) {
+        return new ProperyValueThrottledUpdater<T>(property);
+      }
+    }
 
-      DiscoverGameSizeOnDiskRecursive(game.WorkshopLocation, useCache, (fileCount, sizeOnDisk) => {
-        game.FileCount.Value += fileCount;
-        game.SizeOnDisk.Value += sizeOnDisk;
-        game.WorkshopFileCount.Value += fileCount;
-        game.WorkshopSizeOnDisk.Value += sizeOnDisk;
-      }, info => {
-        info.FileCount = game.WorkshopFileCount.Value;
-        info.FileCount = game.WorkshopFileCount.Value;
-        info.SizeOnDisk = game.WorkshopSizeOnDisk.Value;
-      }, cancellationToken);
+    public class ProperyValueThrottledUpdater<T> : IDisposable {
+      private readonly PropertyValue<T> _property;
+      private readonly Stopwatch _stopwatch = new Stopwatch();
+      private T _value;
+
+      public ProperyValueThrottledUpdater(PropertyValue<T> property) {
+        _property = property;
+        _stopwatch.Start();
+        Value = property.Value;
+      }
+
+      public T Value {
+        get { return _value; }
+        set {
+          _value = value;
+          if (_stopwatch.ElapsedMilliseconds >= 10) {
+            _stopwatch.Reset();
+            _property.Value = _value;
+          }
+        }
+      }
+
+      public void Dispose() {
+        _property.Value = _value;
+      }
+    }
+
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+    private void DiscoverGameSizeOnDisk([NotNull] SteamGame game, bool useCache, CancellationToken cancellationToken) {
+      using (var gameFileCount = ProperyValueThrottledUpdater.Create(game.FileCount))
+      using (var gameSizeOnDisk = ProperyValueThrottledUpdater.Create(game.SizeOnDisk))
+      using (var gameWorkshopFileCount = ProperyValueThrottledUpdater.Create(game.WorkshopFileCount))
+      using (var gameWorkshopSizeOnDisk = ProperyValueThrottledUpdater.Create(game.WorkshopSizeOnDisk)) {
+        DiscoverGameSizeOnDiskRecursive(game.Location, useCache, (fileCount, sizeOnDisk) => {
+          gameFileCount.Value += fileCount;
+          gameSizeOnDisk.Value += sizeOnDisk;
+        }, info => {
+          info.FileCount = gameFileCount.Value;
+          info.SizeOnDisk = gameSizeOnDisk.Value;
+        }, cancellationToken);
+
+        DiscoverGameSizeOnDiskRecursive(game.WorkshopLocation, useCache, (fileCount, sizeOnDisk) => {
+          gameFileCount.Value += fileCount;
+          gameSizeOnDisk.Value += sizeOnDisk;
+          gameWorkshopFileCount.Value += fileCount;
+          gameWorkshopSizeOnDisk.Value += sizeOnDisk;
+        }, info => {
+          info.FileCount = gameWorkshopFileCount.Value;
+          info.SizeOnDisk = gameWorkshopSizeOnDisk.Value;
+        }, cancellationToken);
+      }
     }
 
     private void DiscoverGameSizeOnDiskRecursive([CanBeNull] FullPath? directoryPath, bool useCache,
@@ -204,14 +242,12 @@ namespace SteamLibraryExplorer.SteamUtil {
         return;
       }
 
-      var entries = FileSystem.EnumerateEntries(directoryPath).ToList();
-
-      var files = entries.Where(x => x.IsFile).ToList();
-      var fileBytes = files.Aggregate(0L, (s, x) => s + x.FileSize);
-      updateValues(files.Count, fileBytes);
-
-      foreach (var childDirectory in entries.Where(x => x.IsDirectory)) {
-        DiscoverGameSizeOnDiskRecursiveImpl(childDirectory.Path, updateValues, cancellationToken);
+      foreach (var entry in FileSystem.EnumerateEntries(directoryPath)) {
+        if (entry.IsFile) {
+          updateValues(1, entry.FileSize);
+        } else if (entry.IsDirectory) { 
+          DiscoverGameSizeOnDiskRecursiveImpl(entry.Path, updateValues, cancellationToken);
+        }
       }
     }
 
