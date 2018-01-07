@@ -242,11 +242,11 @@ namespace SteamLibraryExplorer.SteamUtil {
         return;
       }
 
-      foreach (var entry in FileSystem.EnumerateEntries(directoryPath)) {
+      foreach (var entry in FileSystem.EnumerateEntriesWithFileName(directoryPath)) {
         if (entry.IsFile) {
           updateValues(1, entry.FileSize);
         } else if (entry.IsDirectory) { 
-          DiscoverGameSizeOnDiskRecursiveImpl(entry.Path, updateValues, cancellationToken);
+          DiscoverGameSizeOnDiskRecursiveImpl(directoryPath.Combine(entry.FileName), updateValues, cancellationToken);
         }
       }
     }

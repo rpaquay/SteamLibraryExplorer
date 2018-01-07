@@ -65,16 +65,12 @@ namespace SteamLibraryExplorer.Utils {
       _coreFileSystem.CopyFile(sourceEntry, destinationPath, options, callback);
     }
 
-    protected override IEnumerable<FileSystemEntry> EnumerateFilesImpl(FullPath path, string pattern = null) {
-      return EnumerateEntriesImpl(path, pattern).Where(x => x.IsFile);
-    }
-
-    protected override IEnumerable<FileSystemEntry> EnumerateDirectoriesImpl(FullPath path, string pattern = null) {
-      return EnumerateEntriesImpl(path, pattern).Where(x => x.IsDirectory);
-    }
-
     protected override IEnumerable<FileSystemEntry> EnumerateEntriesImpl(FullPath path, string pattern = null) {
       return _coreFileSystem.EnumerateDirectoryEntries(path, pattern);
+    }
+
+    protected override IEnumerable<FileSystemEntryWithFileName> EnumerateEntriesWithFileNameImpl(FullPath path, string pattern = null) {
+      return _coreFileSystem.EnumerateDirectoryEntriesData(path, pattern);
     }
   }
 }

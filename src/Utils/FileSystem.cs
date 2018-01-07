@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using mtsuite.CoreFileSystem;
 
@@ -46,17 +47,22 @@ namespace SteamLibraryExplorer.Utils {
 
     [NotNull]
     public static IEnumerable<FileSystemEntry> EnumerateFiles([NotNull]FullPath path, string pattern = null) {
-      return Instance.EnumerateFilesImpl(path, pattern);
+      return Instance.EnumerateEntriesImpl(path, pattern).Where(x => x.IsFile);
     }
 
     [NotNull]
     public static IEnumerable<FileSystemEntry> EnumerateDirectories([NotNull]FullPath path, string pattern = null) {
-      return Instance.EnumerateDirectoriesImpl(path, pattern);
+      return Instance.EnumerateEntriesImpl(path, pattern).Where(x => x.IsDirectory);
     }
 
     [NotNull]
     public static IEnumerable<FileSystemEntry> EnumerateEntries([NotNull]FullPath path, string pattern = null) {
       return Instance.EnumerateEntriesImpl(path, pattern);
+    }
+
+    [NotNull]
+    public static IEnumerable<FileSystemEntryWithFileName> EnumerateEntriesWithFileName([NotNull]FullPath path, string pattern = null) {
+      return Instance.EnumerateEntriesWithFileNameImpl(path, pattern);
     }
 
     protected abstract FileSystemEntry GetEntryImpl(FullPath path);
@@ -68,8 +74,7 @@ namespace SteamLibraryExplorer.Utils {
     protected abstract void DeleteDirectoryImpl(FullPath path);
     protected abstract void DeleteFileImpl(FullPath path);
     protected abstract void CopyFileImpl(FileSystemEntry sourceEntry, [NotNull]FullPath destinationPath, CopyFileOptions options, [NotNull]CopyFileCallback callback);
-    protected abstract IEnumerable<FileSystemEntry> EnumerateFilesImpl([NotNull]FullPath path, string pattern = null);
-    protected abstract IEnumerable<FileSystemEntry> EnumerateDirectoriesImpl([NotNull]FullPath path, string pattern = null);
     protected abstract IEnumerable<FileSystemEntry> EnumerateEntriesImpl([NotNull]FullPath path, string pattern = null);
+    protected abstract IEnumerable<FileSystemEntryWithFileName> EnumerateEntriesWithFileNameImpl([NotNull]FullPath path, string pattern = null);
   }
 }
