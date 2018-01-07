@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SteamLibraryExplorer.Utils {
   public class FileSystemImpl : FileSystem {
-    private readonly IFileSystem _coreFileSystem = new mtsuite.CoreFileSystem.FileSystem(new StringSourceFormatters.AlwaysLongPathFormatter());
+    private readonly IFileSystem _coreFileSystem = new mtsuite.CoreFileSystem.FileSystem(new PathSerializers.LongPathAsNeededSerializer());
 
     protected override string ReadAllTextImpl(FullPath path) {
       using (var fileSteam = _coreFileSystem.OpenFile(path, FileAccess.Read)) {

@@ -17,7 +17,7 @@ using System;
 namespace mtsuite.CoreFileSystem.Win32 {
   /// <summary>
   /// File or directory entry information returned by <see
-  /// cref="Win32.GetDirectoryEntries"/>, including the short <see cref="Name"/>
+  /// cref="Win32{TPath}.GetDirectoryEntries"/>, including the short <see cref="Name"/>
   /// and file attributes.
   /// </summary>
   public struct DirectoryEntry {

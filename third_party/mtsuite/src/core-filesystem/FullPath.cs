@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using mtsuite.CoreFileSystem.Utils;
-using mtsuite.CoreFileSystem.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,7 +31,7 @@ namespace mtsuite.CoreFileSystem {
   /// property does not allocate a new string, althought the <see cref="FullName"/> property does
   /// allocate a new string at each invocation. To alleviate this, <see cref="FullPath"/> implements
   /// </summary>
-  public struct FullPath : IEquatable<FullPath>, IComparable<FullPath>, IStringSource {
+  public struct FullPath : IEquatable<FullPath>, IComparable<FullPath> {
     private class FullPathValue {
       /// <summary>
       /// The parent path, or <code>null</code> <see cref="_name"/> is a root path
@@ -124,7 +123,6 @@ namespace mtsuite.CoreFileSystem {
 
         result += pathValue._name.Length;
         return result;
-
       }
 
       public static bool EqualsOperator(object value, object other) {
@@ -225,15 +223,16 @@ namespace mtsuite.CoreFileSystem {
     public string FullName {
       get {
         var sb = new StringBuffer(256);
-        BuildPath(sb);
+        FullPathValue.BuildPath(_value, sb);
         return sb.ToString();
       }
     }
 
     public string Name {
       get {
-        if (_value is FullPathValue) {
-          return ((FullPathValue) _value).Name;
+        var pathValue = _value as FullPathValue;
+        if (pathValue != null) {
+          return pathValue.Name;
         }
 
         return (string) _value;
@@ -290,30 +289,18 @@ namespace mtsuite.CoreFileSystem {
       get { return FullPathValue.GetRootPrefixKind(_value); }
     }
 
-    public enum LongPathPrefixKind {
-      None,
-      LongDiskPath,
-      LongUncPath,
-    }
-
-    private void BuildPath(StringBuffer sb) {
-      FullPathValue.BuildPath(_value, sb);
-    }
-
     public override string ToString() {
       return FullName;
     }
 
     public int Length {
-      get { return GetLength(this); }
+      get {
+        return FullPathValue.GetLength(_value);
+      }
     }
 
     public void CopyTo(StringBuffer sb) {
-      BuildPath(sb);
-    }
-
-    private static int GetLength(FullPath path) {
-      return FullPathValue.GetLength(path._value);
+      FullPathValue.BuildPath(_value, sb);
     }
 
     public bool Equals(FullPath other) {

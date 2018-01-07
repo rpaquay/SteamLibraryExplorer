@@ -105,7 +105,7 @@ namespace mtsuite.CoreFileSystem.Utils {
         return (TField)(object)value;
 
       if (fieldType == typeof(ulong))
-        return (TField)(object)(ulong)value;
+        return (TField)(object)value;
 
       throw new InvalidOperationException("Invalid integer type");
     }
@@ -148,10 +148,10 @@ namespace mtsuite.CoreFileSystem.Utils {
         _buffer.WriteUInt32(offset, unchecked((uint)value));
 
       } else if (fieldType == typeof(long)) {
-        _buffer.WriteUInt64(offset, unchecked((ulong)value));
+        _buffer.WriteUInt64(offset, value);
 
       } else if (fieldType == typeof(ulong)) {
-        _buffer.WriteUInt64(offset, unchecked((ulong)value));
+        _buffer.WriteUInt64(offset, value);
 
       } else {
         throw new InvalidOperationException("Invalid integer type");

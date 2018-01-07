@@ -55,7 +55,7 @@ namespace tests.FileSystemHelpers {
     }
 
     public void SetAttributes(FileEntrySetup entry, FileAttributes attributes) {
-      new Win32<FullPath>(new StringSourceFormatters.AlwaysLongPathFormatter()).SetFileAttributes(entry.Path, (FILE_ATTRIBUTE)attributes);
+      new Win32<FullPath>(new PathSerializers.AlwaysLongPathSerializer()).SetFileAttributes(entry.Path, (FILE_ATTRIBUTE)attributes);
     }
 
     private void DeleteDirectoryEntriesRecurse(FullPath directory) {

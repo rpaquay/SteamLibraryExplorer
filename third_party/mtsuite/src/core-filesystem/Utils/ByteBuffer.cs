@@ -146,7 +146,7 @@ namespace mtsuite.CoreFileSystem.Utils {
       void* bufferStart = (Pointer + offset).ToPointer();
       switch (size) {
         case 1:
-          return *(byte*)bufferStart;;
+          return *(byte*)bufferStart;
         case 2:
           return *(ushort*)bufferStart;
         case 4:
@@ -192,7 +192,7 @@ namespace mtsuite.CoreFileSystem.Utils {
     }
 
     public static ulong AsUInt64(byte value) {
-      return unchecked((ulong)value);
+      return value;
     }
 
     public static ulong AsUInt64(short value) {
@@ -208,7 +208,7 @@ namespace mtsuite.CoreFileSystem.Utils {
     }
 
     public static ulong AsUInt64(ulong value) {
-      return unchecked((ulong)value);
+      return value;
     }
 
     private void CheckRange(int offset, int size) {

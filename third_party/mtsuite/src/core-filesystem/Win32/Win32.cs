@@ -17,22 +17,22 @@ using mtsuite.CoreFileSystem.ObjectPool;
 using mtsuite.CoreFileSystem.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace mtsuite.CoreFileSystem.Win32 {
-  public class Win32<T> where T: IStringSource {
+  public class Win32<TPath> {
     private readonly IPool<List<DirectoryEntry>> _entryListPool = new ListPool<DirectoryEntry>();
     private readonly IPool<StringBuffer> _stringBufferPool = PoolFactory<StringBuffer>.Create(() => new StringBuffer(64), x => x.Clear());
     private readonly IPool<ByteBuffer> _byteBufferPool = PoolFactory<ByteBuffer>.Create(() => new ByteBuffer(256));
-    private IStringSourceFormatter<T> _pathFormatter;
+    private readonly IPathSerializer<TPath> _pathSerializer;
 
-    public Win32(IStringSourceFormatter<T> pathFormatter) {
-      _pathFormatter = pathFormatter;
+    public Win32(IPathSerializer<TPath> pathSerializer) {
+      _pathSerializer = pathSerializer;
     }
 
-    public IStringSourceFormatter<T> PathFormatter {
-      get { return _pathFormatter; }
-      set { _pathFormatter = value; }
+    public IPathSerializer<TPath> PathSerializer {
+      get { return _pathSerializer; }
     }
 
     private static string StripPath(string path) {
@@ -41,19 +41,19 @@ namespace mtsuite.CoreFileSystem.Win32 {
       return PathHelpers.StripLongPathPrefix(path);
     }
 
-    private string StripPath(T path) {
-      var sb = new StringBuffer(_pathFormatter.GetLength(path) + 1);
-      _pathFormatter.CopyTo(path, sb);
+    private string StripPath(TPath path) {
+      var sb = new StringBuffer(_pathSerializer.GetLength(path) + 1);
+      _pathSerializer.CopyTo(path, sb);
       return StripPath(sb.Text);
     }
 
     /// <summary>
     /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
     /// </summary>
-    public FromPool<List<DirectoryEntry>> GetDirectoryEntries(T path) {
+    public FromPool<List<DirectoryEntry>> GetDirectoryEntries(TPath path) {
       // Build search pattern (on the stack) as path + "\\*" + '\0'
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
         sb.Item.Append(@"\*");
 
         // Start enumerating files
@@ -105,9 +105,9 @@ namespace mtsuite.CoreFileSystem.Win32 {
       return (entry.IsDirectory) && (entry.Name.Equals(".") || entry.Name.Equals(".."));
     }
 
-    public void DeleteFile(T path) {
+    public void DeleteFile(TPath path) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
         if (NativeMethods.DeleteFile(sb.Item.Data))
           return;
 
@@ -117,9 +117,9 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    public void DeleteDirectory(T path) {
+    public void DeleteDirectory(TPath path) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
         // Note: RemoveDirectory works for empty directories as well
         // as for junction points, even if their target is not empty.
         if (NativeMethods.RemoveDirectory(sb.Item.Data))
@@ -131,9 +131,9 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    public void SetFileAttributes(T path, FILE_ATTRIBUTE fileAttributes) {
+    public void SetFileAttributes(TPath path, FILE_ATTRIBUTE fileAttributes) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
         if (NativeMethods.SetFileAttributes(sb.Item.Data, fileAttributes))
           return;
 
@@ -143,9 +143,9 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    public FILE_ATTRIBUTE GetFileAttributes(T path) {
+    public FILE_ATTRIBUTE GetFileAttributes(TPath path) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
         var INVALID_FILE_ATTRIBUTES = unchecked((FILE_ATTRIBUTE)(-1));
         var attributes = NativeMethods.GetFileAttributes(sb.Item.Data);
         if (attributes != INVALID_FILE_ATTRIBUTES)
@@ -157,7 +157,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    public WIN32_FILE_ATTRIBUTE_DATA GetFileAttributesEx(T path) {
+    public WIN32_FILE_ATTRIBUTE_DATA GetFileAttributesEx(TPath path) {
       WIN32_FILE_ATTRIBUTE_DATA data;
       var lastWin32Error = TryGetFileAttributesEx(path, out data);
       if (lastWin32Error == Win32Errors.ERROR_SUCCESS)
@@ -166,16 +166,18 @@ namespace mtsuite.CoreFileSystem.Win32 {
         string.Format("Error getting extended file attributes for \"{0}\"", StripPath(path)));
     }
 
-    public Win32Errors TryGetFileAttributesEx(T path, out WIN32_FILE_ATTRIBUTE_DATA data) {
+    public Win32Errors TryGetFileAttributesEx(TPath path, out WIN32_FILE_ATTRIBUTE_DATA data) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
         if (NativeMethods.GetFileAttributesEx(sb.Item.Data, 0, out data))
           return Win32Errors.ERROR_SUCCESS;
         return (Win32Errors)Marshal.GetLastWin32Error();
       }
     }
 
+    [SuppressMessage("ReSharper", "StaticMemberInGenericType")]
     private static readonly NativeMethods.CopyProgressRoutine CopyProgressRoutine = CopyProgressFunction;
+    [SuppressMessage("ReSharper", "StaticMemberInGenericType")]
     private static readonly IntPtr CopyProgressRoutinePtr = Marshal.GetFunctionPointerForDelegate(CopyProgressRoutine);
 
     private static NativeMethods.CopyProgressResult CopyProgressFunction(
@@ -198,11 +200,11 @@ namespace mtsuite.CoreFileSystem.Win32 {
       public Exception Error { get; set; }
     }
 
-    public void CopyFile(T sourcePath, T destinationPath, CopyFileOptions options, CopyFileCallback callback) {
+    public void CopyFile(TPath sourcePath, TPath destinationPath, CopyFileOptions options, CopyFileCallback callback) {
       using (var source = _stringBufferPool.AllocateFrom())
       using (var destination = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(sourcePath, source.Item);
-        _pathFormatter.CopyTo(destinationPath, destination.Item);
+        _pathSerializer.CopyTo(sourcePath, source.Item);
+        _pathSerializer.CopyTo(destinationPath, destination.Item);
 
         var callbackData = new CopyFileCallbackData { Callback = callback };
         var callbackDataHandle = GCHandle.Alloc(callbackData);
@@ -234,9 +236,9 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    public void CreateDirectory(T path) {
+    public void CreateDirectory(TPath path) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
 
         if (NativeMethods.CreateDirectory(sb.Item.Data, IntPtr.Zero))
           return;
@@ -253,7 +255,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
       public DateTime? LastWriteTimeUtc { get; set; }
     }
 
-    public void CopyDirectoryReparsePoint(T sourcePath, T destinationPath) {
+    public void CopyDirectoryReparsePoint(TPath sourcePath, TPath destinationPath) {
       var info = GetReparsePointInfo(sourcePath);
 
       if (info.IsSymbolicLink) {
@@ -282,7 +284,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
         string.Format("Error copying reparse point \"{0}\" (unsupported reparse point type?)", StripPath(sourcePath)));
     }
 
-    public void CopyFileReparsePoint(T sourcePath, T destinationPath) {
+    public void CopyFileReparsePoint(TPath sourcePath, TPath destinationPath) {
       var info = GetReparsePointInfo(sourcePath);
 
       if (info.IsSymbolicLink) {
@@ -300,7 +302,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
         string.Format("Error copying reparse point \"{0}\" (unsupported reparse point type?)", StripPath(sourcePath)));
     }
 
-    public unsafe void SetFileTimes(T path, SafeFileHandle file, FileTimes fileTimes) {
+    public unsafe void SetFileTimes(TPath path, SafeFileHandle file, FileTimes fileTimes) {
       NativeMethods.FILETIME* lpCreationTime = null;
       NativeMethods.FILETIME* lpLastAccessTime = null;
       NativeMethods.FILETIME* lpLastWriteTime = null;
@@ -328,13 +330,13 @@ namespace mtsuite.CoreFileSystem.Win32 {
     }
 
     public SafeFileHandle OpenFile(
-      T path,
+      TPath path,
       NativeMethods.EFileAccess access,
       NativeMethods.EFileShare share,
       NativeMethods.ECreationDisposition creationDisposition,
       NativeMethods.EFileAttributes attributes) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
 
         var fileHandle = NativeMethods.CreateFile(
           sb.Item.Data,
@@ -354,7 +356,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    public SafeFileHandle OpenFileAsReparsePoint(T path, bool readWrite) {
+    public SafeFileHandle OpenFileAsReparsePoint(TPath path, bool readWrite) {
       var access = NativeMethods.EFileAccess.FILE_GENERIC_READ;
       if (readWrite) {
         access |= NativeMethods.EFileAccess.FILE_GENERIC_WRITE;
@@ -396,20 +398,20 @@ namespace mtsuite.CoreFileSystem.Win32 {
       return substituteName;
     }
 
-    public void CreateDirectorySymbolicLink(T path, string targetPath) {
+    public void CreateDirectorySymbolicLink(TPath path, string targetPath) {
       CreateSymbolicLinkWorker(path, targetPath, NativeMethods.SYMBOLIC_LINK_FLAG.Directory);
     }
 
-    public void CreateFileSymbolicLink(T path, string targetPath) {
+    public void CreateFileSymbolicLink(TPath path, string targetPath) {
       CreateSymbolicLinkWorker(path, targetPath, NativeMethods.SYMBOLIC_LINK_FLAG.File);
     }
 
     public void CreateSymbolicLinkWorker(
-      T path,
+      TPath path,
       string targetPath,
       NativeMethods.SYMBOLIC_LINK_FLAG linkFlag) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
-        _pathFormatter.CopyTo(path, sb.Item);
+        _pathSerializer.CopyTo(path, sb.Item);
 
         // Note: Win32 documentation for CreateSymbolicLink is incorrect (probably an issue in Windows).
         // On success, the function returns "1".
@@ -436,7 +438,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
     /// 
     /// Note that <paramref name="path"/> must not exist on disk.
     /// </summary>
-    public void CreateJunctionPoint(T path, string targetPath) {
+    public void CreateJunctionPoint(TPath path, string targetPath) {
       // http://www.flexhex.com/docs/articles/hard-links.phtml
       // To create a junction point, we need to:
       // 1. Create a regular directory entry
@@ -475,13 +477,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    private string GetPathText(T source) {
-      var sb = new StringBuffer();
-      _pathFormatter.CopyTo(source, sb);
-      return sb.ToString();
-    }
-
-    public unsafe ReparsePointInfo GetReparsePointInfo(T path) {
+    public unsafe ReparsePointInfo GetReparsePointInfo(TPath path) {
       using (var fileHandle = OpenFileAsReparsePoint(path, /*readWrite*/false)) {
 
         var creationTime = default(NativeMethods.FILETIME);
@@ -558,7 +554,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    private bool TryDeviceIoControl(T path, SafeFileHandle fileHandle, NativeMethods.EIOControlCode ioControlCode, ByteBuffer buffer) {
+    private bool TryDeviceIoControl(TPath path, SafeFileHandle fileHandle, NativeMethods.EIOControlCode ioControlCode, ByteBuffer buffer) {
       int bytesReturned;
       var success = NativeMethods.DeviceIoControl(
         fileHandle,
@@ -581,7 +577,7 @@ namespace mtsuite.CoreFileSystem.Win32 {
         string.Format("Error reading target of reparse point \"{0}\"", StripPath(path)));
     }
 
-    private void SetMountPointReparse(SafeFileHandle fileHandle, T path, StringBuffer substituteNameBuffer, StringBuffer printNameBuffer) {
+    private void SetMountPointReparse(SafeFileHandle fileHandle, TPath path, StringBuffer substituteNameBuffer, StringBuffer printNameBuffer) {
       using (var pooledBuffer = _byteBufferPool.AllocateFrom()) {
         var buffer = pooledBuffer.Item;
 

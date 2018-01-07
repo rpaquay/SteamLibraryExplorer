@@ -74,6 +74,106 @@ namespace tests {
       CollectionAssert.AreEqual(new[] { 'a', 'b', 'c', '\0' }, GetData(sb));
     }
 
+    [TestMethod]
+    public void Insert1Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.InsertAt(0, 'A');
+      Assert.AreEqual("Aabcde", sb.ToString());
+      Assert.AreEqual(6, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Insert2Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.InsertAt(2, 'A');
+      Assert.AreEqual("abAcde", sb.ToString());
+      Assert.AreEqual(6, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Insert3Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.InsertAt(5, 'A');
+      Assert.AreEqual("abcdeA", sb.ToString());
+      Assert.AreEqual(6, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Insert4Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.InsertAt(0, "FOO");
+      Assert.AreEqual("FOOabcde", sb.ToString());
+      Assert.AreEqual(8, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Insert5Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.InsertAt(2, "FOO");
+      Assert.AreEqual("abFOOcde", sb.ToString());
+      Assert.AreEqual(8, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Insert6Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.InsertAt(5, "FOO");
+      Assert.AreEqual("abcdeFOO", sb.ToString());
+      Assert.AreEqual(8, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Delete1Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.DeleteAt(0, 1);
+      Assert.AreEqual("bcde", sb.ToString());
+      Assert.AreEqual(4, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Delete2Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.DeleteAt(0, 5);
+      Assert.AreEqual("", sb.ToString());
+      Assert.AreEqual(0, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Delete3Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.DeleteAt(4, 1);
+      Assert.AreEqual("abcd", sb.ToString());
+      Assert.AreEqual(4, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
+    [TestMethod]
+    public void Delete4Test() {
+      var sb = new StringBuffer(10);
+      sb.Append("abcde");
+      sb.DeleteAt(5, 0);
+      Assert.AreEqual("abcde", sb.ToString());
+      Assert.AreEqual(5, sb.Length);
+      Assert.AreEqual(0, sb.Data[sb.Length]);
+    }
+
     private ICollection GetData(StringBuffer sb) {
       var items = new char[sb.Length + 1];
       Array.Copy(sb.Data, 0, items, 0, sb.Length + 1);

@@ -84,6 +84,36 @@ namespace mtsuite.CoreFileSystem.Utils {
       _items[_length] = '\0';
     }
 
+    public void InsertAt(int index, char value) {
+      EnsureCapacity(_length + 2);
+      Array.Copy(_items, index, _items, index + 1, _length - index);
+      _items[index] = value;
+
+      _length++;
+      _items[_length] = '\0';
+    }
+
+    public void InsertAt(int index, string value) {
+      EnsureCapacity(_length + value.Length + 1);
+      Array.Copy(_items, index, _items, index + value.Length, _length - index);
+
+      value.CopyTo(0, _items, index, value.Length);
+
+      _length += value.Length;
+      _items[_length] = '\0';
+    }
+
+    public void DeleteAt(int position, int count) {
+      if (position < 0) throw new ArgumentException("position");
+      if (position > _length) throw new ArgumentException("position");
+      if (count < 0) throw new ArgumentException("count");
+      if (count > _length - position) throw new ArgumentException("count");
+
+      Array.Copy(_items, position + count, _items, position, _length - count);
+      _length -= count;
+      _items[_length] = '\0';
+    }
+
     public override string ToString() {
       return new string(_items, 0, _length);
     }

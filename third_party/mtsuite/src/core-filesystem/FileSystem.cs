@@ -22,11 +22,11 @@ namespace mtsuite.CoreFileSystem {
     private readonly IPool<List<FileSystemEntry>> _entryListPool = new ListPool<FileSystemEntry>();
     private readonly Win32<FullPath> _win32;
 
-    public FileSystem() : this(new StringSourceFormatters.AlwaysLongPathFormatter()) {
+    public FileSystem() : this(new PathSerializers.AsIsSerializer()) {
     }
 
-    public FileSystem(IStringSourceFormatter<FullPath> stringSourceFormatter) {
-      _win32 = new Win32<FullPath>(stringSourceFormatter);
+    public FileSystem(IPathSerializer<FullPath> pathSerializer) {
+      _win32 = new Win32<FullPath>(pathSerializer);
     }
 
     public FileSystemEntry GetEntry(FullPath path) {

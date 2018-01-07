@@ -23,7 +23,7 @@ namespace mtsuite.CoreFileSystem.Utils {
       if (member == null)
         throw new ArgumentException(string.Format(
           "Expression '{0}' refers to a method, not a property.",
-          lambda.ToString()));
+          lambda));
 
       var memberInfo = member.Member;
 
@@ -33,7 +33,7 @@ namespace mtsuite.CoreFileSystem.Utils {
           throw new ArgumentException(
             string.Format(
               "Expresion '{0}' refers to a property that is not from type {1}.",
-              lambda.ToString(),
+              lambda,
               type));
       }
 
@@ -47,7 +47,7 @@ namespace mtsuite.CoreFileSystem.Utils {
       if (propInfo == null)
         throw new ArgumentException(string.Format(
           "Expression '{0}' refers to a field, not a property.",
-          propertyLambda.ToString()));
+          propertyLambda));
 
       return propInfo;
     }
@@ -59,7 +59,7 @@ namespace mtsuite.CoreFileSystem.Utils {
       if (propInfo == null)
         throw new ArgumentException(string.Format(
           "Expression '{0}' refers to a propertty, not a field.",
-          propertyLambda.ToString()));
+          propertyLambda));
 
       return propInfo;
     }

@@ -35,11 +35,12 @@ namespace SteamLibraryExplorer.Utils {
       return Instance.ReadAllTextImpl(path);
     }
 
+    [NotNull]
     public static FileSystemEntry GetEntry([NotNull]FullPath path) {
       return Instance.GetEntryImpl(path);
     }
 
-    public static void CopyFile(FileSystemEntry sourceEntry, [NotNull]FullPath destinationPath, CopyFileOptions options, [NotNull]CopyFileCallback callback) {
+    public static void CopyFile([NotNull]FileSystemEntry sourceEntry, [NotNull]FullPath destinationPath, CopyFileOptions options, [NotNull]CopyFileCallback callback) {
       Instance.CopyFileImpl(sourceEntry, destinationPath, options, callback);
     }
 
