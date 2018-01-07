@@ -54,6 +54,17 @@ namespace mtsuite.CoreFileSystem {
     IEnumerable<FileSystemEntry> EnumerateDirectoryEntries(FullPath path, string pattern = null);
 
     /// <summary>
+    /// Enumerates the entries in a given directory <paramref
+    /// name="path"/>. Each entry contains the relative name of the child file
+    /// or directory, as well as the corresponding <see cref="FILE_ATTRIBUTE"/>.
+    /// Throw an exception if <paramref name="path"/> does not exist or is not
+    /// accessible for some reason.
+    /// 
+    /// Note: A handle is held on the underlying directory until the enumeration is disposed.
+    /// </summary>
+    IEnumerable<FileSystemEntryWithFileName> EnumerateDirectoryEntriesData(FullPath path, string pattern = null);
+
+    /// <summary>
     /// Delete a file or directory, given the <see cref="FileSystemEntry"/> of
     /// the file/directory. Note that if <paramref name="entry"/> is a
     /// directory, it must be empty. Throws an exception if <paramref

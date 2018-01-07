@@ -14,6 +14,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 
 namespace mtsuite.CoreFileSystem.Win32 {
@@ -33,10 +34,31 @@ namespace mtsuite.CoreFileSystem.Win32 {
     internal uint nFileSizeLow;
     internal uint dwReserved0;
     internal uint dwReserved1;
+    internal unsafe fixed char cFileName[260];
+    internal unsafe fixed char cAlternateFileName[14];
 
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-    internal string cFileName;
+    /// <summary>
+    /// Returns the <see cref="cFileName"/> field as a string. This implies a memory allocation.
+    /// </summary>
+    [Pure]
+    public string GetFileName() {
+      unsafe {
+        fixed (char* name = cFileName) {
+          return new string(name);
+        }
+      }
+    }
 
-    private unsafe fixed char cAlternateFileName[14];
+    /// <summary>
+    /// Returns the <see cref="cAlternateFileName"/> field as a string. This implies a memory allocation.
+    /// </summary>
+    [Pure]
+    public string GetAlternativeFileName() {
+      unsafe {
+        fixed (char* name = cFileName) {
+          return new string(name);
+        }
+      }
+    }
   }
 }

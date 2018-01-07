@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Text;
-using mtsuite.CoreFileSystem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using mtsuite.CoreFileSystem;
+using System.Linq;
+using System.Text;
 using tests.FileSystemHelpers;
 
 namespace tests {
@@ -71,7 +72,7 @@ namespace tests {
       }
 
       // Prepare
-      var fooTarget = _fileSystemSetup.Root.CreateFile("foo.txt", 100);
+      _fileSystemSetup.Root.CreateFile("foo.txt", 100);
 
       // Act
       var link = _fileSystemSetup.Root.CreateFileLink("link.txt", "foo.txt");
@@ -153,7 +154,7 @@ namespace tests {
     public void CreatedJunctionPointRedirectionWorks() {
       // Prepare
       var fooTarget = _fileSystemSetup.Root.CreateDirectory("foo");
-      var testFile = fooTarget.CreateFile("testfile.txt", 200);
+      fooTarget.CreateFile("testfile.txt", 200);
 
       // Act
       var junctionPoint = _fileSystemSetup.Root.CreateJunctionPoint("jct", "foo");
@@ -233,5 +234,36 @@ namespace tests {
       Assert.IsFalse(info.IsTargetRelative);
       Assert.AreEqual(fooTarget.Path.FullName, info.Target);
     }
+
+    [TestMethod]
+    public void EnumerateDirectoryEntriesWorks() {
+      // Prepare
+      var fooTarget = _fileSystemSetup.Root.CreateDirectory("foo");
+      fooTarget.CreateFile("testfile.txt", 20);
+
+      // Act
+      var entries = _fileSystemSetup.FileSystem.EnumerateDirectoryEntries(fooTarget.Path).ToList();
+
+      // Assert
+      Assert.AreEqual(1, entries.Count);
+      Assert.AreEqual("testfile.txt", entries[0].Name);
+    }
+
+    [TestMethod]
+    public void EnumerateDirectoryEntriesDataWorks() {
+      // Prepare
+      var fooTarget = _fileSystemSetup.Root.CreateDirectory("foo");
+      fooTarget.CreateFile("testfile.txt", 20);
+      fooTarget.CreateDirectory("dir1");
+
+      // Act
+      var entries = _fileSystemSetup.FileSystem.EnumerateDirectoryEntriesData(fooTarget.Path).ToList();
+
+      // Assert
+      Assert.AreEqual(2, entries.Count);
+      Assert.IsNotNull(entries.FirstOrDefault(x => x.FileName == "testfile.txt"));
+      Assert.IsNotNull(entries.FirstOrDefault(x => x.FileName == "dir1"));
+    }
+
   }
 }

@@ -51,33 +51,35 @@ namespace mtsuite.CoreFileSystem.Win32 {
     /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
     /// </summary>
     public FromPool<List<DirectoryEntry>> GetDirectoryEntries(TPath path, string pattern = null) {
-      // Build search pattern (on the stack) as path + "\\*" + '\0'
-      using (var sb = _stringBufferPool.AllocateFrom()) {
-        // Start enumerating files
-        WIN32_FIND_DATA data;
-        var findHandle = FindFirstFile(path, pattern, sb, out data);
-        if (findHandle == null) {
-          return _entryListPool.AllocateFrom();
-        }
-        using (findHandle) {
-          var result = _entryListPool.AllocateFrom();
-          try {
+      // Start enumerating files
+      WIN32_FIND_DATA data;
+      var findHandle = FindFirstFile(path, pattern, out data);
+      if (findHandle == null) {
+        return _entryListPool.AllocateFrom();
+      }
+      using (findHandle) {
+        var result = _entryListPool.AllocateFrom();
+        try {
+          while (true) {
+            // Add entry
             AddResult(ref data, result.Item);
-            while (NativeMethods.FindNextFile(findHandle, out data)) {
-              AddResult(ref data, result.Item);
+
+            // Try to get next
+            if (!NativeMethods.FindNextFile(findHandle, out data)) {
+              var lastWin32Error = Marshal.GetLastWin32Error();
+              if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
+                throw new LastWin32ErrorException(lastWin32Error,
+                  string.Format("Error during enumeration of files at \"{0}\"",
+                    StripPath(path)));
+              }
+              break;
             }
-            var lastWin32Error = Marshal.GetLastWin32Error();
-            if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
-              throw new LastWin32ErrorException(lastWin32Error,
-                string.Format("Error during enumeration of files at \"{0}\"",
-                  StripPath(path)));
-            }
-          } catch {
-            result.Dispose();
-            throw;
           }
-          return result;
+        } catch {
+          result.Dispose();
+          throw;
         }
+        return result;
       }
     }
 
@@ -85,65 +87,112 @@ namespace mtsuite.CoreFileSystem.Win32 {
     /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
     /// </summary>
     public IEnumerable<DirectoryEntry> EnumerateDirectoryEntries(TPath path, string pattern = null) {
-      // Build search pattern (on the stack) as path + "\\*" + '\0'
-      using (var sb = _stringBufferPool.AllocateFrom()) {
-        WIN32_FIND_DATA data;
-        var findHandle = FindFirstFile(path, pattern, sb, out data);
-        if (findHandle == null) {
-          yield break;
-        }
-        using (findHandle) {
-          var entry = new DirectoryEntry(data.cFileName, data);
-          if (!SkipSpecialEntry(entry)) yield return entry;
-          while (NativeMethods.FindNextFile(findHandle, out data)) {
-            entry = new DirectoryEntry(data.cFileName, data);
-            if (!SkipSpecialEntry(entry)) yield return entry;
-          }
-          var lastWin32Error = Marshal.GetLastWin32Error();
-          if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
-            throw new LastWin32ErrorException(lastWin32Error,
-              string.Format("Error during enumeration of files at \"{0}\"",
-                StripPath(path)));
+      WIN32_FIND_DATA data;
+      var findHandle = FindFirstFile(path, pattern, out data);
+      if (findHandle == null) {
+        yield break;
+      }
+      using (findHandle) {
+
+        // Process all entries
+        while (true) {
+
+          // Entry found, return it
+          var entry = new DirectoryEntry(data);
+          if (!SkipSpecialEntry(ref data)) yield return entry;
+
+          // Try to find next
+          if (!NativeMethods.FindNextFile(findHandle, out data)) {
+            var lastWin32Error = Marshal.GetLastWin32Error();
+            if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
+              throw new LastWin32ErrorException(lastWin32Error,
+                string.Format("Error during enumeration of files at \"{0}\"",
+                  StripPath(path)));
+            }
+            break;
           }
         }
       }
     }
 
-    private SafeFindHandle FindFirstFile(TPath path, string pattern, FromPool<StringBuffer> sb, out WIN32_FIND_DATA data) {
-      _pathSerializer.CopyTo(path, sb.Item);
-      sb.Item.Append('\\');
-      sb.Item.Append(pattern ?? @"*");
-
-      // Start enumerating files
-      var findHandle = NativeMethods.FindFirstFileEx(
-        sb.Item.Data,
-        NativeMethods.FINDEX_INFO_LEVELS.FindExInfoBasic,
-        out data,
-        NativeMethods.FINDEX_SEARCH_OPS.FindExSearchNameMatch,
-        IntPtr.Zero,
-        NativeMethods.FINDEX_ADDITIONAL_FLAGS.FindFirstExLargeFetch);
-      if (findHandle.IsInvalid) {
-        var lastWin32Error = Marshal.GetLastWin32Error();
-        if (lastWin32Error == (int)Win32Errors.ERROR_FILE_NOT_FOUND) {
-          return null;
-        }
-        throw new LastWin32ErrorException(lastWin32Error,
-          string.Format("Error enumerating files at \"{0}\"", StripPath(path)));
+    /// <summary>
+    /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
+    /// </summary>
+    public IEnumerable<WIN32_FIND_DATA> EnumerateDirectoryEntriesData(TPath path, string pattern = null) {
+      WIN32_FIND_DATA data;
+      var findHandle = FindFirstFile(path, pattern, out data);
+      if (findHandle == null) {
+        yield break;
       }
+      using (findHandle) {
+        while (true) {
+          // Entry found, return it
+          if (!SkipSpecialEntry(ref data)) yield return data;
 
-      return findHandle;
+          // Try to find next
+          if (!NativeMethods.FindNextFile(findHandle, out data)) {
+            var lastWin32Error = Marshal.GetLastWin32Error();
+            if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
+              throw new LastWin32ErrorException(lastWin32Error,
+                string.Format("Error during enumeration of files at \"{0}\"",
+                  StripPath(path)));
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    private SafeFindHandle FindFirstFile(TPath path, string pattern, out WIN32_FIND_DATA data) {
+      using (var sb = _stringBufferPool.AllocateFrom()) {
+        _pathSerializer.CopyTo(path, sb.Item);
+        // Build search pattern (on the stack) as path + "\\*" + '\0'
+        sb.Item.Append('\\');
+        sb.Item.Append(pattern ?? @"*");
+
+        // Start enumerating files
+        var findHandle = NativeMethods.FindFirstFileEx(
+          sb.Item.Data,
+          NativeMethods.FINDEX_INFO_LEVELS.FindExInfoBasic,
+          out data,
+          NativeMethods.FINDEX_SEARCH_OPS.FindExSearchNameMatch,
+          IntPtr.Zero,
+          NativeMethods.FINDEX_ADDITIONAL_FLAGS.FindFirstExLargeFetch);
+        if (findHandle.IsInvalid) {
+          var lastWin32Error = Marshal.GetLastWin32Error();
+          if (lastWin32Error == (int)Win32Errors.ERROR_FILE_NOT_FOUND) {
+            return null;
+          }
+
+          throw new LastWin32ErrorException(lastWin32Error,
+            string.Format("Error enumerating files at \"{0}\"", StripPath(path)));
+        }
+
+        return findHandle;
+      }
     }
 
     private static void AddResult(ref WIN32_FIND_DATA data, List<DirectoryEntry> entries) {
-      var entry = new DirectoryEntry(data.cFileName, data);
-      if (SkipSpecialEntry(entry))
+      var entry = new DirectoryEntry(data);
+      if (SkipSpecialEntry(ref data))
         return;
 
       entries.Add(entry);
     }
 
-    private static bool SkipSpecialEntry(DirectoryEntry entry) {
-      return (entry.IsDirectory) && (entry.Name.Equals(".") || entry.Name.Equals(".."));
+    private static bool SkipSpecialEntry(ref WIN32_FIND_DATA data) {
+      if ((data.dwFileAttributes & (int)FILE_ATTRIBUTE.FILE_ATTRIBUTE_DIRECTORY) != 0) {
+        unsafe
+        {
+          fixed (char* name = data.cFileName)
+          {
+            return (name[0] == '.' && name[1] == 0) ||
+                   (name[0] == '.' && name[1] == '.' && name[2] == 0);
+          }
+        }
+      }
+
+      return false;
     }
 
     public void DeleteFile(TPath path) {
