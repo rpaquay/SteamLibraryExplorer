@@ -310,12 +310,12 @@ namespace SteamLibraryExplorer.SteamUtil {
 
     [NotNull]
     private static Task<T> RunAsync<T>([NotNull]Func<T> func) {
-      return Task.Run(() => func.Invoke());
+      return TaskUtils.Run(() => func.Invoke());
     }
 
     [NotNull]
     private static Task RunAsync([NotNull]Action func) {
-      return Task.Run(func);
+      return TaskUtils.Run(func);
     }
 
     protected virtual void OnCopyingFile([NotNull]FileCopyEventArgs e) {

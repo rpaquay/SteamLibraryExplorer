@@ -27,7 +27,7 @@ namespace SteamLibraryExplorer.ViewModel {
     /// Event raised when a "Move Game To Library" command is invoked
     /// The parameter is the library path.
     /// </summary>
-    public event EventHandler<string> MoveGameToLibraryInvoked;
+    public event EventHandler<MoveToLibraryEventArgs> MoveGameToLibraryInvoked;
 
     /// <summary>
     /// The command invoked when a "Move To Library" menu item is clicked.
@@ -126,7 +126,14 @@ namespace SteamLibraryExplorer.ViewModel {
     }
 
     protected virtual void OnMoveGameToLibraryInvoked(object libraryPath) {
-      MoveGameToLibraryInvoked?.Invoke(this, (string)libraryPath);
+      MoveGameToLibraryInvoked?.Invoke(this, new MoveToLibraryEventArgs((string)libraryPath));
     }
+  }
+
+  public class MoveToLibraryEventArgs : EventArgs {
+    public MoveToLibraryEventArgs(string libraryPath) {
+      LibraryPath = libraryPath;
+    }
+    public string LibraryPath { get; }
   }
 }

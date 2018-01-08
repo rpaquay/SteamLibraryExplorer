@@ -1,8 +1,9 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 using mtsuite.CoreFileSystem;
 
 namespace SteamLibraryExplorer.SteamUtil {
-  public class PathEventArgs {
+  public class PathEventArgs : EventArgs {
     public PathEventArgs([NotNull]FullPath path) {
       Path = path;
     }

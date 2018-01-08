@@ -290,7 +290,7 @@ namespace SteamLibraryExplorer {
         };
         gameViewModel.WorkshopFileCount = game.WorkshopFileCount.Value;
 
-        gameViewModel.MoveGameToLibraryInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args));
+        gameViewModel.MoveGameToLibraryInvoked += (sender, args) => OnCopyGameInvoked(new MoveGameEventArgs(game, args.LibraryPath));
 
         libraryViewModel.SteamGames.Add(gameViewModel);
       }

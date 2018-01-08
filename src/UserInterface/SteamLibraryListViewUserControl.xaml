@@ -38,7 +38,6 @@
     </Style>
   </UserControl.Resources>
   <ListView x:Name="ListView" ItemsSource="{Binding Source={StaticResource SteamGamesCollectionViewSource}}"
-            VirtualizingPanel.IsVirtualizingWhenGrouping="True"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
             ScrollViewer.VerticalScrollBarVisibility="Disabled"
             PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"

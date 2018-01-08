@@ -10,7 +10,7 @@ namespace SteamLibraryExplorer.Utils {
 
     protected override string ReadAllTextImpl(FullPath path) {
       using (var fileSteam = _coreFileSystem.OpenFile(path, FileAccess.Read)) {
-        using (var streamReader = new StreamReader(fileSteam, Encoding.UTF8, true, 4096, false))
+        using (var streamReader = new StreamReader(fileSteam, Encoding.UTF8, true, 4096))
           return streamReader.ReadToEnd();
       }
     }
