@@ -165,8 +165,8 @@ namespace SteamLibraryExplorer.SteamUtil {
         set {
           _value = value;
           if (_stopwatch.ElapsedMilliseconds >= 10) {
-            _stopwatch.Reset();
             _property.Value = _value;
+            _stopwatch.Restart();
           }
         }
       }
