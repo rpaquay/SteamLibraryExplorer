@@ -20,7 +20,7 @@ namespace SteamLibraryExplorer.Utils.NLogUtils {
       config.AddTarget("error-file", errorFileTarget);
 
       // Step 3. Set target properties 
-      const string layout = @"[${date:format=HH\:mm\:ss} ${logger}] ${message}";
+      const string layout = @"[${date:format=HH\:mm\:ss} ${logger}] ${message} ${exception:format=toString,Data:maxInnerExceptionLevel=10}";
 
       consoleTarget.Layout = layout;
 

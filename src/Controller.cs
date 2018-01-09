@@ -5,6 +5,7 @@ using SteamLibraryExplorer.Utils;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using FileSystem = SteamLibraryExplorer.Utils.FileSystem;
@@ -18,27 +19,25 @@ namespace SteamLibraryExplorer {
     private readonly ISteamDiscovery _steamDiscovery;
     private readonly ISteamGameMover _steamGameMover;
     private readonly DispatcherTimer _lookForSteamTimer;
+    private readonly TaskAwaiter _awaiter;
     private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     private CopyProgressView _currentGameMoveOperationView;
 
     public Controller(Model model, MainView mainView) {
       _model = model;
       _mainView = mainView;
+      _awaiter = new TaskAwaiter(TaskErrorHandler);
       _steamDiscovery = new SteamDiscovery();
       _steamGameMover = new SteamGameMover();
-      _steamGameMover.CopyingFile += (sender, args) => {
-        Logger.Info("Copying file \"{0}\" to \"{1}\"", args.SourcePath.FullName, args.DestinationPath.FullName);
-      };
-      _steamGameMover.DeletingFile += (sender, args) => {
-        Logger.Info("Deleting file \"{0}\"", args.Path.FullName);
-      };
-      _steamGameMover.CreatingDirectory += (sender, args) => {
-        Logger.Info("Creating directory \"{0}\"", args.Path.FullName);
-      };
-      _steamGameMover.DeletingDirectory += (sender, args) => {
-        Logger.Info("Deleting directory \"{0}\"", args.Path.FullName);
-      };
+      _steamGameMover.CopyingFile += (sender, args) => { Logger.Info("Copying file \"{0}\" to \"{1}\"", args.SourcePath.FullName, args.DestinationPath.FullName); };
+      _steamGameMover.DeletingFile += (sender, args) => { Logger.Info("Deleting file \"{0}\"", args.Path.FullName); };
+      _steamGameMover.CreatingDirectory += (sender, args) => { Logger.Info("Creating directory \"{0}\"", args.Path.FullName); };
+      _steamGameMover.DeletingDirectory += (sender, args) => { Logger.Info("Deleting directory \"{0}\"", args.Path.FullName); };
       _lookForSteamTimer = new DispatcherTimer();
+    }
+
+    private void TaskErrorHandler(Exception obj) {
+      Logger.Error(obj, "Error executing asynchronous operation");
     }
 
     public void Run() {
@@ -52,34 +51,37 @@ namespace SteamLibraryExplorer {
       FetchSteamConfigurationAsync(true);
     }
 
-    private async void LookForSteamTimerOnTick(object o, EventArgs eventArgs) {
+    private void LookForSteamTimerOnTick(object o, EventArgs eventArgs) {
       if (_model.SteamConfiguration.Location.Value == null) {
-        var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
-        if (steamLocation != null) {
-          FetchSteamConfigurationAsync(true);
-        }
+        var steamLocationTask = _steamDiscovery.LocateSteamFolderAsync();
+        _awaiter.Await(steamLocationTask, steamLocation => {
+          if (steamLocation != null) {
+            FetchSteamConfigurationAsync(true);
+          }
+        });
       }
     }
 
-    private async void FetchSteamConfigurationAsync(bool useCache) {
+    private void FetchSteamConfigurationAsync(bool useCache) {
       // Cancel previous operation
       _cancellationTokenSource.Cancel();
       _cancellationTokenSource = new CancellationTokenSource();
+
+
+      _awaiter.TryFinally(
+        () => _mainView.StartProgress(),
+        () => FetchSteamConfigurationAsyncBody(useCache),
+        () => _mainView.StopProgress());
+    }
+
+    private Task FetchSteamConfigurationAsyncBody(bool useCache) {
       var cancellationToken = _cancellationTokenSource.Token;
 
-      _mainView.StartProgress();
-      try {
+      // Clear model and start a new collection process
+      _model.SteamConfiguration.SteamLibraries.Clear();
 
-        // Clear model and start a new collection process
-        _model.SteamConfiguration.SteamLibraries.Clear();
-
-
-        // Find steam location (installation directory)
-        var steamLocation = await _steamDiscovery.LocateSteamFolderAsync();
-        if (cancellationToken.IsCancellationRequested) {
-          return;
-        }
-
+      // Find steam location (installation directory)
+      return _awaiter.CombineWith(_steamDiscovery.LocateSteamFolderAsync(), steamLocation => {
         // If no location found, re-use previously found one
         if (steamLocation == null) {
           steamLocation = _model.SteamConfiguration.Location.Value;
@@ -95,31 +97,31 @@ namespace SteamLibraryExplorer {
           _mainView.ShowError(
             "Cannot locate Steam installation folder.\r\n\r\n" +
             "Try starting the Steam application and select \"File > Refresh\".");
-          return;
+          throw new OperationCanceledException();
         }
 
-        var mainLibrary = await _steamDiscovery.LoadMainLibraryAsync(steamLocation.Value, cancellationToken);
-        if (cancellationToken.IsCancellationRequested) {
-          return;
-        }
-        _model.SteamConfiguration.SteamLibraries.Add(mainLibrary);
+        var mainLibraryTask = _steamDiscovery.LoadMainLibraryAsync(steamLocation.Value, cancellationToken);
+        return _awaiter.CombineWith(mainLibraryTask, mainLibrary => {
+          cancellationToken.ThrowIfCancellationRequested();
 
-        var libraries = await _steamDiscovery.LoadAdditionalLibrariesAsync(steamLocation.Value, cancellationToken);
-        if (cancellationToken.IsCancellationRequested) {
-          return;
-        }
-        foreach (var library in libraries) {
-          _model.SteamConfiguration.SteamLibraries.Add(library);
-        }
+          _model.SteamConfiguration.SteamLibraries.Add(mainLibrary);
 
-        // Start background tasks of discovering game size on disk
-        await _steamDiscovery.DiscoverSizeOnDiskAsync(_model.SteamConfiguration.SteamLibraries, useCache, cancellationToken);
-      } finally {
-        _mainView.StopProgress();
-      }
+          var librariesTask = _steamDiscovery.LoadAdditionalLibrariesAsync(steamLocation.Value, cancellationToken);
+          return _awaiter.CombineWith(librariesTask, libraries => {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            foreach (var library in libraries) {
+              _model.SteamConfiguration.SteamLibraries.Add(library);
+            }
+
+            // Start background tasks of discovering game size on disk
+            return _steamDiscovery.DiscoverSizeOnDiskAsync(_model.SteamConfiguration.SteamLibraries, useCache, cancellationToken);
+          });
+        });
+      });
     }
 
-    private async void MoveGameToOtherLibrary(MoveGameEventArgs e) {
+    private void MoveGameToOtherLibrary(MoveGameEventArgs e) {
       if (_currentGameMoveOperationView != null) {
         _mainView.ShowError("Cannot move game because another game is currently being moved.\r\n\r\n" +
                             "Please wait for the operation to finish, or cancel it.");
@@ -142,25 +144,36 @@ namespace SteamLibraryExplorer {
         return;
       }
 
-      _currentGameMoveOperationView = new CopyProgressView(_mainView.CreateCopyPropgressWindow());
-      try {
-        var cancellationTokenSource = new CancellationTokenSource();
+      _awaiter.TryFinally(
+        () => _currentGameMoveOperationView = new CopyProgressView(_mainView.CreateCopyPropgressWindow()),
+        () => MoveGameToOtherLibraryAsync(e.Game, destinationLibrary),
+        () => {
+          _currentGameMoveOperationView.Close();
+          _currentGameMoveOperationView = null;
 
-        // Show modeless progess dialog
-        _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
-        Action<MoveDirectoryInfo> progress = info => {
-          _currentGameMoveOperationView.ReportProgress(info);
-        };
-        _currentGameMoveOperationView.Show();
+          // Refresh view since things have changed
+          FetchSteamConfigurationAsync(true);
+        }
+      );
 
-        // Perform the (long running) move operation
-        var result = await _steamGameMover.MoveSteamGameAsync(e.Game, destinationLibrary, progress, cancellationTokenSource.Token);
+    }
 
+    private Task MoveGameToOtherLibraryAsync(SteamGame game, FullPath destinationLibrary) {
+      var cancellationTokenSource = new CancellationTokenSource();
+
+      // Show modeless progess dialog
+      _currentGameMoveOperationView.Cancel += (sender, args) => cancellationTokenSource.Cancel();
+      Action<MoveDirectoryInfo> progress = info => { _currentGameMoveOperationView.ReportProgress(info); };
+      _currentGameMoveOperationView.Show();
+
+      // Perform the (long running) move operation
+      var moveSteamGameAsync = _steamGameMover.MoveSteamGameAsync(game, destinationLibrary, progress, cancellationTokenSource.Token);
+      return _awaiter.CombineWith(moveSteamGameAsync, result => {
         // Check the result
         switch (result.Kind) {
           case MoveGameResultKind.Cancelled:
             // If user cancelled, there is nothing else to do
-            break;
+            return TaskUtils.CompletedTask;
 
           case MoveGameResultKind.Error:
             // If there was an error, display error to the user
@@ -168,7 +181,7 @@ namespace SteamLibraryExplorer {
             _mainView.ShowError(
               $"Error moving steam game to library \"{destinationLibrary.FullName}\":\r\n\r\n" +
               $"{result.Error.Message}");
-            break;
+            return TaskUtils.CompletedTask;
 
           case MoveGameResultKind.Ok:
             //
@@ -178,48 +191,45 @@ namespace SteamLibraryExplorer {
             // Delete the steam application cache so that Steam is aware things have changed
             // wrt to the location of games on disk. Steam will automatically rebuild the cache
             // next time is starts. It only takes a couple of seconds.
-            await _steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration);
-            var steamProcess = await _steamDiscovery.FindSteamProcessAsync();
+            return _awaiter.CombineWith(_steamGameMover.DeleteAppCacheAsync(_model.SteamConfiguration), () => {
+              return _awaiter.CombineWith(_steamDiscovery.FindSteamProcessAsync(), steamProcess => {
 
-            // Hide the progress dialog now, since we are about to show info messages
-            _currentGameMoveOperationView.Close();
+                // Hide the progress dialog now, since we are about to show info messages
+                _currentGameMoveOperationView.Close();
 
-            // Display sucess message and restart Steam
-            var successMessage =
-              $"The game \"{e.Game.DisplayName}\" has been successfully moved to " +
-              $"the library located at \"{destinationLibrary.FullName}\".";
-            if (steamProcess == null) {
-              _mainView.ShowInfo(successMessage);
-            }
-            else {
-              var steamExePath = new FullPath(steamProcess.MainModule.FileName);
-              var yes = _mainView.ShowYesNo(
-                successMessage + "\r\n\r\n" +
-                "Steam should be restarted now to make sure the new game location is taken into account.\r\n\r\n" +
-                "Do you want to automatically restart Steam now?");
-
-              if (yes) {
-                var success = await _steamDiscovery.RestartSteamAsync(steamExePath);
-                if (success) {
-                  _mainView.ShowInfo("Steam was successfully restarted");
+                // Display sucess message and restart Steam
+                var successMessage =
+                  $"The game \"{game.DisplayName}\" has been successfully moved to " +
+                  $"the library located at \"{destinationLibrary.FullName}\".";
+                if (steamProcess == null) {
+                  _mainView.ShowInfo(successMessage);
                 }
                 else {
-                  _mainView.ShowInfo("Steam could not be restarted. Please restart manually.");
+                  var steamExePath = new FullPath(steamProcess.MainModule.FileName);
+                  var yes = _mainView.ShowYesNo(
+                    successMessage + "\r\n\r\n" +
+                    "Steam should be restarted now to make sure the new game location is taken into account.\r\n\r\n" +
+                    "Do you want to automatically restart Steam now?");
+
+                  if (yes) {
+                    return _awaiter.CombineWith(_steamDiscovery.RestartSteamAsync(steamExePath), success => {
+                      if (success) {
+                        _mainView.ShowInfo("Steam was successfully restarted");
+                      }
+                      else {
+                        _mainView.ShowInfo("Steam could not be restarted. Please restart manually.");
+                      }
+                      return TaskUtils.CompletedTask;
+                    });
+                  }
                 }
-              }
-            }
-            break;
+                return TaskUtils.CompletedTask;
+              });
+            });
           default:
             throw new ArgumentOutOfRangeException();
         }
-      }
-      finally {
-        _currentGameMoveOperationView.Close();
-        _currentGameMoveOperationView = null;
-
-        // Refresh view since things have changed
-        FetchSteamConfigurationAsync(true);
-      }
+      });
     }
   }
 }
