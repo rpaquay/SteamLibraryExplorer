@@ -14,151 +14,35 @@
 
 using System;
 using System.IO;
-using mtsuite.CoreFileSystem.Win32;
 
 namespace mtsuite.CoreFileSystem {
   public struct FileSystemEntry {
     private readonly FullPath _path;
     private readonly FileSystemEntryData _data;
 
-    public FileSystemEntry(FullPath path, uint attributes, uint fileSizeHigh, uint fileSizeLow,
-      uint ftLastWriteTimeHigh, uint ftLastWriteTimeLow) {
+    public FileSystemEntry(FullPath path, FileSystemEntryData data) {
       _path = path;
-      _data = new FileSystemEntryData(attributes, fileSizeHigh, fileSizeLow, ftLastWriteTimeHigh, ftLastWriteTimeLow);
+      _data = data;
     }
 
-    public FileSystemEntry(FullPath path, WIN32_FIND_DATA data) {
-      _path = path;
-      _data = new FileSystemEntryData(data);
-    }
-
-    public FileSystemEntry(FullPath path, WIN32_FILE_ATTRIBUTE_DATA data) {
-      _path = path;
-      _data = new FileSystemEntryData(data);
-    }
-
-    public FullPath Path { get { return _path; } }
-
-    public string Name { get { return _path.Name; } }
-
-    public long FileSize { get { return _data.FileSize; } }
-
-    public DateTime LastWriteTimeUtc { get { return _data.LastWriteTimeUtc; } }
-
-    public FileAttributes FileAttributes { get { return _data.FileAttributes; } }
-
-    public bool IsFile { get { return _data.IsFile; } }
-
-    public bool IsDirectory { get { return _data.IsDirectory; } }
-
+    public FullPath Path => _path;
+    public string Name => _path.Name;
+    public long FileSize => _data.FileSize;
+    public DateTime LastWriteTimeUtc => _data.LastWriteTimeUtc;
+    public FileAttributes FileAttributes => _data.FileAttributes;
+    public bool IsFile => _data.IsFile;
+    public bool IsDirectory => _data.IsDirectory;
     /// <summary>
     /// Return <code>true</code> if the entry is either a junction point or
     /// symbolic link. A junction point applies only to directories, whereas
     /// a symbolic link applies to both files and directories.
     /// </summary>
-    public bool IsReparsePoint { get { return _data.IsReparsePoint; } }
-
-    public bool IsReadOnly { get { return _data.IsReadOnly; } }
-
-    public bool IsSystem { get { return _data.IsSystem; } }
+    public bool IsReparsePoint => _data.IsReparsePoint;
+    public bool IsReadOnly => _data.IsReadOnly;
+    public bool IsSystem => _data.IsSystem;
 
     public override string ToString() {
       return string.Format("\"{0}\", {1}", _path.Name, _data);
     }
   }
-
-  public struct FileSystemEntryData {
-    private readonly FileAttributes _attributes;
-    private readonly long _fileSize;
-    private readonly long _lastWriteTimeUtc;
-
-    public FileSystemEntryData(uint attributes, uint fileSizeHigh, uint fileSizeLow,
-      uint ftLastWriteTimeHigh, uint ftLastWriteTimeLow) {
-      _attributes = (FileAttributes)attributes;
-      _fileSize = HighLowToLong(fileSizeHigh, fileSizeLow);
-      _lastWriteTimeUtc = HighLowToLong(ftLastWriteTimeHigh, ftLastWriteTimeLow);
-    }
-
-    public FileSystemEntryData(WIN32_FIND_DATA data)
-      : this(data.dwFileAttributes, data.nFileSizeHigh, data.nFileSizeLow,
-        data.ftLastWriteTime_dwHighDateTime, data.ftLastWriteTime_dwHighDateTime) {
-    }
-
-    public FileSystemEntryData(WIN32_FILE_ATTRIBUTE_DATA data)
-      : this(data.fileAttributes, data.fileSizeHigh, data.fileSizeLow,
-        data.ftLastWriteTimeHigh, data.ftLastWriteTimeLow) {
-    }
-
-    public long FileSize { get { return _fileSize; } }
-
-    public DateTime LastWriteTimeUtc { get { return DateTime.FromFileTimeUtc(_lastWriteTimeUtc); } }
-
-    public FileAttributes FileAttributes { get { return _attributes; } }
-
-    public bool IsFile { get { return (_attributes & FileAttributes.Directory) == 0; } }
-
-    public bool IsDirectory { get { return (_attributes & FileAttributes.Directory) != 0; } }
-
-    /// <summary>
-    /// Return <code>true</code> if the entry is either a junction point or
-    /// symbolic link. A junction point applies only to directories, whereas
-    /// a symbolic link applies to both files and directories.
-    /// </summary>
-    public bool IsReparsePoint { get { return (_attributes & FileAttributes.ReparsePoint) != 0; } }
-
-    public bool IsReadOnly { get { return (_attributes & FileAttributes.ReadOnly) != 0; } }
-
-    public bool IsSystem { get { return (_attributes & FileAttributes.System) != 0; } }
-
-    public override string ToString() {
-      return string.Format("file:{0}, dir:{1}, link:{2}, attrs:{3}, date: {4}",
-        IsFile,
-        IsDirectory,
-        IsReparsePoint,
-        Enum.Format(typeof(FileAttributes), _attributes, "f"),
-        LastWriteTimeUtc);
-    }
-
-    private static long HighLowToLong(uint high, uint low) {
-      return low + ((long)high << 32);
-    }
-  }
-
-  public struct FileSystemEntryWithFileName {
-    private readonly WIN32_FIND_DATA _win32Data;
-    private readonly FileSystemEntryData _data;
-
-    public FileSystemEntryWithFileName(WIN32_FIND_DATA data) {
-      _win32Data = data;
-      _data = new FileSystemEntryData(data);
-    }
-
-    public string FileName { get { return _win32Data.GetFileName(); } }
-
-    public long FileSize { get { return _data.FileSize; } }
-
-    public DateTime LastWriteTimeUtc { get { return _data.LastWriteTimeUtc; } }
-
-    public FileAttributes FileAttributes { get { return _data.FileAttributes; } }
-
-    public bool IsFile { get { return _data.IsFile; } }
-
-    public bool IsDirectory { get { return _data.IsDirectory; } }
-
-    /// <summary>
-    /// Return <code>true</code> if the entry is either a junction point or
-    /// symbolic link. A junction point applies only to directories, whereas
-    /// a symbolic link applies to both files and directories.
-    /// </summary>
-    public bool IsReparsePoint { get { return _data.IsReparsePoint; } }
-
-    public bool IsReadOnly { get { return _data.IsReadOnly; } }
-
-    public bool IsSystem { get { return _data.IsSystem; } }
-
-    public override string ToString() {
-      return string.Format("\"{0}\", {1}", FileName, _data);
-    }
-  }
-
 }

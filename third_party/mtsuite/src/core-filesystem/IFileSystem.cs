@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using mtsuite.CoreFileSystem.ObjectPool;
@@ -59,10 +60,8 @@ namespace mtsuite.CoreFileSystem {
     /// or directory, as well as the corresponding <see cref="FILE_ATTRIBUTE"/>.
     /// Throw an exception if <paramref name="path"/> does not exist or is not
     /// accessible for some reason.
-    /// 
-    /// Note: A handle is held on the underlying directory until the enumeration is disposed.
     /// </summary>
-    IEnumerable<FileSystemEntryWithFileName> EnumerateDirectoryEntriesData(FullPath path, string pattern = null);
+    void EnumerateDirectoryEntries(FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback);
 
     /// <summary>
     /// Delete a file or directory, given the <see cref="FileSystemEntry"/> of

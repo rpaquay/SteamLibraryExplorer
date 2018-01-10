@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using mtsuite.CoreFileSystem.Win32;
 using FileSystem = SteamLibraryExplorer.Utils.FileSystem;
 
 namespace SteamLibraryExplorer.SteamUtil {
@@ -242,13 +243,15 @@ namespace SteamLibraryExplorer.SteamUtil {
         return;
       }
 
-      foreach (var entry in FileSystem.EnumerateEntriesWithFileName(directoryPath)) {
+      FileSystem.EnumerateEntries(directoryPath, null, (ref DirectoryEntry directoryEntry) => {
+        var entry = new FileSystemEntryData(directoryEntry.Data);
         if (entry.IsFile) {
           updateValues(1, entry.FileSize);
-        } else if (entry.IsDirectory) { 
-          DiscoverGameSizeOnDiskRecursiveImpl(directoryPath.Combine(entry.FileName), updateValues, cancellationToken);
         }
-      }
+        else if (entry.IsDirectory) {
+          DiscoverGameSizeOnDiskRecursiveImpl(directoryPath.Combine(directoryEntry.FileName), updateValues, cancellationToken);
+        }
+      });
     }
 
     [NotNull]

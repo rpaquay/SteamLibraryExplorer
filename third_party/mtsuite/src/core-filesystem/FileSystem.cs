@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace mtsuite.CoreFileSystem {
 
     public FileSystemEntry GetEntry(FullPath path) {
       var data = _win32.GetFileAttributesEx(path);
-      return new FileSystemEntry(path, data);
+      return new FileSystemEntry(path, new FileSystemEntryData(data));
     }
 
     public bool TryGetEntry(FullPath path, out FileSystemEntry entry) {
@@ -42,7 +43,7 @@ namespace mtsuite.CoreFileSystem {
         return false;
       }
 
-      entry = new FileSystemEntry(path, data);
+      entry = new FileSystemEntry(path, new FileSystemEntryData(data));
       return true;
     }
 
@@ -50,7 +51,7 @@ namespace mtsuite.CoreFileSystem {
       using (var entries = _win32.GetDirectoryEntries(path, pattern)) {
         var result = _entryListPool.AllocateFrom();
         foreach (var x in entries.Item) {
-          result.Item.Add(new FileSystemEntry(path.Combine(x.FileName), x.Data));
+          result.Item.Add(new FileSystemEntry(path.Combine(x.FileName), new FileSystemEntryData(x.Data)));
         }
         return result;
       }
@@ -58,12 +59,11 @@ namespace mtsuite.CoreFileSystem {
 
     public IEnumerable<FileSystemEntry> EnumerateDirectoryEntries(FullPath path, string pattern = null) {
       return _win32.EnumerateDirectoryEntries(path, pattern)
-        .Select(entry => new FileSystemEntry(path.Combine(entry.FileName), entry.Data));
+        .Select(entry => new FileSystemEntry(path.Combine(entry.FileName), new FileSystemEntryData(entry.Data)));
     }
 
-    public IEnumerable<FileSystemEntryWithFileName> EnumerateDirectoryEntriesData(FullPath path, string pattern = null) {
-      return _win32.EnumerateDirectoryEntriesData(path, pattern)
-        .Select(data => new FileSystemEntryWithFileName(data));
+    public void EnumerateDirectoryEntries(FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback) {
+      _win32.EnumerateDirectoryEntries(path, pattern, callback);
     }
 
     public void DeleteEntry(FileSystemEntry entry) {

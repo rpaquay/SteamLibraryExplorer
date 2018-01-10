@@ -38,6 +38,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CopyFileOptions.cs" />
+    <Compile Include="FileSystemEntryData.cs" />
+    <Compile Include="IFileSystemEntryAccessor.cs" />
     <Compile Include="ObjectPool\PoolFactory.cs" />
     <Compile Include="ObjectPool\ListPool.cs" />
     <Compile Include="ObjectPool\PoolExtensions.cs" />
@@ -61,6 +63,7 @@
     <Compile Include="Utils\StringBuffer.cs" />
     <Compile Include="Win32\DirectoryEntry.cs" />
     <Compile Include="ObjectPool\FromPool.cs" />
+    <Compile Include="Win32\EnumerateDirectoryEntriesCallback.cs" />
     <Compile Include="Win32\FILE_ATTRIBUTE.cs" />
     <Compile Include="Win32\IPathSerializer.cs" />
     <Compile Include="Win32\LastWin32ErrorException.cs" />

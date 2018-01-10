@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using mtsuite.CoreFileSystem;
 using System.Linq;
 using System.Text;
+using mtsuite.CoreFileSystem.Win32;
 using tests.FileSystemHelpers;
 
 namespace tests {
@@ -257,7 +259,9 @@ namespace tests {
       fooTarget.CreateDirectory("dir1");
 
       // Act
-      var entries = _fileSystemSetup.FileSystem.EnumerateDirectoryEntriesData(fooTarget.Path).ToList();
+      var entries = new List<DirectoryEntry>();
+      _fileSystemSetup.FileSystem.EnumerateDirectoryEntries(fooTarget.Path, null, 
+        (ref DirectoryEntry data) => entries.Add(data));
 
       // Assert
       Assert.AreEqual(2, entries.Count);

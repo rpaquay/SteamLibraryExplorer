@@ -53,34 +53,29 @@ namespace mtsuite.CoreFileSystem.Win32 {
     public FromPool<List<DirectoryEntry>> GetDirectoryEntries(TPath path, string pattern = null) {
       // Start enumerating files
       WIN32_FIND_DATA data;
+      var result = _entryListPool.AllocateFrom();
       var findHandle = FindFirstFile(path, pattern, out data);
-      if (findHandle == null) {
-        return _entryListPool.AllocateFrom();
-      }
-      using (findHandle) {
-        var result = _entryListPool.AllocateFrom();
-        try {
-          while (true) {
-            // Add entry
-            AddResult(ref data, result.Item);
-
-            // Try to get next
-            if (!NativeMethods.FindNextFile(findHandle, out data)) {
-              var lastWin32Error = Marshal.GetLastWin32Error();
-              if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
-                throw new LastWin32ErrorException(lastWin32Error,
-                  string.Format("Error during enumeration of files at \"{0}\"",
-                    StripPath(path)));
+      if (findHandle != null) {
+        using (findHandle) {
+          try {
+            while (true) {
+              var entry = new DirectoryEntry(data);
+              if (!SkipSpecialEntry(ref data)) {
+                result.Item.Add(entry);
               }
-              break;
+
+              if (!FindNextFile(findHandle, path, out data)) {
+                break;
+              }
             }
           }
-        } catch {
-          result.Dispose();
-          throw;
+          catch {
+            result.Dispose();
+            throw;
+          }
         }
-        return result;
       }
+      return result;
     }
 
     /// <summary>
@@ -89,27 +84,16 @@ namespace mtsuite.CoreFileSystem.Win32 {
     public IEnumerable<DirectoryEntry> EnumerateDirectoryEntries(TPath path, string pattern = null) {
       WIN32_FIND_DATA data;
       var findHandle = FindFirstFile(path, pattern, out data);
-      if (findHandle == null) {
-        yield break;
-      }
-      using (findHandle) {
-
-        // Process all entries
-        while (true) {
-
-          // Entry found, return it
-          var entry = new DirectoryEntry(data);
-          if (!SkipSpecialEntry(ref data)) yield return entry;
-
-          // Try to find next
-          if (!NativeMethods.FindNextFile(findHandle, out data)) {
-            var lastWin32Error = Marshal.GetLastWin32Error();
-            if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
-              throw new LastWin32ErrorException(lastWin32Error,
-                string.Format("Error during enumeration of files at \"{0}\"",
-                  StripPath(path)));
+      if (findHandle != null) {
+        using (findHandle) {
+          while (true) {
+            var entry = new DirectoryEntry(data);
+            if (!SkipSpecialEntry(ref data)) {
+              yield return entry;
             }
-            break;
+            if (!FindNextFile(findHandle, path, out data)) {
+              break;
+            }
           }
         }
       }
@@ -118,26 +102,20 @@ namespace mtsuite.CoreFileSystem.Win32 {
     /// <summary>
     /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
     /// </summary>
-    public IEnumerable<WIN32_FIND_DATA> EnumerateDirectoryEntriesData(TPath path, string pattern = null) {
+    public void EnumerateDirectoryEntries(TPath path, string pattern, EnumerateDirectoryEntriesCallback callback) {
       WIN32_FIND_DATA data;
       var findHandle = FindFirstFile(path, pattern, out data);
-      if (findHandle == null) {
-        yield break;
-      }
-      using (findHandle) {
-        while (true) {
-          // Entry found, return it
-          if (!SkipSpecialEntry(ref data)) yield return data;
-
-          // Try to find next
-          if (!NativeMethods.FindNextFile(findHandle, out data)) {
-            var lastWin32Error = Marshal.GetLastWin32Error();
-            if (lastWin32Error != (int)Win32Errors.ERROR_NO_MORE_FILES) {
-              throw new LastWin32ErrorException(lastWin32Error,
-                string.Format("Error during enumeration of files at \"{0}\"",
-                  StripPath(path)));
+      if (findHandle != null) {
+        using (findHandle) {
+          while (true) {
+            var entry = new DirectoryEntry(data);
+            if (!SkipSpecialEntry(ref data)) {
+              callback(ref entry);
             }
-            break;
+
+            if (!FindNextFile(findHandle, path, out data)) {
+              break;
+            }
           }
         }
       }
@@ -170,6 +148,21 @@ namespace mtsuite.CoreFileSystem.Win32 {
 
         return findHandle;
       }
+    }
+
+    private bool FindNextFile(SafeFindHandle findHandle, TPath path, out WIN32_FIND_DATA data) {
+      if (NativeMethods.FindNextFile(findHandle, out data)) {
+        return true;
+      }
+
+      var lastWin32Error = Marshal.GetLastWin32Error();
+      if (lastWin32Error == (int)Win32Errors.ERROR_NO_MORE_FILES) {
+        return false;
+      }
+
+      throw new LastWin32ErrorException(lastWin32Error,
+        string.Format("Error during enumeration of files at \"{0}\"",
+          StripPath(path)));
     }
 
     private static void AddResult(ref WIN32_FIND_DATA data, List<DirectoryEntry> entries) {

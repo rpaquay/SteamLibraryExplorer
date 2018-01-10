@@ -2,6 +2,7 @@
 using System.Linq;
 using JetBrains.Annotations;
 using mtsuite.CoreFileSystem;
+using mtsuite.CoreFileSystem.Win32;
 
 namespace SteamLibraryExplorer.Utils {
   public abstract class FileSystem {
@@ -61,8 +62,8 @@ namespace SteamLibraryExplorer.Utils {
     }
 
     [NotNull]
-    public static IEnumerable<FileSystemEntryWithFileName> EnumerateEntriesWithFileName([NotNull]FullPath path, string pattern = null) {
-      return Instance.EnumerateEntriesWithFileNameImpl(path, pattern);
+    public static void EnumerateEntries([NotNull]FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback) {
+      Instance.EnumerateEntriesImpl(path, pattern, callback);
     }
 
     protected abstract FileSystemEntry GetEntryImpl(FullPath path);
@@ -74,7 +75,7 @@ namespace SteamLibraryExplorer.Utils {
     protected abstract void DeleteDirectoryImpl(FullPath path);
     protected abstract void DeleteFileImpl(FullPath path);
     protected abstract void CopyFileImpl(FileSystemEntry sourceEntry, [NotNull]FullPath destinationPath, CopyFileOptions options, [NotNull]CopyFileCallback callback);
-    protected abstract IEnumerable<FileSystemEntry> EnumerateEntriesImpl([NotNull]FullPath path, string pattern = null);
-    protected abstract IEnumerable<FileSystemEntryWithFileName> EnumerateEntriesWithFileNameImpl([NotNull]FullPath path, string pattern = null);
+    protected abstract IEnumerable<FileSystemEntry> EnumerateEntriesImpl([NotNull]FullPath path, string pattern);
+    protected abstract void EnumerateEntriesImpl([NotNull]FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback);
   }
 }

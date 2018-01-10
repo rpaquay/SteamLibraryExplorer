@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using mtsuite.CoreFileSystem;
 using mtsuite.CoreFileSystem.Utils;
@@ -24,6 +25,19 @@ namespace tests {
       var pathString = @"c:\test\test2";
       var path = new FullPath(pathString);
       Assert.AreEqual(pathString, path.FullName);
+    }
+
+    [TestMethod]
+    public void FullPathWithRootPathShouldWork() {
+      var pathString = @"c:\";
+      var path = new FullPath(pathString);
+      Assert.AreEqual(pathString, path.FullName);
+      Assert.IsNull(path.Parent);
+      Assert.IsTrue(path.HasTrailingSeparator);
+      Assert.AreEqual(PathHelpers.RootPrefixKind.DiskPath, path.PathKind);
+      Assert.AreEqual(@"c:\", path.FullName);
+      Assert.AreEqual(@"c:\", path.Name);
+      Assert.IsTrue(path.GetHashCode() != 0);
     }
 
     [TestMethod]
@@ -155,6 +169,51 @@ namespace tests {
       Assert.AreEqual("server", p1.Parent?.Parent?.Name);
       Assert.AreEqual(@"\\?\unc\", p1.Parent?.Parent?.Parent?.Name);
       Assert.AreEqual(null, p1.Parent?.Parent?.Parent?.Parent);
+    }
+
+    [TestMethod]
+    public void FullPathEqualsShouldWork() {
+      var path1 = new FullPath(@"c:\test\test2");
+      var path2 = new FullPath(@"c:\test");
+      Assert.IsFalse(path1.Equals(path2));
+      Assert.IsFalse(path2.Equals(path1));
+      Assert.IsFalse(Object.Equals(path1, path2));
+      Assert.AreNotEqual(path1.GetHashCode(), path2.GetHashCode());
+    }
+
+    [TestMethod]
+    public void FullPathEqualsShouldWork2() {
+      var path1 = new FullPath(@"c:\test\test2");
+      var path2 = new FullPath(@"c:\test").Combine("test2");
+      Assert.IsTrue(path1.Equals(path2));
+      Assert.IsTrue(path2.Equals(path1));
+      Assert.IsTrue(Object.Equals(path1, path2));
+      Assert.AreEqual(path1.GetHashCode(), path2.GetHashCode());
+    }
+
+    [TestMethod]
+    public void FullPathCompareToShouldWork1() {
+      var path1 = new FullPath(@"c:\test\test2");
+      var path2 = new FullPath(@"c:\testaaaa");
+      Assert.IsTrue(path1.CompareTo(path2) > 0);
+      Assert.IsTrue(path2.CompareTo(path1) < 0);
+    }
+
+    [TestMethod]
+    public void FullPathCompareToShouldWork2() {
+      var path1 = new FullPath(@"c:\test\test2");
+      var path2 = new FullPath(@"c:\test").Combine("test2");
+      Assert.IsTrue(path1.CompareTo(path2) == 0);
+      Assert.IsTrue(path2.CompareTo(path1) == 0);
+    }
+
+    [TestMethod]
+    public void FullPathShouldBeCaseInsensitiveShouldWork() {
+      var path1 = new FullPath(@"c:\test");
+      var path2 = new FullPath(@"c:\TEST");
+      Assert.IsTrue(path1.Equals(path2));
+      Assert.AreEqual(path1.GetHashCode(), path2.GetHashCode());
+      Assert.AreEqual(0, path1.CompareTo(path2));
     }
   }
 }
