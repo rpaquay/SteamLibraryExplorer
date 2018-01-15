@@ -1,10 +1,9 @@
-﻿using mtsuite.CoreFileSystem;
+﻿using JetBrains.Annotations;
+using mtsuite.CoreFileSystem;
+using mtsuite.CoreFileSystem.Win32;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using JetBrains.Annotations;
-using mtsuite.CoreFileSystem.Win32;
 
 namespace SteamLibraryExplorer.Utils {
   public class FileSystemImpl : FileSystem {
@@ -71,8 +70,8 @@ namespace SteamLibraryExplorer.Utils {
       return _coreFileSystem.EnumerateDirectoryEntries(path, pattern);
     }
 
-    protected override void EnumerateEntriesImpl([NotNull]FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback) {
-      _coreFileSystem.EnumerateDirectoryEntries(path, pattern, callback);
+    protected override DirectoryEntriesEnumerator<FullPath> GetDirectoryEntriesEnumeratorImpl([NotNull] FullPath path, string pattern) {
+      return _coreFileSystem.GetDirectoryEntriesEnumerator(path, pattern);
     }
   }
 }

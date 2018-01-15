@@ -252,7 +252,7 @@ namespace tests {
     }
 
     [TestMethod]
-    public void EnumerateDirectoryEntriesDataWorks() {
+    public void GetDirectoryEntriesEnumeratorWorks() {
       // Prepare
       var fooTarget = _fileSystemSetup.Root.CreateDirectory("foo");
       fooTarget.CreateFile("testfile.txt", 20);
@@ -260,8 +260,11 @@ namespace tests {
 
       // Act
       var entries = new List<DirectoryEntry>();
-      _fileSystemSetup.FileSystem.EnumerateDirectoryEntries(fooTarget.Path, null, 
-        (ref DirectoryEntry data) => entries.Add(data));
+      using (var e = _fileSystemSetup.FileSystem.GetDirectoryEntriesEnumerator(fooTarget.Path, null)) {
+        while (e.MoveNext()) {
+          entries.Add(e.Current);
+        }
+      }
 
       // Assert
       Assert.AreEqual(2, entries.Count);

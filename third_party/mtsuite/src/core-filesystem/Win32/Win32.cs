@@ -48,80 +48,56 @@ namespace mtsuite.CoreFileSystem.Win32 {
     }
 
     /// <summary>
-    /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
+    /// Return the list of entries of a directory as a <see cref="DirectoryEntriesEnumerator{TPath}"/>.
+    /// The returned <see cref="DirectoryEntriesEnumerator{TPath}"/> is a value type so there is no heap allocation
+    /// involved. There is also no heap allocation involved when enumerating entries with
+    /// <see cref="DirectoryEntriesEnumerator{TPath}.MoveNext"/> and <see cref="DirectoryEntriesEnumerator{TPath}.CurrentEntry"/>,
+    /// other than when calling <see cref="DirectoryEntry.FileName"/>.
+    /// <para>
+    /// This is the most efficient way of enumerating the list of entries of a directory.
+    /// </para>
     /// </summary>
-    public FromPool<List<DirectoryEntry>> GetDirectoryEntries(TPath path, string pattern = null) {
-      // Start enumerating files
-      WIN32_FIND_DATA data;
-      var result = _entryListPool.AllocateFrom();
-      var findHandle = FindFirstFile(path, pattern, out data);
-      if (findHandle != null) {
-        using (findHandle) {
-          try {
-            while (true) {
-              var entry = new DirectoryEntry(data);
-              if (!SkipSpecialEntry(ref data)) {
-                result.Item.Add(entry);
-              }
-
-              if (!FindNextFile(findHandle, path, out data)) {
-                break;
-              }
-            }
-          }
-          catch {
-            result.Dispose();
-            throw;
-          }
-        }
-      }
-      return result;
+    public DirectoryEntriesEnumerator<TPath> GetDirectoryEntriesEnumerator(TPath path, string pattern = null) {
+      return new DirectoryEntriesEnumerator<TPath>(this, path, pattern);
     }
 
     /// <summary>
-    /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
+    /// Returns the list of entries in a directory as a <see cref="IEnumerable{DirectoryEntry}"/>.
+    /// The only memory allocation is the enumerable object, but it can be quite large (500+ bytes)
+    /// as it needs to retain a <see cref="DirectoryEntry"/> value type.
+    /// <para>
+    /// This is slightly less efficient than calling <see cref="GetDirectoryEntriesEnumerator(TPath, string)"/> but offers
+    /// the convenience of the <see cref="IEnumerable{T}"/> interface.
+    /// </para>
     /// </summary>
     public IEnumerable<DirectoryEntry> EnumerateDirectoryEntries(TPath path, string pattern = null) {
-      WIN32_FIND_DATA data;
-      var findHandle = FindFirstFile(path, pattern, out data);
-      if (findHandle != null) {
-        using (findHandle) {
-          while (true) {
-            var entry = new DirectoryEntry(data);
-            if (!SkipSpecialEntry(ref data)) {
-              yield return entry;
-            }
-            if (!FindNextFile(findHandle, path, out data)) {
-              break;
-            }
-          }
+      using (var e = GetDirectoryEntriesEnumerator(path, pattern)) {
+        while (e.MoveNext()) {
+          yield return e.CurrentEntry;
         }
       }
     }
 
     /// <summary>
-    /// Note: For testability, this function should be called through <see cref="IFileSystem"/>.
+    /// Returns the list of entries of a directory in a <see cref="List{DirectoryEntry}"/> allocated
+    /// from an internal memory pool. The list can (should) be disposed when not used anymore
+    /// so that it can be returned to the internal pool.
+    /// <para>
+    /// This is less efficient than calling <see cref="GetDirectoryEntriesEnumerator(TPath, string)"/> because
+    /// of the overhead of creating a list, but it is useful when a <see cref="List{T}"/> is needed.
+    /// </para>
     /// </summary>
-    public void EnumerateDirectoryEntries(TPath path, string pattern, EnumerateDirectoryEntriesCallback callback) {
-      WIN32_FIND_DATA data;
-      var findHandle = FindFirstFile(path, pattern, out data);
-      if (findHandle != null) {
-        using (findHandle) {
-          while (true) {
-            var entry = new DirectoryEntry(data);
-            if (!SkipSpecialEntry(ref data)) {
-              callback(ref entry);
-            }
-
-            if (!FindNextFile(findHandle, path, out data)) {
-              break;
-            }
-          }
+    public FromPool<List<DirectoryEntry>> GetDirectoryEntries(TPath path, string pattern = null) {
+      using (var e = GetDirectoryEntriesEnumerator(path, pattern)) {
+        var result = _entryListPool.AllocateFrom();
+        while (e.MoveNext()) {
+          result.Item.Add(e.Current);
         }
+        return result;
       }
     }
 
-    private SafeFindHandle FindFirstFile(TPath path, string pattern, out WIN32_FIND_DATA data) {
+    internal SafeFindHandle FindFirstFile(TPath path, string pattern, out WIN32_FIND_DATA data) {
       using (var sb = _stringBufferPool.AllocateFrom()) {
         _pathSerializer.CopyTo(path, sb.Item);
         // Build search pattern (on the stack) as path + "\\*" + '\0'
@@ -150,12 +126,13 @@ namespace mtsuite.CoreFileSystem.Win32 {
       }
     }
 
-    private bool FindNextFile(SafeFindHandle findHandle, TPath path, out WIN32_FIND_DATA data) {
+    internal bool FindNextFile(SafeFindHandle findHandle, TPath path, out WIN32_FIND_DATA data) {
       if (NativeMethods.FindNextFile(findHandle, out data)) {
         return true;
       }
 
       var lastWin32Error = Marshal.GetLastWin32Error();
+      findHandle.Close();
       if (lastWin32Error == (int)Win32Errors.ERROR_NO_MORE_FILES) {
         return false;
       }
@@ -165,20 +142,10 @@ namespace mtsuite.CoreFileSystem.Win32 {
           StripPath(path)));
     }
 
-    private static void AddResult(ref WIN32_FIND_DATA data, List<DirectoryEntry> entries) {
-      var entry = new DirectoryEntry(data);
-      if (SkipSpecialEntry(ref data))
-        return;
-
-      entries.Add(entry);
-    }
-
-    private static bool SkipSpecialEntry(ref WIN32_FIND_DATA data) {
+    internal static bool SkipSpecialEntry(ref WIN32_FIND_DATA data) {
       if ((data.dwFileAttributes & (int)FILE_ATTRIBUTE.FILE_ATTRIBUTE_DIRECTORY) != 0) {
-        unsafe
-        {
-          fixed (char* name = data.cFileName)
-          {
+        unsafe {
+          fixed (char* name = data.cFileName) {
             return (name[0] == '.' && name[1] == 0) ||
                    (name[0] == '.' && name[1] == '.' && name[2] == 0);
           }

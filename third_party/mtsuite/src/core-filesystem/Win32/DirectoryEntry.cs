@@ -20,18 +20,14 @@ namespace mtsuite.CoreFileSystem.Win32 {
   /// and file attributes.
   /// </summary>
   public struct DirectoryEntry {
-    private readonly WIN32_FIND_DATA _data;
+    internal WIN32_FIND_DATA Data;
 
     public DirectoryEntry(WIN32_FIND_DATA data) {
-      _data = data;
-    }
-
-    public WIN32_FIND_DATA Data {
-      get { return _data; }
+      Data = data;
     }
 
     public string FileName {
-      get { return _data.GetFileName(); }
+      get { return Data.GetFileName(); }
     }
   }
 }

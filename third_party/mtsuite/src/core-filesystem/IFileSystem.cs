@@ -43,6 +43,8 @@ namespace mtsuite.CoreFileSystem {
     /// </summary>
     FromPool<List<FileSystemEntry>> GetDirectoryEntries(FullPath path, string pattern = null);
 
+    DirectoryEntriesEnumerator<FullPath> GetDirectoryEntriesEnumerator(FullPath path, string pattern = null);
+
     /// <summary>
     /// Enumerates the entries in a given directory <paramref
     /// name="path"/>. Each entry contains the relative name of the child file
@@ -53,15 +55,6 @@ namespace mtsuite.CoreFileSystem {
     /// Note: A handle is held on the underlying directory until the enumeration is disposed.
     /// </summary>
     IEnumerable<FileSystemEntry> EnumerateDirectoryEntries(FullPath path, string pattern = null);
-
-    /// <summary>
-    /// Enumerates the entries in a given directory <paramref
-    /// name="path"/>. Each entry contains the relative name of the child file
-    /// or directory, as well as the corresponding <see cref="FILE_ATTRIBUTE"/>.
-    /// Throw an exception if <paramref name="path"/> does not exist or is not
-    /// accessible for some reason.
-    /// </summary>
-    void EnumerateDirectoryEntries(FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback);
 
     /// <summary>
     /// Delete a file or directory, given the <see cref="FileSystemEntry"/> of

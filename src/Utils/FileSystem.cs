@@ -62,8 +62,8 @@ namespace SteamLibraryExplorer.Utils {
     }
 
     [NotNull]
-    public static void EnumerateEntries([NotNull]FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback) {
-      Instance.EnumerateEntriesImpl(path, pattern, callback);
+    public static DirectoryEntriesEnumerator<FullPath> GetDirectoryEntriesEnumerator([NotNull]FullPath path, string pattern) {
+      return Instance.GetDirectoryEntriesEnumeratorImpl(path, pattern);
     }
 
     protected abstract FileSystemEntry GetEntryImpl(FullPath path);
@@ -76,6 +76,6 @@ namespace SteamLibraryExplorer.Utils {
     protected abstract void DeleteFileImpl(FullPath path);
     protected abstract void CopyFileImpl(FileSystemEntry sourceEntry, [NotNull]FullPath destinationPath, CopyFileOptions options, [NotNull]CopyFileCallback callback);
     protected abstract IEnumerable<FileSystemEntry> EnumerateEntriesImpl([NotNull]FullPath path, string pattern);
-    protected abstract void EnumerateEntriesImpl([NotNull]FullPath path, string pattern, EnumerateDirectoryEntriesCallback callback);
+    protected abstract DirectoryEntriesEnumerator<FullPath> GetDirectoryEntriesEnumeratorImpl(FullPath path, string pattern);
   }
 }
