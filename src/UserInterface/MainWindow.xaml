@@ -20,7 +20,7 @@
     <SolidColorBrush x:Key="GameLocationErrorBrush" Color="Red" />
     <SolidColorBrush x:Key="WorkshopMissingBrush" Color="CadetBlue" />
     <!-- Override text to be "light gray" instead of white -->
-    <SolidColorBrush x:Key="TextBrush" Color="#FFF0F0F0" />
+    <SolidColorBrush x:Key="TextBrush" Color="#FFD0D0D0" />
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding x:Name="CloseCommand" Command="ApplicationCommands.Close"/>
@@ -65,6 +65,14 @@
         </TextBlock>
       </Grid>
     </DockPanel>
+    <!-- Disable mouse wheel scrolling so that our (container) ScrollViewer can do its job -->
+    <userInterface:SteamLibraryListViewUserControl x:Name="SteamLibraryViewColumnHeaders"
+                                                   DockPanel.Dock="Top" DisableMouseWheelScrolling="True" 
+                                                   HideListViewContent="True">
+      <userInterface:SteamLibraryListViewUserControl.DataContext>
+        <viewModel:SteamLibraryViewModel/>
+      </userInterface:SteamLibraryListViewUserControl.DataContext>
+    </userInterface:SteamLibraryListViewUserControl>
     <StatusBar DockPanel.Dock="Bottom">
       <StatusBarItem>
         <TextBlock x:Name="StatusLabel" Text="{Binding StatusText}"/>

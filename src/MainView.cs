@@ -49,6 +49,9 @@ namespace SteamLibraryExplorer {
       _mainForm.RefreshCommand.CanExecute += (sender, args) => args.CanExecute = true;
       _mainForm.CloseCommand.Executed += (sender, args) => OnCloseView();
       _mainForm.RefreshCommand.Executed += (sender, args) => OnRefreshView();
+      // Synchronize the column widths
+      _mainForm.SteamLibraryViewColumnHeaders.ViewModel.SteamLibraryListViewColumnsModel.PropertyChanged +=
+        SteamLibraryListViewColumnsModelOnPropertyChanged;
 
       _mainForm.SearchTextChanged += MainFormOnSearchTextChanged;
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
@@ -158,8 +161,6 @@ namespace SteamLibraryExplorer {
 
     private void RefreshGameLibraryGroups([NotNull]SteamLibrary library, [NotNull]SteamLibraryViewModel libraryViewModel) {
       libraryViewModel.DisplayName = GetGroupHeaderText(library);
-
-      //RefreshListView();
     }
 
     private void RefreshListView() {

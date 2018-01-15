@@ -3,7 +3,7 @@ using SteamLibraryExplorer.Utils;
 namespace SteamLibraryExplorer.ViewModel {
   public class SteamLibraryListViewColumnsModel : ObservableObject {
     private bool _showWorkshopFiles;
-    private double _gameDisplayNameColumnWidth = 220;
+    private double _gameDisplayNameColumnWidth = 260;
     private double _gameAcfFileColumnWidth = 240;
     private double _gameLocationColumnWidth = 240;
     private double _gameSizeOnDiskColumnWidth = 80;

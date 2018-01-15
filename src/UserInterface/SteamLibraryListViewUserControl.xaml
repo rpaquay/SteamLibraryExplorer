@@ -7,7 +7,7 @@
              xmlns:wpfUtils="clr-namespace:SteamLibraryExplorer.WpfUtils"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="1000"
-             d:DataContext="viewModel:SteamLibraryViewModel"
+             DataContext="viewModel:SteamLibraryViewModel"
              x:Name="MyUserControlName">
   <UserControl.Resources>
     <wpfUtils:FileCountValueConverter x:Key="FileCountValueConverter"/>
@@ -18,8 +18,6 @@
     <SolidColorBrush x:Key="GameLocationErrorBrush" Color="Red" />
     <!-- ReSharper disable once Xaml.RedundantResource -->
     <SolidColorBrush x:Key="WorkshopMissingBrush" Color="CadetBlue" />
-    <!-- Override text to be "light gray" instead of white -->
-    <SolidColorBrush x:Key="TextBrush" Color="#FFF0F0F0" />
     <!-- Set background color of list view column headers -->
     <Style x:Key="MyGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
       <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -179,7 +177,7 @@
         </GridViewColumn>
 
         <GridViewColumn d:DataContext="{d:DesignInstance viewModel:SteamLibraryViewModel}"
-                              Width="{Binding SteamLibraryListViewColumnsModel.GameSizeOnDiskColumnWidth, Mode=TwoWay}">
+                              Width="{Binding SteamLibraryListViewColumnsModel.WorkshopSizeOnDiskColumnWidth, Mode=TwoWay}">
           <GridViewColumn.Header>
             <GridViewColumnHeader Tag="WorkshopSizeOnDisk" Click="ListViewColumnHeader_Click">Size</GridViewColumnHeader>
           </GridViewColumn.Header>
