@@ -3,10 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:viewModel="clr-namespace:SteamLibraryExplorer.ViewModel"
              xmlns:userInterface="clr-namespace:SteamLibraryExplorer.UserInterface"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="1000"
-             d:DataContext="viewModel:SteamLibraryViewModel">
+             d:DesignHeight="300" d:DesignWidth="1000">
+  <d:UserControl.DataContext>
+    <viewModel:SteamLibraryViewModel/>
+  </d:UserControl.DataContext>
   <Expander IsExpanded="True" Margin="0,4,0,2" Padding="6,0,0,0">
     <Expander.Header>
       <DockPanel Height="30" >
@@ -17,7 +20,6 @@
     </Expander.Header>
     <!-- Disable mouse wheel scrolling so that our (container) ScrollViewer can do its job -->
     <userInterface:SteamLibraryListViewUserControl
-          DataContext="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
           DisableMouseWheelScrolling="True"
           HideListViewColumnHeaders="True"/>
   </Expander>

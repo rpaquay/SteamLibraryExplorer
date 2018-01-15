@@ -7,8 +7,10 @@
              xmlns:wpfUtils="clr-namespace:SteamLibraryExplorer.WpfUtils"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="1000"
-             DataContext="viewModel:SteamLibraryViewModel"
              x:Name="MyUserControlName">
+  <d:UserControl.DataContext>
+    <viewModel:SteamLibraryViewModel/>
+  </d:UserControl.DataContext>
   <UserControl.Resources>
     <wpfUtils:FileCountValueConverter x:Key="FileCountValueConverter"/>
     <wpfUtils:SizeOnDiskValueConverter x:Key="SizeOnDiskValueConverter"/>

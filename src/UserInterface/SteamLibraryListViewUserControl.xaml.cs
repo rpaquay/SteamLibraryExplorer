@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -16,6 +17,10 @@ namespace SteamLibraryExplorer.UserInterface {
     }
 
     private void OnLoaded(object sender, RoutedEventArgs routedEventArgs) {
+      if (!(DataContext is SteamLibraryViewModel)) {
+        Debug.Assert(false, $"Data context is {DataContext}");
+        return;
+      }
       ViewModel.ListView = ListView;
     }
 

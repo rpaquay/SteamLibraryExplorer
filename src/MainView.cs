@@ -52,6 +52,9 @@ namespace SteamLibraryExplorer {
       // Synchronize the column widths
       _mainForm.SteamLibraryViewColumnHeaders.ViewModel.SteamLibraryListViewColumnsModel.PropertyChanged +=
         SteamLibraryListViewColumnsModelOnPropertyChanged;
+      // Synchronize the column sorting
+      _mainForm.SteamLibraryViewColumnHeaders.ViewModel.GamesListViewColumnsHeaderClick +=
+        LibraryViewModelOnGamesListViewColumnsHeaderClick;
 
       _mainForm.SearchTextChanged += MainFormOnSearchTextChanged;
       _model.SteamConfiguration.Location.ValueChanged += (sender, arg) => ShowSteamLocation(arg.NewValue);
@@ -208,16 +211,8 @@ namespace SteamLibraryExplorer {
       // Add games of new library
       _viewModel.SteamLibraries.Add(libraryViewModel);
 
-      // Synchronize the column sorting
-      libraryViewModel.GamesListViewColumnsHeaderClick +=
-        LibraryViewModelOnGamesListViewColumnsHeaderClick;
-
       // Synchronize search filtering
       libraryViewModel.FilterGameEntry += MainFormOnFilterGameEntry;
-
-      // Synchronize the column widths
-      libraryViewModel.SteamLibraryListViewColumnsModel.PropertyChanged +=
-        SteamLibraryListViewColumnsModelOnPropertyChanged;
 
       // Note: The order is important for concurrency correctness: we want to register to
       //       the "ValueChanged" event before we initialize the value of the ViewModel.
