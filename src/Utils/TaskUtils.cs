@@ -1,15 +1,35 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 
 namespace SteamLibraryExplorer.Utils {
   public static class TaskUtils {
+    //private static readonly TaskScheduler Scheduler = new LimitedConcurrencyLevelTaskScheduler(8);
+    private static readonly TaskScheduler Scheduler = TaskScheduler.Default;
+
+    /// <summary>
+    /// Create a new task for <paramref name="someAction"/> and run in on the default scheduler.
+    /// </summary>
     public static Task Run(Action someAction) {
-      return Task.Factory.StartNew(someAction, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
+      return Run(someAction, CancellationToken.None);
     }
+
+    /// <summary>
+    /// Create a new task for <paramref name="someAction"/> and run in on the default scheduler.
+    /// </summary>
+    public static Task Run(Action someAction, CancellationToken token) {
+      return Task.Factory.StartNew(someAction, token, TaskCreationOptions.None, Scheduler);
+    }
+
+    /// <summary>
+    /// Create a new task for <paramref name="someAction"/> and run in on the default scheduler.
+    /// </summary>
     public static Task<T> Run<T>(Func<T> someAction) {
-      return Task.Factory.StartNew(someAction, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
+      return Run(someAction, CancellationToken.None);
+    }
+
+    public static Task<T> Run<T>(Func<T> someAction, CancellationToken token) {
+      return Task.Factory.StartNew(someAction, token, TaskCreationOptions.None, Scheduler);
     }
 
     public static Task CompletedTask {
@@ -18,111 +38,6 @@ namespace SteamLibraryExplorer.Utils {
         tcs.SetResult(null);
         return tcs.Task;
       }
-    }
-  }
-
-  public class TaskAwaiter {
-    private readonly Action<Exception> _errorHandler;
-    private readonly TaskScheduler _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-    public TaskAwaiter(Action<Exception> errorHandler) {
-      _errorHandler = errorHandler;
-    }
-
-    public Task Await<T>(Task<T> task, Action<T> action) {
-      return task.ContinueWith(t => {
-        if (t.IsCanceled) {
-          return;
-        }
-        if (t.IsFaulted) {
-          _errorHandler(t.Exception);
-          return;
-        }
-        action(t.Result);
-      }, _scheduler);
-    }
-
-    public Task<TNewResult> CombineWith<T, TNewResult>(Task<T> task, Func<T, Task<TNewResult>> continuationFunction) {
-      var tcs = new TaskCompletionSource<TNewResult>();
-      task.ContinueWith(t => {
-        if (t.IsCanceled) {
-          tcs.TrySetCanceled();
-          return;
-        }
-        if (t.IsFaulted) {
-          _errorHandler(t.Exception);
-          tcs.TrySetException(t.Exception);
-          return;
-        }
-        continuationFunction(t.Result).ContinueWith(t2 => {
-          if (t2.IsCanceled) {
-            tcs.TrySetCanceled();
-          } else if (t2.IsFaulted) {
-            _errorHandler(t2.Exception);
-            tcs.TrySetException(t2.Exception);
-          } else {
-            tcs.TrySetResult(t2.Result);
-          }
-        });
-      }, _scheduler);
-      return tcs.Task;
-    }
-
-    public Task CombineWith<T>(Task<T> task, Func<T, Task> continuationFunction) {
-      var tcs = new TaskCompletionSource<object>();
-      task.ContinueWith(t => {
-        if (t.IsCanceled) {
-          tcs.TrySetCanceled();
-          return;
-        }
-        if (t.IsFaulted) {
-          _errorHandler(t.Exception);
-          tcs.TrySetException(t.Exception);
-          return;
-        }
-        continuationFunction(t.Result).ContinueWith(t2 => {
-          if (t2.IsCanceled) {
-            tcs.TrySetCanceled();
-          } else if (t2.IsFaulted) {
-            _errorHandler(t2.Exception);
-            tcs.TrySetException(t2.Exception);
-          } else {
-            tcs.TrySetResult(null);
-          }
-        });
-      }, _scheduler);
-      return tcs.Task;
-    }
-
-    public Task CombineWith(Task task, Func<Task> continuationFunction) {
-      var tcs = new TaskCompletionSource<object>();
-      task.ContinueWith(t => {
-        if (t.IsCanceled) {
-          tcs.TrySetCanceled();
-          return;
-        }
-        if (t.IsFaulted) {
-          _errorHandler(t.Exception);
-          tcs.TrySetException(t.Exception);
-          return;
-        }
-        continuationFunction().ContinueWith(t2 => {
-          if (t2.IsCanceled) {
-            tcs.TrySetCanceled();
-          } else if (t2.IsFaulted) {
-            _errorHandler(t2.Exception);
-            tcs.TrySetException(t2.Exception);
-          } else {
-            tcs.TrySetResult(null);
-          }
-        });
-      }, _scheduler);
-      return tcs.Task;
-    }
-
-    public Task TryFinally(Action tryAction, Func<Task> task, Action finallyAction) {
-      tryAction();
-      return task().ContinueWith(t => finallyAction(), _scheduler);
     }
   }
 }

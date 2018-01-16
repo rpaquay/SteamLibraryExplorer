@@ -97,6 +97,8 @@
     <Compile Include="UserInterface\SteamLibraryListViewUserControl.xaml.cs">
       <DependentUpon>SteamLibraryListViewUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\LimitedConcurrencyLevelTaskScheduler.cs" />
+    <Compile Include="Utils\TaskAwaiter.cs" />
     <Compile Include="Utils\TaskUtils.cs" />
     <Compile Include="WpfUtils\ListViewColumnSorter.cs" />
     <Compile Include="SteamModel\AcfFile.cs" />

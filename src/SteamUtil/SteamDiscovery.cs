@@ -43,7 +43,8 @@ namespace SteamLibraryExplorer.SteamUtil {
     public Task DiscoverSizeOnDiskAsync([NotNull] IEnumerable<SteamLibrary> libraries, bool useCache, CancellationToken cancellationToken) {
       // Copy collection, since it could be cleared if a Refresh occurs.
       var copy = libraries.ToList();
-      return RunAsync(() => DiscoverSizeOnDisk(copy, useCache, cancellationToken));
+      var tasks = DiscoverSizeOnDiskTasks(copy, useCache, cancellationToken).ToArray();
+      return Task.Factory.ContinueWhenAll(tasks, t => t, cancellationToken);
     }
 
     [NotNull]
@@ -108,7 +109,7 @@ namespace SteamLibraryExplorer.SteamUtil {
       return new SteamLibrary(libraryRootPath, isMainLibrary, games);
     }
 
-    private void DiscoverSizeOnDisk([NotNull] IEnumerable<SteamLibrary> libraries, bool useCache, CancellationToken cancellationToken) {
+    private IEnumerable<Task> DiscoverSizeOnDiskTasks([NotNull] List<SteamLibrary> libraries, bool useCache, CancellationToken cancellationToken) {
       // Clear cache if not using it
       if (!useCache) {
         lock (_pathInfosLock) {
@@ -116,22 +117,28 @@ namespace SteamLibraryExplorer.SteamUtil {
         }
       }
 
-      libraries.AsParallel().ForAll(library => {
-        if (cancellationToken.IsCancellationRequested)
-          return;
+      foreach (var library in libraries) {
+        // Create task to retrieve disk size
+        yield return TaskUtils.Run(() => {
+          if (cancellationToken.IsCancellationRequested)
+            return;
 
-        ulong userFreeBytes;
-        ulong totalBytes;
-        ulong freeBytes;
-        if (NativeMethods.GetDiskFreeSpaceEx(library.Location.FullName, out userFreeBytes, out totalBytes, out freeBytes)) {
-          library.FreeDiskSize.Value = (long)freeBytes;
-          library.TotalDiskSize.Value = (long)totalBytes;
-        }
+          ulong userFreeBytes;
+          ulong totalBytes;
+          ulong freeBytes;
+          if (NativeMethods.GetDiskFreeSpaceEx(library.Location.FullName, out userFreeBytes, out totalBytes, out freeBytes)) {
+            library.FreeDiskSize.Value = (long) freeBytes;
+            library.TotalDiskSize.Value = (long) totalBytes;
+          }
+        }, cancellationToken);
 
+        // For each game, crate task to retrieve game file count and size on disk
         foreach (var game in library.Games) {
-          DiscoverGameSizeOnDisk(game, useCache, cancellationToken);
+          yield return TaskUtils.Run(() => {
+            DiscoverGameSizeOnDisk(game, useCache, cancellationToken);
+          }, cancellationToken);
         }
-      });
+      }
     }
 
     public static class ProperyValueThrottledUpdater {
